@@ -1,4 +1,4 @@
-# Name matchin
+# Name matching
 
 Name matching is a Python package for the matching of company names
 
