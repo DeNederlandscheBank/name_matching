@@ -53,6 +53,10 @@ class NameMatcher:
         Boolean indicating whether the most common words from the matching datashould be excluded 
         when calculating the final score. The terms are still included in determining the best match.
         default=False
+    cut_off_no_scoring_words: float
+        the cut off percentage of the occurence of the most occuring word for which words are still included 
+        in the no_soring_words set
+        default=0.01
     lowercase : bool
         A boolean indicating whether during the preprocessing all characters should be converted to
         lowercase, to generate case insensitive matching
@@ -89,6 +93,7 @@ class NameMatcher:
                  remove_ascii=True,
                  legal_suffixes=False,
                  common_words=False,
+                 cut_off_no_scoring_words=0.01,
                  preprocess_split=False,
                  verbose=True,
                  distance_metrics=['overlap', 'weighted_jaccard', 'ratcliff_obershelp', 
@@ -119,10 +124,11 @@ class NameMatcher:
 
         self._preprocess_common_words = pd.Series()
         self._preprocess_split = preprocess_split
+        self._cut_off = cut_off_no_scoring_words
 
         if self._postprocess_company_legal_id:
             self._word_set = self._make_no_scoring_words(
-                'legal', self._word_set)
+                'legal', self._word_set, self._cut_off)
 
         self.set_distance_metrics(distance_metrics)
 
@@ -226,7 +232,7 @@ class NameMatcher:
             self._df_matching_data, self._column)
         if self._postprocess_common_words:
             self._word_set = self._make_no_scoring_words(
-                'common', self._word_set)
+                'common', self._word_set, self._cut_off)
         self._vectorise_data(transform)
         self._preprocessed = True
 
@@ -562,7 +568,7 @@ class NameMatcher:
     def _make_no_scoring_words(self,
                                indicator: str,
                                word_set: set,
-                               cut_off=0.01) -> set:
+                               cut_off: float) -> set:
         """
         A method to make a set of words which are not taken into account when scoring matches.
 
@@ -576,7 +582,6 @@ class NameMatcher:
         cut_off: float
             the cut_off percentage of the occurence of the most occuring word for which words are still included 
             in the no_soring_words set
-            default=0.01
 
         Returns
         -------
