@@ -263,7 +263,7 @@ class NameMatcher:
         self._column_matching = column_matching
 
         if isinstance(to_be_matched, pd.Series):
-            to_be_matched = pd.DataFrame(to_be_matched)
+            to_be_matched = pd.DataFrame([to_be_matched.values], columns=to_be_matched.index.to_list())
         if not self._preprocessed:
             self._process_matching_data()
         to_be_matched = self.preprocess(to_be_matched, self._column_matching)
@@ -283,9 +283,6 @@ class NameMatcher:
         if self._verbose:
             tqdm.write('possible matches found   ')
             tqdm.write('')
-
-        if self._possible_matches is None:
-            return pd.Series(index=['original_name', 'match_name', 'score', 'match_index'])
 
         if self._verbose:
             tqdm.write('fuzzy matching...')
@@ -413,7 +410,7 @@ class NameMatcher:
                 ind[num] = np.argmax(np.mean(method_grouped_results, axis=1))
                 idx = idx + len(method_list)
         elif self._number_of_matches == self._num_distance_metrics:
-            ind = np.argmax(match_score, axis=0)
+            ind = np.argmax(match_score, axis=1)
         else:
             ind = np.argsort(np.mean(match_score, axis=1)
                              )[-self._number_of_matches:][::-1]
@@ -553,7 +550,7 @@ class NameMatcher:
         if self._preprocess_lowercase:
             df[column_name] = df[column_name].str.lower()
         if self._preprocess_punctuations:
-            df[column_name] = df[column_name].str.replace('[^\w\s]', '')
+            df[column_name] = df[column_name].str.replace('[^\w\s]', '', regex=True)
             df[column_name] = df[column_name].str.replace(
                 '  ', ' ').str.strip()
         if self._preprocess_ascii:
@@ -565,7 +562,7 @@ class NameMatcher:
     def _make_no_scoring_words(self,
                                indicator: str,
                                word_set: set,
-                               cut_off=0.2) -> set:
+                               cut_off=0.01) -> set:
         """
         A method to make a set of words which are not taken into account when scoring matches.
 
