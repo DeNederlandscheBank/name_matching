@@ -64,6 +64,5 @@ def test_match_names_preprocess_data(original_name, adjusted_name, case_sensitiv
 def test_match_names_combine_data(original_name, adjusted_name, n_equal):
     if n_equal ==342:
         adjusted_name.loc[89,'company_name'] = original_name.loc[89,'company_name']
-    data_a, data_b = run_nm._match_names_combine_data(original_name, adjusted_name, 'company_name', 'company_name')
-    assert data_a['company_name'][784] == result_1
-    assert data_b['company_name'][784] == result_2
+    data_a = run_nm._match_names_combine_data(original_name, adjusted_name, 'company_name', 'company_name')
+    assert data_a['score'][784] == 100

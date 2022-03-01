@@ -1,8 +1,5 @@
-from pandas.core.frame import DataFrame
-from scipy.sparse import data
 from name_matching.name_matcher import NameMatcher
 from typing import Union, Tuple
-import numpy as np
 import pandas as pd
 import unicodedata
 
@@ -86,7 +83,7 @@ def _match_names_preprocess_data(column: str,
     if not punctuation_sensitive:
         data_first[column] = data_first[column].str.replace('[^\w\s]', '', regex=True)
         data_second[column] = data_second[column].str.replace(
-            '[^\w\s]', '')
+            '[^\w\s]', '', regex=True)
     if not special_character_sensitive:
         data_first[column] = data_first[column].apply(lambda string: unicodedata.normalize(
             'NFKD', string).encode('ASCII', 'ignore').decode())
@@ -123,7 +120,7 @@ def _match_names_combine_data(data_first: pd.DataFrame,
     matches = pd.merge(data_first, data_second, how='left',
                         left_on=left_cols, right_on=right_cols, suffixes=['', '_matched'])
     matches['score'] = 100
-    matches = matches.dropna(subset=['index'])
+    # matches = matches.dropna(subset=['index'])
  
     return matches
 
@@ -157,7 +154,7 @@ def _match_names_match_single(matcher: NameMatcher,
     unmatched = data_first[~data_first.index.isin(matches.index)].copy()
     if len(unmatched) > 0:
         matcher.load_and_process_master_data(name_column, data_second, transform=True)
-        matches = matches.append(matcher.do_name_matching(
+        matches = matches.append(matcher.match_names(
             to_be_matched=unmatched, column_matching=name_column))
         return matches
     else:
@@ -206,7 +203,7 @@ def _match_names_match_group(matcher: NameMatcher,
             matcher.load_and_process_master_data(name_column, 
                 data_second_group, start_processing=False)
             matcher.transform_data()
-            matches = matches.append(matcher.do_name_matching(
+            matches = matches.append(matcher.match_names(
                 to_be_matched=unmatched[unmatched[group_column_first] == group].copy(), column_matching=name_column))
     else:
         print('All data matched with basic string matching')

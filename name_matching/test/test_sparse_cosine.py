@@ -174,8 +174,11 @@ def test_cosine_standard_c1(top_n, num_rows, mat_c, mat_d, result_c_d1):
                         )
 def test_cosine_top_n_cd_low_memory(row, mat_a, mat_b):
     mat_a_co = csc_matrix(mat_a).tocoo()
-    np.testing.assert_array_almost_equal(_sparse_cosine_low_memory(mat_a_co.row, mat_a_co.col, mat_a_co.data, mat_a_co.shape[0], mat_b[row,:].tocsr().indices, mat_b[row,:].tocsr().data).reshape(-1,1),
-                                        (mat_a * (mat_b).T).todense()[:,row], decimal=3)
+    low_memory_result = _sparse_cosine_low_memory(matrix_row = mat_a_co.row, matrix_col = mat_a_co.col, 
+        matrix_data = mat_a_co.data, matrix_len = mat_a_co.shape[0], vector_ind = mat_b[row,:].tocsr().indices, 
+        vector_data = mat_b[row,:].tocsr().data)
+    ordinary_result = (mat_a * (mat_b).T).todense()[:,row]
+    np.testing.assert_array_almost_equal(low_memory_result.reshape(-1,1), ordinary_result, decimal=3)
 
 @pytest.mark.parametrize("top_n, num_rows, row", 
                           [(1, 10, 2),
@@ -190,10 +193,10 @@ def test_cosine_top_n_cd_low_memory(row, mat_a, mat_b):
                         )
 def test_cosine_top_n_cd(top_n, num_rows, row, mat_c, mat_d):
     if num_rows == 0:
-        assert_values_in_array(sparse_cosine_top_n(mat_c.tocoo(), mat_d[row,:].tocsr(), top_n, num_rows, False).reshape(1,-1), 
+        assert_values_in_array(sparse_cosine_top_n(mat_c.tocoo(), mat_d[row,:].tocsr(), top_n, True, num_rows, False).reshape(1,-1), 
         _sparse_cosine_top_n_standard(mat_c, mat_d[row,:], num_rows + 1, top_n, False))
     else:
-        np.testing.assert_array_equal(sparse_cosine_top_n(mat_c, mat_d, top_n, num_rows, False), _sparse_cosine_top_n_standard(mat_c, mat_d, num_rows, top_n, False))
+        np.testing.assert_array_equal(sparse_cosine_top_n(mat_c, mat_d, top_n, False, num_rows, False), _sparse_cosine_top_n_standard(mat_c, mat_d, num_rows, top_n, False))
 
     
 @pytest.mark.parametrize("top_n, num_rows, row", 
@@ -211,8 +214,8 @@ def test_cosine_top_n_cd(top_n, num_rows, row, mat_c, mat_d):
                         )
 def test_cosine_top_n_ab(top_n, num_rows, row, mat_a, mat_b):
     if num_rows == 0:
-        assert_values_in_array(sparse_cosine_top_n(mat_a.tocoo(), mat_b[row,:].tocsr(), top_n, num_rows, False).reshape(1,-1), 
+        assert_values_in_array(sparse_cosine_top_n(mat_a.tocoo(), mat_b[row,:].tocsr(), top_n, True, num_rows, False).reshape(1,-1), 
         _sparse_cosine_top_n_standard(mat_a, mat_b[row,:], num_rows + 1, top_n, False))
     else:
-        np.testing.assert_array_equal(sparse_cosine_top_n(mat_a, mat_b, top_n, num_rows, False), _sparse_cosine_top_n_standard(mat_a, mat_b, num_rows, top_n, False))
+        np.testing.assert_array_equal(sparse_cosine_top_n(mat_a, mat_b, top_n, False, num_rows, False), _sparse_cosine_top_n_standard(mat_a, mat_b, num_rows, top_n, False))
         
