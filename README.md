@@ -34,7 +34,7 @@ matcher.set_distance_metrics(discounted_levenshtein=False,
 matcher.load_and_process_master_data(df_gleif, transform=True)
 
 # perform the name matching on the data you want matched
-matches = matcher.do_name_matching(to_be_matched=unknown_counterparties, column_matching='name')
+matches = matcher.match_names(to_be_matched=unknown_counterparties, column_matching='name')
 
 
 ```
