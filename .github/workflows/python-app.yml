@@ -33,7 +33,7 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Install name_matching_package
       run: |
-        run: python -m pip install .
+        python -m pip install .
     - name: Test with pytest
       run: |
         pytest
