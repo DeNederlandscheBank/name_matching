@@ -1,6 +1,7 @@
 from _pytest.python_api import approx
 import numpy as np
 import pandas as pd
+import os.path as path
 import abydos.distance as abd
 import abydos.phonetic as abp
 from pandas.core.frame import DataFrame
@@ -12,11 +13,13 @@ import name_matching.run_nm as run_nm
 
 @pytest.fixture
 def original_name():
-    return pd.read_csv('test\\test_names.csv')
+    package_dir = path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
+    return pd.read_csv(path.join(package_dir, 'test','test_names.csv'))
 
 @pytest.fixture
 def adjusted_name():
-    return pd.read_csv('test\\adjusted_test_names.csv')
+    package_dir = path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
+    return pd.read_csv(path.join(package_dir, 'test','adjusted_test_names.csv'))
 
 @pytest.mark.parametrize("series, column, group_column",
                         [[False, '', ''],

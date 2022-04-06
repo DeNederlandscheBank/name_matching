@@ -1,6 +1,7 @@
 from _pytest.python_api import approx
 import numpy as np
 import pandas as pd
+import os.path as path
 import abydos.distance as abd
 import abydos.phonetic as abp
 import pytest
@@ -13,7 +14,8 @@ import name_matching.name_matcher as nm
 
 @pytest.fixture
 def name_match():
-    data = pd.read_csv('test/test_names.csv')
+    package_dir = path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
+    data = pd.read_csv(path.join(package_dir, 'test','test_names.csv'))
     name_matcher = nm.NameMatcher()
     name_matcher.load_and_process_master_data(
         'company_name', data, start_processing=False, transform=False)
@@ -22,7 +24,8 @@ def name_match():
 
 @pytest.fixture
 def adjusted_name():
-    return pd.read_csv('test/adjusted_test_names.csv')
+    package_dir = path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
+    return pd.read_csv(path.join(package_dir, 'test','adjusted_test_names.csv'))
 
 
 @pytest.fixture

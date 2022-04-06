@@ -12,5 +12,7 @@ setup(
 			'cleanco',
 			'numba',
 			'scikit-learn', 
+         'pandas',
+         'numpy',
 			'tqdm'],
 )

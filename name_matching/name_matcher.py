@@ -401,7 +401,7 @@ class NameMatcher:
         return match_score
 
     def _rate_matches(self,
-                      match_score: np.array) -> list:
+                      match_score: np.array) -> np.array:
         """
         Converts the match scores from the score_matches method to a list of indexes of the best scoring 
         matches limited to the _number_of_matches.
@@ -414,7 +414,7 @@ class NameMatcher:
 
         Returns
         -------
-        list
+        np.array
             The indexes of the best rated matches
         """
 
@@ -434,7 +434,7 @@ class NameMatcher:
             ind = np.argsort(np.mean(match_score, axis=1)
                              )[-self._number_of_matches:][::-1]
 
-        return ind.astype(int)
+        return np.array(ind, dtype=int)
 
     def _get_alternative_names(self, match: pd.Series) -> list:
         """
