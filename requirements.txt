@@ -1,4 +1,4 @@
-abydos==0.5.0
+abydos
 cleanco==2.0.1
 numba
 numpy
