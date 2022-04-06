@@ -434,7 +434,7 @@ class NameMatcher:
             ind = np.argsort(np.mean(match_score, axis=1)
                              )[-self._number_of_matches:][::-1]
 
-        return ind
+        return ind.astype(int)
 
     def _get_alternative_names(self, match: pd.Series) -> list:
         """
