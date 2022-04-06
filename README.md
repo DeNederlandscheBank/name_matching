@@ -1,3 +1,5 @@
+[![name_matching](https://github.com/DeNederlandscheBank/name_matching/actions/workflows/python-app.yml/badge.svg?branch=main)](https://github.com/DeNederlandscheBank/name_matching/actions/workflows/python-app.yml)
+
 # Name matching
 
 Name matching is a Python package for the matching of company names
