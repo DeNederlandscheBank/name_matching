@@ -1,12 +1,10 @@
-from _pytest.python_api import approx
 import numpy as np
 import pandas as pd
 import os.path as path
 import abydos.distance as abd
 import abydos.phonetic as abp
 import pytest
-from scipy.sparse.csc import csc_matrix
-from sklearn import preprocessing
+from scipy.sparse import csc_matrix
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 import name_matching.name_matcher as nm
@@ -406,7 +404,7 @@ def test_do_name_matching_error(adjusted_name):
 @pytest.mark.parametrize("verbose", [True, False])
 def test_do_name_matching_print(capfd, name_match, adjusted_name, verbose):
     name_match._verbose = verbose
-    name_match.match_names(adjusted_name.iloc[:5], 'company_name')
+    name_match.match_names(adjusted_name.iloc[:5].copy(), 'company_name')
     out, err = capfd.readouterr()
     if verbose:
         assert out.find('preprocessing') > -1
