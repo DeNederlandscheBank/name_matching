@@ -6,7 +6,13 @@ Name matching is a Python package for the matching of company names
 
 ## Installation
 
-To install the package, download the repo, navigate to the folder and run the setup in pip
+The package can be installed via PiPy:
+
+```bash
+pip install name_matching
+```
+
+Alternatively you could install the package by downloading the repo, navigating to the folder and run the setup in pip locally
 
 ```bash
 pip install .
