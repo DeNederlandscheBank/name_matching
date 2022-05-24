@@ -11,7 +11,7 @@ setup(
    author='Michiel Nijhuis',
    author_email='m.nijhuis@ndb.nl',
    packages=['name_matching'],
-   python_requires='<3.9',
+   python_requires='<3.10',
    install_requires = ['abydos==0.5.0',
 			'cleanco',
 			'numba',
