@@ -1,10 +1,10 @@
 import numpy as np
 from tqdm import tqdm
-from numba import jit
+# from numba import jit
 from scipy.sparse import csc_matrix, coo_matrix
 from typing import Union
 
-@jit(nopython=True, fastmath=True)
+# @jit(nopython=True, fastmath=True)
 def _sparse_cosine_low_memory(matrix_row: np.array,
                               matrix_col: np.array,
                               matrix_data: np.array,

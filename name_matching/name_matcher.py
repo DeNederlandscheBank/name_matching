@@ -198,8 +198,8 @@ class NameMatcher:
         individual_words = to_be_matched[self._column_matching].str.split(
             expand=True).stack()
         word_counts = individual_words.value_counts()
-        preprocess_common_words_inst = self._preprocess_common_words.append(
-            word_counts).fillna(0)
+        preprocess_common_words_inst = pd.concat([self._preprocess_common_words,
+            word_counts]).fillna(0)
         to_be_matched_new = to_be_matched.copy()
         name = to_be_matched[self._column_matching].str.split()
         to_be_matched_new[self._column_matching] = name.apply(

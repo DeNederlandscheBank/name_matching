@@ -1,13 +1,6 @@
-from _pytest.python_api import approx
-import numpy as np
 import pandas as pd
 import os.path as path
-import abydos.distance as abd
-import abydos.phonetic as abp
-from pandas.core.frame import DataFrame
 import pytest
-from scipy.sparse.csc import csc_matrix
-from sklearn.feature_extraction.text import TfidfVectorizer
 
 import name_matching.run_nm as run_nm
 

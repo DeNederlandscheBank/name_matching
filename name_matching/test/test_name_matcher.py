@@ -1,13 +1,12 @@
 import numpy as np
 import pandas as pd
 import os.path as path
-import abydos.distance as abd
-import abydos.phonetic as abp
 import pytest
 from scipy.sparse import csc_matrix
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 import name_matching.name_matcher as nm
+from distances import Indel, DiscountedLevenshtein, CormodeLZ, Tichy, IterativeSubString, BaulieuXIII, Clement, DiceAsymmetricI, KuhnsIII, Overlap, PearsonII, WeightedJaccard, WarrensIV, Bag, RougeL, RatcliffObershelp, NCDbz2, FuzzyWuzzyPartialString, FuzzyWuzzyTokenSort, FuzzyWuzzyTokenSet, Editex, Typo,LIG3, SSK, Levenshtein, DoubleMetaphone, RefinedSoundex, PhoneticDistance
 
 
 @pytest.fixture
@@ -45,34 +44,34 @@ def test_make_distance_metrics_error(name_match, method):
 
 
 @pytest.mark.parametrize("method, result",
-                         [['indel', abd.Indel()],
-                          ['discounted_levenshtein', abd.DiscountedLevenshtein()],
-                          ['tichy', abd.Tichy()],
-                          ['cormodeL_z', abd.CormodeLZ()],
-                          ['iterative_sub_string', abd.IterativeSubString()],
-                          ['baulieu_xiii', abd.BaulieuXIII()],
-                          ['clement', abd.Clement()],
-                          ['dice_asymmetricI', abd.DiceAsymmetricI()],
-                          ['kuhns_iii', abd.KuhnsIII()],
-                          ['overlap', abd.Overlap()],
-                          ['pearson_ii', abd.PearsonII()],
-                          ['weighted_jaccard', abd.WeightedJaccard()],
-                          ['warrens_iv', abd.WarrensIV()],
-                          ['bag', abd.Bag()],
-                          ['rouge_l', abd.RougeL()],
-                          ['ratcliff_obershelp', abd.RatcliffObershelp()],
-                          ['ncd_bz2', abd.NCDbz2()],
+                         [['indel', Indel()],
+                          ['discounted_levenshtein', DiscountedLevenshtein()],
+                          ['tichy', Tichy()],
+                          ['cormodeL_z', CormodeLZ()],
+                          ['iterative_sub_string', IterativeSubString()],
+                          ['baulieu_xiii', BaulieuXIII()],
+                          ['clement', Clement()],
+                          ['dice_asymmetricI', DiceAsymmetricI()],
+                          ['kuhns_iii', KuhnsIII()],
+                          ['overlap', Overlap()],
+                          ['pearson_ii', PearsonII()],
+                          ['weighted_jaccard', WeightedJaccard()],
+                          ['warrens_iv', WarrensIV()],
+                          ['bag', Bag()],
+                          ['rouge_l', RougeL()],
+                          ['ratcliff_obershelp', RatcliffObershelp()],
+                          ['ncd_bz2', NCDbz2()],
                           ['fuzzy_wuzzy_partial_string',
-                              abd.FuzzyWuzzyPartialString()],
-                          ['fuzzy_wuzzy_token_sort', abd.FuzzyWuzzyTokenSort()],
-                          ['fuzzy_wuzzy_token_set', abd.FuzzyWuzzyTokenSet()],
-                          ['editex', abd.Editex()],
-                          ['typo', abd.Typo()],
-                          ['lig_3', abd.LIG3()],
-                          ['ssk', abd.SSK()],
-                          ['refined_soundex', abd.PhoneticDistance(transforms=abp.RefinedSoundex(
-                              max_length=30), metric=abd.Levenshtein(), encode_alpha=True)],
-                          ['double_metaphone', abd.PhoneticDistance(transforms=abp.DoubleMetaphone(max_length=30), metric=abd.Levenshtein(), encode_alpha=True)]]
+                              FuzzyWuzzyPartialString()],
+                          ['fuzzy_wuzzy_token_sort', FuzzyWuzzyTokenSort()],
+                          ['fuzzy_wuzzy_token_set', FuzzyWuzzyTokenSet()],
+                          ['editex', Editex()],
+                          ['typo', Typo()],
+                          ['lig_3', LIG3()],
+                          ['ssk', SSK()],
+                          ['refined_soundex', PhoneticDistance(transforms=RefinedSoundex(
+                              max_length=30), metric=Levenshtein(), encode_alpha=True)],
+                          ['double_metaphone', PhoneticDistance(transforms=DoubleMetaphone(max_length=30), metric=Levenshtein(), encode_alpha=True)]]
                          )
 def test_make_distance_metrics(name_match, method, result):
     name_match.set_distance_metrics([method])

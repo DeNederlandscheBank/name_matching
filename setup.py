@@ -6,13 +6,12 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
    name='name_matching',
-   version='0.8.2',
+   version='0.8.3',
    description='A package for the matching of company names',
    author='Michiel Nijhuis',
    author_email='m.nijhuis@ndb.nl',
-   packages=['name_matching'],
-   python_requires='<3.9',
-   install_requires = ['abydos==0.5.0',
+   packages=['name_matching','distances'],
+   install_requires = [
 			'cleanco',
 			'numba',
 			'scikit-learn', 

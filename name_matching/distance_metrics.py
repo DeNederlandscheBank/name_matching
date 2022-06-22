@@ -1,5 +1,4 @@
-import abydos.distance as abd
-import abydos.phonetic as abp
+from distances import Indel, DiscountedLevenshtein, CormodeLZ, Tichy, IterativeSubString, BaulieuXIII, Clement, DiceAsymmetricI, KuhnsIII, Overlap, PearsonII, WeightedJaccard, WarrensIV, Bag, RougeL, RatcliffObershelp, NCDbz2, FuzzyWuzzyPartialString, FuzzyWuzzyTokenSort, FuzzyWuzzyTokenSet, Editex, Typo,LIG3, SSK, Levenshtein, DoubleMetaphone, RefinedSoundex, PhoneticDistance
 from collections import defaultdict
 
 def make_distance_metrics(indel=False,
@@ -180,62 +179,62 @@ def make_distance_metrics(indel=False,
     """
     distance_metrics = defaultdict(list)
     if indel:
-        distance_metrics['Levenshtein'].append(abd.Indel())
+        distance_metrics['Levenshtein'].append(Indel())
     if discounted_levenshtein:
         distance_metrics['Levenshtein'].append(
-            abd.DiscountedLevenshtein())
+            DiscountedLevenshtein())
     if cormodeL_z:
-        distance_metrics['block'].append(abd.CormodeLZ())
+        distance_metrics['block'].append(CormodeLZ())
     if tichy:
-        distance_metrics['block'].append(abd.Tichy())
+        distance_metrics['block'].append(Tichy())
     if iterative_sub_string:
         distance_metrics['Subsequence'].append(
-            abd.IterativeSubString())
+            IterativeSubString())
     if baulieu_xiii:
-        distance_metrics['multiset'].append(abd.BaulieuXIII())
+        distance_metrics['multiset'].append(BaulieuXIII())
     if clement:
-        distance_metrics['multiset'].append(abd.Clement())
+        distance_metrics['multiset'].append(Clement())
     if dice_asymmetricI:
-        distance_metrics['multiset'].append(abd.DiceAsymmetricI())
+        distance_metrics['multiset'].append(DiceAsymmetricI())
     if kuhns_iii:
-        distance_metrics['multiset'].append(abd.KuhnsIII())
+        distance_metrics['multiset'].append(KuhnsIII())
     if overlap:
-        distance_metrics['multiset'].append(abd.Overlap())
+        distance_metrics['multiset'].append(Overlap())
     if pearson_ii:
-        distance_metrics['multiset'].append(abd.PearsonII())
+        distance_metrics['multiset'].append(PearsonII())
     if weighted_jaccard:
-        distance_metrics['multiset'].append(abd.WeightedJaccard())
+        distance_metrics['multiset'].append(WeightedJaccard())
     if warrens_iv:
-        distance_metrics['multiset'].append(abd.WarrensIV())
+        distance_metrics['multiset'].append(WarrensIV())
     if bag:
-        distance_metrics['multiset'].append(abd.Bag())
+        distance_metrics['multiset'].append(Bag())
     if rouge_l:
-        distance_metrics['multiset'].append(abd.RougeL())
+        distance_metrics['multiset'].append(RougeL())
     if ratcliff_obershelp:
         distance_metrics['Subsequence'].append(
-            abd.RatcliffObershelp())
+            RatcliffObershelp())
     if ncd_bz2:
-        distance_metrics['compression'].append(abd.NCDbz2())
+        distance_metrics['compression'].append(NCDbz2())
     if fuzzy_wuzzy_partial_string:
         distance_metrics['fuzzy'].append(
-            abd.FuzzyWuzzyPartialString())
+            FuzzyWuzzyPartialString())
     if fuzzy_wuzzy_token_sort:
-        distance_metrics['fuzzy'].append(abd.FuzzyWuzzyTokenSort())
+        distance_metrics['fuzzy'].append(FuzzyWuzzyTokenSort())
     if fuzzy_wuzzy_token_set:
-        distance_metrics['fuzzy'].append(abd.FuzzyWuzzyTokenSet())
+        distance_metrics['fuzzy'].append(FuzzyWuzzyTokenSet())
     if editex:
-        distance_metrics['edit'].append(abd.Editex())
+        distance_metrics['edit'].append(Editex())
     if typo:
-        distance_metrics['edit'].append(abd.Typo())
+        distance_metrics['edit'].append(Typo())
     if lig_3:
-        distance_metrics['Levenshtein'].append(abd.LIG3())
+        distance_metrics['Levenshtein'].append(LIG3())
     if ssk:
-        distance_metrics['Subsequence'].append(abd.SSK())
+        distance_metrics['Subsequence'].append(SSK())
     if refined_soundex:
-        distance_metrics['phonetic'].append(abd.PhoneticDistance(
-            transforms=abp.RefinedSoundex(max_length=30), metric=abd.Levenshtein(), encode_alpha=True))
+        distance_metrics['phonetic'].append(PhoneticDistance(
+            transforms=RefinedSoundex(max_length=30), metric=Levenshtein(), encode_alpha=True))
     if double_metaphone:
-        distance_metrics['phonetic'].append(abd.PhoneticDistance(
-            transforms=abp.DoubleMetaphone(max_length=30), metric=abd.Levenshtein(), encode_alpha=True))
+        distance_metrics['phonetic'].append(PhoneticDistance(
+            transforms=DoubleMetaphone(max_length=30), metric=Levenshtein(), encode_alpha=True))
 
     return distance_metrics

@@ -1,5 +1,3 @@
-import numpy as np
-import pandas as pd
 import pytest
 
 from name_matching.distance_metrics import make_distance_metrics
@@ -356,14 +354,14 @@ def test_refined_soundex(string_a, string_b, expected):
     
 @pytest.mark.parametrize("string_a, string_b, expected", 
                             [('De Nederlandsche Bank', 'De Nederlandsche Bank', 1), 
-                            ('De Nederlandsche Bank', 'Nederlandsche Bank', 0.5),  
+                            ('De Nederlandsche Bank', 'Nederlandsche Bank', 0.91666666666666666),  
                             ('De Nederlandsche Bank', 'Bank de Nederlandsche', 0.5),  
-                            ('De Nederlandsche Bank', 'De Nederlandse Bank', 0.5), 
-                            ('De Nederlandsche Bank', 'De Nederlancsh Bank', 0.5), 
-                            ('De Nederlandsche Bank', 'De Bank', 0.5), 
+                            ('De Nederlandsche Bank', 'De Nederlandse Bank', 0.91666666666666666), 
+                            ('De Nederlandsche Bank', 'De Nederlancsh Bank', 0.91666666666666666), 
+                            ('De Nederlandsche Bank', 'De Bank', 0.41666666666666663), 
                             ('De Nederlandsche Bank', 'De Nederlandsche Benk', 1.0), 
-                            ('De Nederlandsche Bank', 'De Duitse Bank', 0.5),
-                            ('De Nederlandsche Bank', 'Federal Reserve', 0.5)]
+                            ('De Nederlandsche Bank', 'De Duitse Bank', 0.5833333333333333),
+                            ('De Nederlandsche Bank', 'Federal Reserve', 0.33333333333333337)]
                         )
 def test_double_metaphone(string_a, string_b, expected):
     assert pytest.approx(make_distance_metrics(double_metaphone=True).popitem()[1][0].sim(string_a, string_b)) == expected
