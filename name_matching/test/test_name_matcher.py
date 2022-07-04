@@ -4,7 +4,10 @@ import os.path as path
 import pytest
 from scipy.sparse import csc_matrix
 from sklearn.feature_extraction.text import TfidfVectorizer
-
+from cleanco.termdata import terms_by_country, terms_by_type
+import functools
+import operator
+import re
 import name_matching.name_matcher as nm
 from distances import Indel, DiscountedLevenshtein, CormodeLZ, Tichy, IterativeSubString, BaulieuXIII, Clement, DiceAsymmetricI, KuhnsIII, Overlap, PearsonII, WeightedJaccard, WarrensIV, Bag, RougeL, RatcliffObershelp, NCDbz2, FuzzyWuzzyPartialString, FuzzyWuzzyTokenSort, FuzzyWuzzyTokenSet, Editex, Typo,LIG3, SSK, Levenshtein, DoubleMetaphone, RefinedSoundex, PhoneticDistance
 
@@ -32,6 +35,33 @@ def words():
             'oppose', 'paper', 'oppose', 'brown', 'pig', 'fat', 'oppose', 'paper',
             'oppose', 'brown', 'pig', 'fat', 'snail']
 
+def number_of_words_in_legal_list(preprocess: bool) -> int:
+    """
+    Get the number of words in the legal word list. To allow for updates of the cleanco
+    package.
+
+    Parameters
+    -------
+    preprocess: bool
+        a bool determining if the punctuations should be removed
+
+    Returns
+    -------
+    int
+        The number of legal words in the list
+    """
+
+    if preprocess:
+        set_of_words = set([re.sub(r'[^\w\s]', '', s).strip() for s in functools.reduce(
+                operator.iconcat, terms_by_country.values(), [])])
+        set_of_words.update([re.sub(r'[^\w\s]', '', s).strip() for s in functools.reduce(
+                operator.iconcat, terms_by_type.values(), [])])
+    else:
+        set_of_words = set([s.strip() for s in functools.reduce(
+            operator.iconcat, terms_by_country.values(), [])])
+        set_of_words.update([s.strip() for s in functools.reduce(operator.iconcat, terms_by_type.values(), [])])
+
+    return len(set_of_words)
 
 @pytest.mark.parametrize("method",
                          ["",
@@ -79,15 +109,18 @@ def test_make_distance_metrics(name_match, method, result):
 
 
 @pytest.mark.parametrize("kwargs_str, result_1, result_2, result_3, result_4",
-                         [[{"ngrams": (4, 5)}, 0, False, (4, 5), 5000],
-                          [{"low_memory": True}, 0, True, (2, 3), 5000],
-                          [{"legal_suffixes": True}, 244, False, (2, 3), 5000],
+                         [[{"ngrams": (4, 5)}, -1, False, (4, 5), 5000],
+                          [{"low_memory": True}, -1, True, (2, 3), 5000],
+                          [{"legal_suffixes": True}, 0, False, (2, 3), 5000],
                           [{"legal_suffixes": True, "number_of_rows": 8,
-                              "ngrams": (1, 2, 3)}, 244, False, (1, 2, 3), 8],
+                              "ngrams": (1, 2, 3)}, 0, False, (1, 2, 3), 8],
                           ])
 def test_initialisation(kwargs_str, result_1, result_2, result_3, result_4):
     name_match = nm.NameMatcher(**kwargs_str)
-    assert len(name_match._word_set) == result_1
+    number_of_words = 1
+    if result_1 > -1:
+        number_of_words = number_of_words_in_legal_list(name_match._preprocess_punctuations)
+    assert len(name_match._word_set) == number_of_words + result_1
     assert name_match._low_memory == result_2
     assert name_match._vec.ngram_range == result_3
     assert name_match._number_of_rows == result_4
@@ -95,21 +128,21 @@ def test_initialisation(kwargs_str, result_1, result_2, result_3, result_4):
 
 @pytest.mark.parametrize("occ, result_1, result_2, result_3, result_4, result_5",
                          [[1, '', '', '', '', ''],
-                          [2, 'a-nd', 'Hndkiewicz,2Nicolas',
-                              'Tashirian', 'Hpdson Sbns', 'Marquardt,'],
-                          [3, 'Dickens a-nd', 'Hndkiewicz,2Nicolas',
-                              'Runolfsson, Tashirian Will', 'Hpdson Sbns', 'Hermiston Marquardt,'],
+                          [2, 'Schiller', 'Sch-ster, an[',
+                              'Runolfsson, Tashirian Will', 'Hyats, S|nger', 'Ankunding-Harb-er'],
+                          [3, 'Schiller', 'Sch-ster, Raynor an[ Hermann',
+                              'Runolfsson, Tashirian Will', 'Hyats, Durgan S|nger', 'Ankunding-Harb-er'],
                           ])
 def test_preprocess_reduce(name_match, adjusted_name, occ, result_1, result_2, result_3, result_4, result_5):
 
     name_match._column_matching = 'company_name'
     new_names = name_match._preprocess_reduce(
         adjusted_name, occurence_count=occ)
-    assert new_names.loc[1866, 'company_name'] == result_1
-    assert new_names.loc[1423, 'company_name'] == result_2
+    assert new_names.loc[166, 'company_name'] == result_1
+    assert new_names.loc[423, 'company_name'] == result_2
     assert new_names.loc[268, 'company_name'] == result_3
-    assert new_names.loc[859, 'company_name'] == result_4
-    assert new_names.loc[1918, 'company_name'] == result_5
+    assert new_names.loc[59, 'company_name'] == result_4
+    assert new_names.loc[18, 'company_name'] == result_5
 
 
 @pytest.mark.parametrize("col, start_pro, transform",
@@ -181,16 +214,16 @@ def test_preprocess(name_match, lower_case, punctuations, ascii, result_1, resul
         name_match._df_matching_data, 'company_name')
     assert new_df.loc[0, 'company_name'] == result_1
     assert new_df.loc[2, 'company_name'] == result_2
-    assert new_df.loc[784, 'company_name'] == result_3
+    assert new_df.loc[432, 'company_name'] == result_3
 
 
 @pytest.mark.parametrize("low_memory, ngrams, result_1, result_2, result_3",
-                         [[1, (5, 6), 0.02579, 0.00781, 0.01738],
-                          [6, (2, 3), 0.009695, 0.01022, 0.01120],
-                          [8, (1, 2), 0.027087, 0.02765, 0.02910],
-                          [0, (5, 6), 0.02579, 0.00781, 0.01738],
-                          [0, (2, 3), 0.009695, 0.01022, 0.01120],
-                          [0, (1, 2), 0.027087, 0.02765, 0.02910],
+                         [[1, (5, 6), 0.00689, 0.00892, 0.02242],
+                          [6, (2, 3), 0.01044, 0.01092, 0.035],
+                          [8, (1, 2), 0.02729, 0.02783, 0.02324],
+                          [0, (5, 6), 0.00689, 0.00892, 0.02242],
+                          [0, (2, 3), 0.01044, 0.01092, 0.035],
+                          [0, (1, 2), 0.02729, 0.02783, 0.02324],
                           ])
 def test_transform_data(name_match, low_memory, ngrams, result_1, result_2, result_3):
     name_match._low_memory = low_memory
@@ -310,7 +343,7 @@ def test_postprocess(name_match, match, number_of_matches, word_set, score, resu
                           ('legal', True, set(), 0.01, 'plc', 'bedrijf'),
                           ('legal', True, set(['bedrijf']),
                           0.01, 'bedrijf', 'Group'),
-                          ('common', True, set(), 0.01, 'Group', 'West'),
+                          ('common', True, set(), 0.01, 'Group', 'bedrijf'),
                           ('common', True, set(), 0.3, 'and', 'Group'),
                           ('common', True, set(['West']),
                           0.3, 'West', 'bedrijf'),
@@ -331,19 +364,20 @@ def test_search_for_possible_matches_error(adjusted_name):
         name_matcher._search_for_possible_matches(adjusted_name)
 
 
-@pytest.mark.parametrize("top_n, low_memory, result_1, result_2",
-                         [(10, 0, 1518, 144),
-                          (50, 0, 1992, 9),
-                          (100, 0, 1999, 6),
-                          (1, 0, 44, 144),
-                          (10, 8, 1518, 144),
-                          (50, 8, 1992, 9),
-                          (100, 8, 1999, 6),
-                          (1, 8, 44, 144)
+@pytest.mark.parametrize("top_n, low_memory, number_of_rows, result_1, result_2",
+                         [(10, True, 55, 469, 144),
+                          (50, True, 112, 499, 6),
+                          (100, True, 112, 499, 1),
+                          (1, True, 112, 44, 144),
+                          (10, False, 500, 469, 144),
+                          (50, False, 1500, 499, 6),
+                          (100, False, 500, 499, 1),
+                          (1, False, 500, 44, 144)
                           ])
-def test_search_for_possible_matches(name_match, adjusted_name, top_n, low_memory, result_1, result_2):
+def test_search_for_possible_matches(name_match, adjusted_name, top_n, low_memory, number_of_rows, result_1, result_2):
     name_match._column_matching = 'company_name'
     name_match._low_memory = low_memory
+    name_match._number_of_rows = number_of_rows
     name_match._top_n = top_n
     name_match._process_matching_data(True)
     possible_match = name_match._search_for_possible_matches(adjusted_name)
@@ -355,16 +389,16 @@ def test_search_for_possible_matches(name_match, adjusted_name, top_n, low_memor
 
 
 @pytest.mark.parametrize("common_words, num_matches, possible_matches, matching_series, result_0, result_1",
-                         [(True, 3, np.array([29, 343, 727, 855, 1702]), pd.Series(
-                              ['Company and Sons'], index=['company_name']), 36.03, 31.33),
-                          (False, 2, np.array([29, 343, 727, ]), pd.Series(
+                         [(True, 3, np.array([29, 343, 126, 238, 445]), pd.Series(
+                              ['Company and Sons'], index=['company_name']), 31.33, 31.77),
+                          (False, 2, np.array([29, 343, 126, ]), pd.Series(
                               ['Company and Sons'], index=['company_name']), 71.28, 68.6),
                           (False, 2, np.array([29, 343]), pd.Series(
                               ['Company and Sons'], index=['company_name']), 71.28, 68.6),
                           (False, 2, np.array([[29, 343], [0, 0]]), pd.Series(
                               ['Company and Sons'], index=['company_name']), 71.28, 68.6),
-                          (False, 2, np.array([29, 343, 727, 855, 1702]), pd.Series(
-                              ['Company and Sons'], index=['company_name']), 72.28, 71.28)
+                          (False, 2, np.array([29, 343, 126, 238, 445]), pd.Series(
+                              ['Company and Sons'], index=['company_name']), 71.28, 68.6)
                           ])
 def test_fuzzy_matches(name_match, common_words, num_matches, possible_matches, matching_series, result_0, result_1):
     name_match._column_matching = 'company_name'
@@ -380,7 +414,7 @@ def test_fuzzy_matches(name_match, common_words, num_matches, possible_matches, 
 
 def test_do_name_matching_full(name_match, adjusted_name):
     result = name_match.match_names(adjusted_name, 'company_name')
-    assert np.sum(result['match_index'] == result.index) == 1922
+    assert np.sum(result['match_index'] == result.index) == 491
 
 
 def test_do_name_matching_split(name_match, adjusted_name):
@@ -501,15 +535,15 @@ def test_process_words(words, string, stringlist, result_1, result_2, y):
 
 
 @pytest.mark.parametrize("word_set, cut_off, result_1, result_2",
-                         [[set(), 0, 1518, 'Group'],
-                          [set(), 0, 1518, 'and'],
+                         [[set(), 0, 635, 'Group'],
+                          [set(), 0, 635, 'and'],
                              [set(), 0.1, 7, 'Group'],
                              [set(), 0.1, 7, 'LLC'],
-                             [set(), 0.12, 6, 'LLC'],
+                             [set(), 0.12, 7, 'LLC'],
                              [set(), 0.2, 1, 'and'],
                              [set(['apple']), 1, 1, 'apple'],
-                             [set(['apple']), 0, 1519, 'apple'],
-                             [set(['apple']), 0, 1519, 'Group']
+                             [set(['apple']), 0, 636, 'apple'],
+                             [set(['apple']), 0, 636, 'Group']
                           ])
 def test_process_common_words(name_match, word_set, cut_off, result_1, result_2):
     words = name_match._process_common_words(word_set, cut_off)
@@ -517,21 +551,23 @@ def test_process_common_words(name_match, word_set, cut_off, result_1, result_2)
     assert len(words) == result_1
 
 
-@pytest.mark.parametrize("word_set, preprocess, result_1, result_2",
-                         [[set(), True, 244, 'company'],
-                          [set(), True, 244, '3ao'],
-                             [set(), True, 244, 'gmbh'],
-                             [set(), False, 312, '& company'],
-                             [set(), False, 312, '3ao'],
-                             [set(), False, 312, 'g.m.b.h.'],
-                             [set(['apple']), True, 245, 'apple'],
-                             [set(['apple']), False, 313, 'apple'],
-                             [set(['apple..']), True, 245, 'apple..'],
-                             [set(['apple..']), False, 313, 'apple..']
+@pytest.mark.parametrize("word_set, preprocess, result_1, result_2, result_3",
+                         [[set(), True, 0, 'company', True],
+                          [set(), True, 0, '3ao', True],
+                             [set(), True, 0, 'g.m.b.h.', False],
+                             [set(), False, 0, '& company', True],
+                             [set(), False, 0, '3ao', True],
+                             [set(), False, 0, 'g.m.b.h.', True],
+                             [set(['apple']), True, 1, 'apple', True],
+                             [set(['apple']), False, 1, 'apple', True],
+                             [set(['apple..']), True, 1, 'apple..', True],
+                             [set(['apple..']), False, 1, 'apple..', True]
                           ])
-def test_process_legal_words(word_set, preprocess, result_1, result_2):
+def test_process_legal_words(word_set, preprocess, result_1, result_2, result_3):
     name_match = nm.NameMatcher()
     name_match._preprocess_punctuations = preprocess
     words = name_match._process_legal_words(word_set)
-    assert result_2 in words
-    assert len(words) == result_1
+
+    number_of_words = number_of_words_in_legal_list(preprocess)
+    assert (result_2 in words) == result_3
+    assert len(words) == number_of_words + result_1

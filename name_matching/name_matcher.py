@@ -9,7 +9,7 @@ from typing import Union, Tuple
 from itertools import compress
 from sklearn.feature_extraction.text import TfidfVectorizer
 from name_matching.distance_metrics import make_distance_metrics
-from name_matching.term_data import terms_by_type, terms_by_country
+from cleanco.termdata import terms_by_type, terms_by_country
 from name_matching.sparse_cosine import sparse_cosine_top_n
 
 

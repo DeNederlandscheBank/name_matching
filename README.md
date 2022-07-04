@@ -2,7 +2,10 @@
 
 # Name matching
 
-Name matching is a Python package for the matching of company names
+Name matching is a Python package for the matching of company names. This package has been developed to match the names of companies from different databases together to allow them to be merged. The package has a number of options to determine how exact the matches should be and also for the selection of different name matching algorithms.
+
+For a more in-depth discussion of the name matching package please see the [company name matching](https://medium.com/dnb-data-science-hub/company-name-matching-6a6330710334) medium post
+
 
 ## Installation
 
@@ -52,3 +55,6 @@ All contributions are welcome. For more substantial changes, please open an issu
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
+
+## Thanks
+Thanks to the work of implementing name matching algorithms done in the [Abydos package](https://github.com/chrislit/abydos). These form the basis of the name matching algorithms used in this package.
