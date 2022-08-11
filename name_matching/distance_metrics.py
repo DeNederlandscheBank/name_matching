@@ -4,11 +4,11 @@ from collections import defaultdict
 def make_distance_metrics(indel=False,
                           discounted_levenshtein=False,
                           tichy=False,
-                          cormodeL_z=False,
+                          cormodel_z=False,
                           iterative_sub_string=False,
                           baulieu_xiii=False,
                           clement=False,
-                          dice_asymmetricI=False,
+                          dice_asymmetrici=False,
                           kuhns_iii=False,
                           overlap=False,
                           pearson_ii=False,
@@ -85,7 +85,7 @@ def make_distance_metrics(indel=False,
         fuzzy name matching. This algorithm provides a shortest edit distance based
         on substring and add operations.
         default=False
-    cormodeL_z: bool
+    cormodel_z: bool
         Boolean indicating whether the CormodeLZ method should be used during the 
         fuzzy name matching. The CormodeLZ distance between strings x and y, is the 
         minimum number of single characters or substrings of y or of the partially 
@@ -109,7 +109,7 @@ def make_distance_metrics(indel=False,
         by the following formula: (|X ∩ Y|/|X|)*(1-|X|/|N|) + (|(N \ X) \ Y|/|N \ X|) *
         (1-|N \ X|/|N|)
         default=False
-    dice_asymmetricI: bool
+    dice_asymmetrici: bool
         Boolean indicating whether the DiceAsymmetricI method should be used during 
         the fuzzy name matching. The Dice asymmetric similarity is given be |X ∩ Y|/|X|
         default=False
@@ -209,7 +209,7 @@ def make_distance_metrics(indel=False,
     if discounted_levenshtein:
         distance_metrics['Levenshtein'].append(
             DiscountedLevenshtein())
-    if cormodeL_z:
+    if cormodel_z:
         distance_metrics['block'].append(CormodeLZ())
     if tichy:
         distance_metrics['block'].append(Tichy())
@@ -220,7 +220,7 @@ def make_distance_metrics(indel=False,
         distance_metrics['multiset'].append(BaulieuXIII())
     if clement:
         distance_metrics['multiset'].append(Clement())
-    if dice_asymmetricI:
+    if dice_asymmetrici:
         distance_metrics['multiset'].append(DiceAsymmetricI())
     if kuhns_iii:
         distance_metrics['multiset'].append(KuhnsIII())

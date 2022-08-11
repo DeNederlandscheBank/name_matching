@@ -56,7 +56,7 @@ def test_tichy(string_a, string_b, expected):
                             ('De Nederlandsche Bank', 'Federal Reserve', 5/21)]
                         )
 def test_cormodeL_z(string_a, string_b, expected):
-    assert pytest.approx(make_distance_metrics(cormodeL_z=True).popitem()[1][0].sim(string_a, string_b)) == expected
+    assert pytest.approx(make_distance_metrics(cormodel_z=True).popitem()[1][0].sim(string_a, string_b)) == expected
     
 @pytest.mark.parametrize("string_a, string_b, expected", 
                             [('De Nederlandsche Bank', 'De Nederlandsche Bank', 1), 
@@ -112,7 +112,7 @@ def test_clement(string_a, string_b, expected):
                             ('De Nederlandsche Bank', 'Federal Reserve', 3/22)]
                         )
 def test_dice_asymmetricI(string_a, string_b, expected):
-    assert pytest.approx(make_distance_metrics(dice_asymmetricI=True).popitem()[1][0].sim(string_a, string_b)) == expected
+    assert pytest.approx(make_distance_metrics(dice_asymmetrici=True).popitem()[1][0].sim(string_a, string_b)) == expected
     
 @pytest.mark.parametrize("string_a, string_b, expected", 
                             [('De Nederlandsche Bank', 'De Nederlandsche Bank', 3067/3100), 

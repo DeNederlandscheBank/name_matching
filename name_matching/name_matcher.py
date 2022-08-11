@@ -174,7 +174,7 @@ class NameMatcher:
                 double_metaphone
         """
 
-        input_metrics = {metric.lower(): True for metric in metrics}
+        input_metrics = {str(metric).lower(): True for metric in metrics}
         try:
             self._distance_metrics = make_distance_metrics(**input_metrics)
         except TypeError:
