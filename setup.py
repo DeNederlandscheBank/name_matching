@@ -9,7 +9,7 @@ setup(
    version='0.8.4',
    description='A package for the matching of company names',
    author='Michiel Nijhuis',
-   author_email='m.nijhuis@ndb.nl',
+   author_email='m.nijhuis@dnb.nl',
    packages=['name_matching','distances'],
    install_requires = [
 			'cleanco',
