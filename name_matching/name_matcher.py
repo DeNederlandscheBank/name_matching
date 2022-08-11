@@ -138,10 +138,43 @@ class NameMatcher:
     def set_distance_metrics(self, metrics: list) -> None:
         """
         A method to set which of the distance metrics should be employed during the
-        fuzzy matching
+        fuzzy matching. For very short explanations of most of the name matching 
+        algorithms please see the make_distance_metrics function in distance_matrics.py
+
+        Parameters
+        ----------
+        metrics: list 
+            The list with the distance metrics to be used during the name matching. The
+            distance metrics can be chosen from the list below:
+                indel
+                discounted_levenshtein
+                tichy
+                cormodeL_z
+                iterative_sub_string
+                baulieu_xiii
+                clement
+                dice_asymmetricI
+                kuhns_iii
+                overlap
+                pearson_ii
+                weighted_jaccard
+                warrens_iv
+                bag
+                rouge_l
+                ratcliff_obershelp
+                ncd_bz2
+                fuzzy_wuzzy_partial_string
+                fuzzy_wuzzy_token_sort
+                fuzzy_wuzzy_token_set
+                editex
+                typo
+                lig_3
+                ssk
+                refined_soundex
+                double_metaphone
         """
 
-        input_metrics = {metric: True for metric in metrics}
+        input_metrics = {metric.lower(): True for metric in metrics}
         try:
             self._distance_metrics = make_distance_metrics(**input_metrics)
         except TypeError:
