@@ -462,7 +462,7 @@ class _TokenDistance(_Distance):
 
         For (multi-)sets S and T, this is :math:`S + T`.
 
-        In the case of multisets, this counts values in the interesection
+        In the case of multisets, this counts values in the intersection
         twice. In the case of sets, this is identical to the union.
         """
         if self.params['intersection_type'] == 'soft':
