@@ -137,7 +137,7 @@ def test_preprocess_reduce(name_match, adjusted_name, occ, result_1, result_2, r
 
     name_match._column_matching = 'company_name'
     new_names = name_match._preprocess_reduce(
-        adjusted_name, occurence_count=occ)
+        adjusted_name, occurrence_count=occ)
     assert new_names.loc[166, 'company_name'] == result_1
     assert new_names.loc[423, 'company_name'] == result_2
     assert new_names.loc[268, 'company_name'] == result_3
@@ -451,18 +451,18 @@ def test_do_name_matching_print(capfd, name_match, adjusted_name, verbose):
         assert out == ''
 
 
-@pytest.mark.parametrize("word, occurence_count, result",
+@pytest.mark.parametrize("word, occurrence_count, result",
                          [['fun snail pool', 2, 'snail'],
                           ['fun snail pool', 3, 'fun snail'],
                           ['fun snail pool', 1, ''],
                           ['fun small pool', 3, 'fun small pool'],
                           ['fun snail', 3, 'fun snail'],
                           ['fun small pool', 5, 'fun small pool']])
-def test_select_top_words(word, words, occurence_count, result):
+def test_select_top_words(word, words, occurrence_count, result):
     word_counts = pd.Series(words).value_counts()
     name_match = nm.NameMatcher()
     new_word = name_match._select_top_words(
-        word.split(), word_counts, occurence_count)
+        word.split(), word_counts, occurrence_count)
     assert new_word == result
 
 
