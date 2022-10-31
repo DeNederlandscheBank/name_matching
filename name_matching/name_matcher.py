@@ -17,14 +17,14 @@ class NameMatcher:
 
     """
     A class for the name matching of data based on the strings in a single column. The NameMatcher
-    first applies a cosine simularity on the ngrams of the strings to get an aproximate match followed 
+    first applies a cosine similarity on the ngrams of the strings to get an approximate match followed 
     by a fuzzy matching based on a number of different algorithms.
 
     Parameters
     ----------
     ngrams : tuple of integers
         The length of the ngrams which should be used for the generation of ngrams for the cosine
-        simularity comparrison of the possible matches
+        similarity comparison of the possible matches
         default=(2, 3)
     top_n : integer
         The number of possible matches that should be included in the group which will be analysed
@@ -36,10 +36,10 @@ class NameMatcher:
         default=False
     number_of_rows : integer
         Determines how many rows should be calculated at once with the sparse cosine similarity step.
-        If the low_memory bool is True this number is unsued.
+        If the low_memory bool is True this number is unused.
         default=5000
     number_of_matches : int
-        The number of matches which should be returned by the matching algroithm. If a number higher
+        The number of matches which should be returned by the matching algorithm. If a number higher
         than 1 is given, a number of alternative matches are also returned. If the number is equal
         to the number of algorithms used, the best match for each algorithm is returned. If the
         number is equal to the number of algorithm groups which are included the best match for each
@@ -50,11 +50,11 @@ class NameMatcher:
         the final score. The terms are still included in determining the best match.
         default=False
     common_words : bool
-        Boolean indicating whether the most common words from the matching datashould be excluded 
+        Boolean indicating whether the most common words from the matching data should be excluded 
         when calculating the final score. The terms are still included in determining the best match.
         default=False
     cut_off_no_scoring_words: float
-        the cut off percentage of the occurence of the most occuring word for which words are still included 
+        the cut off percentage of the occurrence of the most occurring word for which words are still included 
         in the no_soring_words set
         default=0.01
     lowercase : bool
@@ -69,7 +69,7 @@ class NameMatcher:
         ascii characters
         default=True : bool
     preprocess_split
-        Indicating whether during the preporcessing an additional step should be taken in which only 
+        Indicating whether during the preprocessing an additional step should be taken in which only 
         the most common words out of a name are isolated and used in the matching process. The removing 
         of the common words is only done for the n-grams cosine matching part.
         default=False
@@ -178,14 +178,14 @@ class NameMatcher:
         try:
             self._distance_metrics = make_distance_metrics(**input_metrics)
         except TypeError:
-            raise TypeError('Not all of the supplied distance metrics are avialable. Please check the' +
+            raise TypeError('Not all of the supplied distance metrics are available. Please check the' +
                             'list of options in the make_distance_metrics function and adjust your list accordingly')
         self._num_distance_metrics = sum(
             [len(x) for x in self._distance_metrics.values()])
 
-    def _select_top_words(self, word: str, word_counts: pd.Series, occurence_count: int) -> str:
+    def _select_top_words(self, word: str, word_counts: pd.Series, occurrence_count: int) -> str:
         """
-        Remove the top words from the string word based on an occurence_count threshold
+        Remove the top words from the string word based on an occurrence_count threshold
 
         Parameters
         ----------
@@ -193,8 +193,8 @@ class NameMatcher:
             the string from which the words should be removed
         word_counts: pd.Series
             the words which should be removed with their counts as result from a value_counts
-        occurence_count: int 
-            the multiplication factor of the minimum occurences below which to select 
+        occurrence_count: int 
+            the multiplication factor of the minimum occurrences below which to select 
 
         Returns
         -------
@@ -202,13 +202,13 @@ class NameMatcher:
            The string word with the words with a too high word_counts removed
         """
         compressed_list = list(compress(
-            word, (word_counts[word] < occurence_count*word_counts[word].min()).values))
+            word, (word_counts[word] < occurrence_count*word_counts[word].min()).values))
 
         return ' '.join(compressed_list)
 
     def _preprocess_reduce(self,
                            to_be_matched: pd.DataFrame,
-                           occurence_count: int = 3) -> pd.DataFrame:
+                           occurrence_count: int = 3) -> pd.DataFrame:
         """
         Preprocesses and copies the data to obtain the data with reduced strings. The strings have all words
         removed which appear more than 3x as often as the least common word in the string and returns an adjusted 
@@ -218,8 +218,8 @@ class NameMatcher:
         ----------
         to_be_matched: pd.DataFrame 
             A dataframe from which the most common words should be removed
-        occurence_count: int
-            The number of occurence a word can occur more then the least common word in the string for which it will
+        occurrence_count: int
+            The number of occurrence a word can occur more then the least common word in the string for which it will
             still be included in the process 
             default=3
 
@@ -236,7 +236,7 @@ class NameMatcher:
         to_be_matched_new = to_be_matched.copy()
         name = to_be_matched[self._column_matching].str.split()
         to_be_matched_new[self._column_matching] = name.apply(
-            lambda word: self._select_top_words(word, preprocess_common_words_inst, occurence_count))
+            lambda word: self._select_top_words(word, preprocess_common_words_inst, occurrence_count))
 
         return to_be_matched_new
 
@@ -255,10 +255,10 @@ class NameMatcher:
         df_matching_data: pd.DataFrame
             The dataframe which is used to match the data to.
         start_processing : bool 
-            A boolean indicating wether to start the preprocessing step after loading the matching data 
+            A boolean indicating whether to start the preprocessing step after loading the matching data 
             default: True
         transform : bool 
-            A boolean indicating wether or not the data should be transformed after the vectoriser is initialised 
+            A boolean indicating whether or not the data should be transformed after the vectoriser is initialised 
             default: True
 
         """
@@ -270,13 +270,13 @@ class NameMatcher:
     def _process_matching_data(self,
                                transform: bool = True) -> None:
         """
-        Function to process the matching data. Frst the matching data is perprocessed and assinged to 
+        Function to process the matching data. First the matching data is preprocessed and assigned to 
         a variable within the NameMatcher. Next the data is used to initialise the TfidfVectorizer. 
 
         Parameters
         ----------
         transform : bool 
-            A boolean indicating wether or not the data should be transformed after the vectoriser is initialised 
+            A boolean indicating whether or not the data should be transformed after the vectoriser is initialised 
             default: True
 
         """
@@ -294,7 +294,7 @@ class NameMatcher:
         """
         Performs the name matching operation on the to_be_matched data. First it does the preprocessing of the 
         data to be matched as well as the matching data if this has not been performed. Subsequently based on 
-        ngrams a cosine simularity is computed between the matching data and the data to be matched, to the top n
+        ngrams a cosine similarity is computed between the matching data and the data to be matched, to the top n
         matches fuzzy matching algorithms are performed to determine the best match and the quality of the match
 
         Parameters
@@ -307,7 +307,7 @@ class NameMatcher:
         Returns
         -------
         Union[pd.Series, pd.DataFrame]
-            A series or dataframe depending on the input containg the match index from the matching_data dataframe. 
+            A series or dataframe depending on the input containing the match index from the matching_data dataframe. 
             the name in the to_be_matched data, the name to which the datapoint was matched and a score between 0 
             (no match) and 100(perfect match) to indicate the quality of the matches
         """
@@ -371,7 +371,7 @@ class NameMatcher:
         Returns
         -------
         pd.Series
-            A series containg the match index from the matching_data dataframe. the name in the to_be_matched data,
+            A series containing the match index from the matching_data dataframe. the name in the to_be_matched data,
             the name to which the datapoint was matched and a score between 0 (no match) and 100(perfect match) to 
             indicate the quality of the matches
 
@@ -443,7 +443,7 @@ class NameMatcher:
         ----------
         match_score : np.array
             An array containing the scores of each of the possible alternatives for each
-            of the differnet methods used
+            of the different methods used
 
         Returns
         -------
@@ -568,14 +568,14 @@ class NameMatcher:
     def _vectorise_data(self,
                         transform: bool = True):
         """
-        Initialises the TfidfVectorizer, which generates ngrams and weights them based on the occurance.
+        Initialises the TfidfVectorizer, which generates ngrams and weights them based on the occurrance.
         Subsequently the matching data will be used to fit the vectoriser and the matching data might also be send
-        to the transform_data funtion depending on the transform boolean.
+        to the transform_data function depending on the transform boolean.
 
         Parameters
         ----------
         transform : bool 
-            A boolean indicating wether or not the data should be transformed after the vectoriser is initialised 
+            A boolean indicating whether or not the data should be transformed after the vectoriser is initialised 
             default: True
 
         """
@@ -726,7 +726,7 @@ class NameMatcher:
         word_set: str
             the current word list which should be extended with additional words  
         cut_off: float
-            the cut_off percentage of the occurence of the most occuring word for which words are still included 
+            the cut_off percentage of the occurrence of the most occurring word for which words are still included 
             in the no_soring_words set
 
         Returns
@@ -757,7 +757,7 @@ class NameMatcher:
         word_set: str
             the current word list which should be extended with additional words  
         cut_off: float
-            the cut_off percentage of the occurence of the most occuring word for which words are still included 
+            the cut_off percentage of the occurrence of the most occurring word for which words are still included 
             in the no_soring_words set
 
         Returns

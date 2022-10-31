@@ -81,7 +81,7 @@ class PhoneticDistance(_Distance):
             the strings will be compared for identify (returning 0.0 if
             identical, otherwise 1.0, when distance is computed).
         encode_alpha : bool
-            Set to true to use the encode_alpha method of phonetic algoritms
+            Set to true to use the encode_alpha method of phonetic algorithms
             whenever possible.
         **kwargs
             Arbitrary keyword arguments
