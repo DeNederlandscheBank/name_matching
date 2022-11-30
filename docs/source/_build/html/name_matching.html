@@ -1,0 +1,705 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>name_matching &#8212; name matching  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="distances" href="distances.html" />
+    <link rel="prev" title="Welcome to name matching’s documentation!" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="name-matching">
+<h1><code class="docutils literal notranslate"><span class="pre">name_matching</span></code><a class="headerlink" href="#name-matching" title="Permalink to this heading">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<section id="module-name_matching.run_nm">
+<span id="run-nm"></span><h2><code class="docutils literal notranslate"><span class="pre">run_nm</span></code><a class="headerlink" href="#module-name_matching.run_nm" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="name_matching.run_nm.match_names">
+<span class="sig-prename descclassname"><span class="pre">name_matching.run_nm.</span></span><span class="sig-name descname"><span class="pre">match_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_first</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Series</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_second</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Series</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_first</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_second</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_column_first</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_column_second</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">case_sensitive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">punctuation_sensitive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">special_character_sensitive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">95</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="headerlink" href="#name_matching.run_nm.match_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function which performs name matching. First a simple merge on the data is performed
+to get the instances in which the name matches perfectly. Subsequently the matches are
+matched using the name matching algorithm as defined in name_matcher.
+Parameters
+———-
+data_first: Union[pd.DataFrame, pd.Series]</p>
+<blockquote>
+<div><p>The first dataframe or series used for the name matching</p>
+</div></blockquote>
+<dl class="simple">
+<dt>data_second: Union[pd.DataFrame, pd.Series]</dt><dd><p>The second dataframe or series used for the name matching, for matching the data to 
+itself data_second should be equal to data first</p>
+</dd>
+<dt>column_first: str</dt><dd><p>If data_first is a dataframe column_first should be the column in which the name 
+that should be matched can be found for data_first
+default=’’</p>
+</dd>
+<dt>column_second: str</dt><dd><p>If data_second is a dataframe column_second should be the column in which the name 
+that should be matched can be found for data_second
+default=’’</p>
+</dd>
+<dt>group_column_first: str</dt><dd><p>The name of the column that should be used to generate groups within the data_first 
+dataframe. The matchig is then only performed for instances in which the groups are
+identical
+default=’’</p>
+</dd>
+<dt>group_column_second: str</dt><dd><p>The name of the column that should be used to generate groups within the data_second 
+dataframe. The matchig is then only performed for instances in which the groups are
+identical
+default=’’</p>
+</dd>
+<dt>case_sensitive: bool</dt><dd><p>Boolean value indicating whether the names should be converted to lower case names
+before the name matching starts. If False all the characters are converted to lowercase
+default=False</p>
+</dd>
+<dt>punctuation_sensitive: bool</dt><dd><p>Boolean value indicating whether punctuations should be removed from the original names
+before the name matching starts. If False the punctuations are removed
+default=False</p>
+</dd>
+<dt>special_character_sensitive: bool</dt><dd><p>Boolean value indicating whether special characters should be converted to unicode
+before the name matching starts. If False the special characters are replaced
+default=False</p>
+</dd>
+<dt>threshold: int</dt><dd><p>the minimal score a match should have to be part of the output
+default=95</p>
+</dd>
+<dt><a href="#id1"><span class="problematic" id="id2">**</span></a>kwargs</dt><dd><p>Additional inputs for the name_matcher</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>pd.DataFrame</dt><dd><p>A dataframe containing the matched rows were the match score is above the threshold. The
+dataframe consists of 4 columns; original_name: the original name from data_first after 
+preprocessing, match_name_0: the name it is matched to from data_second after preprocessing,
+score_0: the score of the match, match_index_0: the index of the match in data_second. The 
+match_index_0 can be used to join the data from both dataframes.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-name_matching.name_matcher">
+<span id="name-matcher"></span><h2><code class="docutils literal notranslate"><span class="pre">name_matcher</span></code><a class="headerlink" href="#module-name_matching.name_matcher" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="name_matching.name_matcher.NameMatcher">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">name_matching.name_matcher.</span></span><span class="sig-name descname"><span class="pre">NameMatcher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ngrams</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(2,</span> <span class="pre">3)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top_n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low_memory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_rows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_matches</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lowercase</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">punctuations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_ascii</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">legal_suffixes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">common_words</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut_off_no_scoring_words</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preprocess_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_metrics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">['overlap',</span> <span class="pre">'weighted_jaccard',</span> <span class="pre">'ratcliff_obershelp',</span> <span class="pre">'fuzzy_wuzzy_token_sort',</span> <span class="pre">'editex']</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#name_matching.name_matcher.NameMatcher" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class for the name matching of data based on the strings in a single column. The NameMatcher
+first applies a cosine simularity on the ngrams of the strings to get an aproximate match followed 
+by a fuzzy matching based on a number of different algorithms.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>ngrams</strong><span class="classifier">tuple of integers</span></dt><dd><p>The length of the ngrams which should be used for the generation of ngrams for the cosine
+simularity comparrison of the possible matches
+default=(2, 3)</p>
+</dd>
+<dt><strong>top_n</strong><span class="classifier">integer</span></dt><dd><p>The number of possible matches that should be included in the group which will be analysed
+with the fuzzy matching algorithms
+default=50</p>
+</dd>
+<dt><strong>low_memory</strong><span class="classifier">bool</span></dt><dd><p>Bool indicating if the a low memory approach should be taken in the sparse cosine similarity
+step.
+default=False</p>
+</dd>
+<dt><strong>number_of_rows</strong><span class="classifier">integer</span></dt><dd><p>Determines how many rows should be calculated at once with the sparse cosine similarity step.
+If the low_memory bool is True this number is unsued.
+default=5000</p>
+</dd>
+<dt><strong>number_of_matches</strong><span class="classifier">int</span></dt><dd><p>The number of matches which should be returned by the matching algroithm. If a number higher
+than 1 is given, a number of alternative matches are also returned. If the number is equal
+to the number of algorithms used, the best match for each algorithm is returned. If the
+number is equal to the number of algorithm groups which are included the best match for each
+group is returned.
+default=1</p>
+</dd>
+<dt><strong>legal_suffixes</strong><span class="classifier">bool</span></dt><dd><p>Boolean indicating whether the most common company legal terms should be excluded when calculating 
+the final score. The terms are still included in determining the best match.
+default=False</p>
+</dd>
+<dt><strong>common_words</strong><span class="classifier">bool</span></dt><dd><p>Boolean indicating whether the most common words from the matching datashould be excluded 
+when calculating the final score. The terms are still included in determining the best match.
+default=False</p>
+</dd>
+<dt><strong>cut_off_no_scoring_words: float</strong></dt><dd><p>the cut off percentage of the occurence of the most occuring word for which words are still included 
+in the no_soring_words set
+default=0.01</p>
+</dd>
+<dt><strong>lowercase</strong><span class="classifier">bool</span></dt><dd><p>A boolean indicating whether during the preprocessing all characters should be converted to
+lowercase, to generate case insensitive matching
+default=True</p>
+</dd>
+<dt><strong>punctuations</strong><span class="classifier">bool</span></dt><dd><p>A boolean indicating whether during the preprocessing all punctuations should be ignored
+default=True</p>
+</dd>
+<dt><strong>remove_ascii</strong><span class="classifier">bool</span></dt><dd><p>A boolean indicating whether during the preprocessing all characters should be converted to
+ascii characters
+default=True : bool</p>
+</dd>
+<dt><strong>preprocess_split</strong></dt><dd><p>Indicating whether during the preporcessing an additional step should be taken in which only 
+the most common words out of a name are isolated and used in the matching process. The removing 
+of the common words is only done for the n-grams cosine matching part.
+default=False</p>
+</dd>
+<dt><strong>verbose</strong><span class="classifier">bool</span></dt><dd><p>A boolean indicating whether progress printing should be done
+default=True</p>
+</dd>
+<dt><strong>distance_metrics: list</strong></dt><dd><p>A list of The distance metrics to be used during the fuzzy matching. For a list of possible distance
+metrics see the distance_metrics.py file. By default the following metrics are used: overlap, weighted_jaccard,</p>
+<blockquote>
+<div><p>ratcliff_obershelp, fuzzy_wuzzy_token_sort and editex.</p>
+</div></blockquote>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#name_matching.name_matcher.NameMatcher.fuzzy_matches" title="name_matching.name_matcher.NameMatcher.fuzzy_matches"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fuzzy_matches</span></code></a>(possible_matches, to_be_matched)</p></td>
+<td><p>A method which performs the fuzzy matching between the data in the to_be_matched series as well as the indicated indexes of the matching_data points which are possible matching candidates.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#name_matching.name_matcher.NameMatcher.load_and_process_master_data" title="name_matching.name_matcher.NameMatcher.load_and_process_master_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_and_process_master_data</span></code></a>(column, ...[, ...])</p></td>
+<td><p>Load the matching data into the NameMatcher and start the preprocessing.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#name_matching.name_matcher.NameMatcher.match_names" title="name_matching.name_matcher.NameMatcher.match_names"><code class="xref py py-obj docutils literal notranslate"><span class="pre">match_names</span></code></a>(to_be_matched, column_matching)</p></td>
+<td><p>Performs the name matching operation on the to_be_matched data.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#name_matching.name_matcher.NameMatcher.postprocess" title="name_matching.name_matcher.NameMatcher.postprocess"><code class="xref py py-obj docutils literal notranslate"><span class="pre">postprocess</span></code></a>(match)</p></td>
+<td><p>Postprocesses the scores to exclude certain specific company words or the most common words.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#name_matching.name_matcher.NameMatcher.preprocess" title="name_matching.name_matcher.NameMatcher.preprocess"><code class="xref py py-obj docutils literal notranslate"><span class="pre">preprocess</span></code></a>(df, column_name)</p></td>
+<td><p>Preprocess a dataframe before applying a name matching algorithm.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#name_matching.name_matcher.NameMatcher.set_distance_metrics" title="name_matching.name_matcher.NameMatcher.set_distance_metrics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_distance_metrics</span></code></a>(metrics)</p></td>
+<td><p>A method to set which of the distance metrics should be employed during the fuzzy matching.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#name_matching.name_matcher.NameMatcher.transform_data" title="name_matching.name_matcher.NameMatcher.transform_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">transform_data</span></code></a>()</p></td>
+<td><p>A method which transforms the matching data based on the ngrams transformer.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="name_matching.name_matcher.NameMatcher.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ngrams</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(2,</span> <span class="pre">3)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top_n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low_memory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_rows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_matches</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lowercase</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">punctuations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_ascii</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">legal_suffixes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">common_words</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut_off_no_scoring_words</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preprocess_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_metrics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">['overlap',</span> <span class="pre">'weighted_jaccard',</span> <span class="pre">'ratcliff_obershelp',</span> <span class="pre">'fuzzy_wuzzy_token_sort',</span> <span class="pre">'editex']</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#name_matching.name_matcher.NameMatcher.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="name_matching.name_matcher.NameMatcher.fuzzy_matches">
+<span class="sig-name descname"><span class="pre">fuzzy_matches</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">possible_matches</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_be_matched</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Series</span></span></span><a class="headerlink" href="#name_matching.name_matcher.NameMatcher.fuzzy_matches" title="Permalink to this definition">¶</a></dt>
+<dd><p>A method which performs the fuzzy matching between the data in the to_be_matched series as well as
+the indicated indexes of the matching_data points which are possible matching candidates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>possible_matches</strong><span class="classifier">np.array</span></dt><dd><p>An array containing the indexes of the matching data with potential matches</p>
+</dd>
+<dt><strong>to_be_matched</strong><span class="classifier">pd.Series</span></dt><dd><p>The data which should be matched</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>pd.Series</dt><dd><p>A series containg the match index from the matching_data dataframe. the name in the to_be_matched data,
+the name to which the datapoint was matched and a score between 0 (no match) and 100(perfect match) to 
+indicate the quality of the matches</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="name_matching.name_matcher.NameMatcher.load_and_process_master_data">
+<span class="sig-name descname"><span class="pre">load_and_process_master_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df_matching_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_processing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#name_matching.name_matcher.NameMatcher.load_and_process_master_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the matching data into the NameMatcher and start the preprocessing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>column</strong><span class="classifier">string</span></dt><dd><p>The column name of the dataframe which should be used for the matching</p>
+</dd>
+<dt><strong>df_matching_data: pd.DataFrame</strong></dt><dd><p>The dataframe which is used to match the data to.</p>
+</dd>
+<dt><strong>start_processing</strong><span class="classifier">bool</span></dt><dd><p>A boolean indicating wether to start the preprocessing step after loading the matching data 
+default: True</p>
+</dd>
+<dt><strong>transform</strong><span class="classifier">bool</span></dt><dd><p>A boolean indicating wether or not the data should be transformed after the vectoriser is initialised 
+default: True</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="name_matching.name_matcher.NameMatcher.match_names">
+<span class="sig-name descname"><span class="pre">match_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">to_be_matched</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Series</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">DataFrame</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_matching</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Series</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">DataFrame</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#name_matching.name_matcher.NameMatcher.match_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs the name matching operation on the to_be_matched data. First it does the preprocessing of the 
+data to be matched as well as the matching data if this has not been performed. Subsequently based on 
+ngrams a cosine simularity is computed between the matching data and the data to be matched, to the top n
+matches fuzzy matching algorithms are performed to determine the best match and the quality of the match</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>to_be_matched: Union[pd.Series, pd.DataFrame]</strong></dt><dd><p>The data which should be matched</p>
+</dd>
+<dt><strong>column_matching: str</strong></dt><dd><p>string indicating the column which will be matched</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>Union[pd.Series, pd.DataFrame]</dt><dd><p>A series or dataframe depending on the input containg the match index from the matching_data dataframe. 
+the name in the to_be_matched data, the name to which the datapoint was matched and a score between 0 
+(no match) and 100(perfect match) to indicate the quality of the matches</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="name_matching.name_matcher.NameMatcher.postprocess">
+<span class="sig-name descname"><span class="pre">postprocess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">match</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Series</span></span></span><a class="headerlink" href="#name_matching.name_matcher.NameMatcher.postprocess" title="Permalink to this definition">¶</a></dt>
+<dd><p>Postprocesses the scores to exclude certain specific company words or the most common words. In 
+this method only the scores are adjusted, the matches still stand.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>match</strong><span class="classifier">pd.Series</span></dt><dd><p>The series with the possible matches and original scores</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>pd.Series</dt><dd><p>A new version of the input series with updated scores</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="name_matching.name_matcher.NameMatcher.preprocess">
+<span class="sig-name descname"><span class="pre">preprocess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="headerlink" href="#name_matching.name_matcher.NameMatcher.preprocess" title="Permalink to this definition">¶</a></dt>
+<dd><p>Preprocess a dataframe before applying a name matching algorithm. The preprocessing consists of 
+removing special characters, spaces, converting all characters to lower case and removing the
+words given in the word lists</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>df</strong><span class="classifier">DataFrame</span></dt><dd><p>The dataframe or series on which the preprocessing needs to be performed</p>
+</dd>
+<dt><strong>column_name</strong><span class="classifier">str</span></dt><dd><p>The name of the column that is used for the preprocessing</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>pd.DataFrame</dt><dd><p>The preprocessed dataframe or series depending on the input</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="name_matching.name_matcher.NameMatcher.set_distance_metrics">
+<span class="sig-name descname"><span class="pre">set_distance_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metrics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#name_matching.name_matcher.NameMatcher.set_distance_metrics" title="Permalink to this definition">¶</a></dt>
+<dd><p>A method to set which of the distance metrics should be employed during the
+fuzzy matching. For very short explanations of most of the name matching 
+algorithms please see the make_distance_metrics function in distance_matrics.py</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>metrics: list</strong></dt><dd><p>The list with the distance metrics to be used during the name matching. The
+distance metrics can be chosen from the list below:</p>
+<blockquote>
+<div><p>indel
+discounted_levenshtein
+tichy
+cormodeL_z
+iterative_sub_string
+baulieu_xiii
+clement
+dice_asymmetricI
+kuhns_iii
+overlap
+pearson_ii
+weighted_jaccard
+warrens_iv
+bag
+rouge_l
+ratcliff_obershelp
+ncd_bz2
+fuzzy_wuzzy_partial_string
+fuzzy_wuzzy_token_sort
+fuzzy_wuzzy_token_set
+editex
+typo
+lig_3
+ssk
+refined_soundex
+double_metaphone</p>
+</div></blockquote>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="name_matching.name_matcher.NameMatcher.transform_data">
+<span class="sig-name descname"><span class="pre">transform_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#name_matching.name_matcher.NameMatcher.transform_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>A method which transforms the matching data based on the ngrams transformer. After the 
+transformation (the generation of the ngrams), the data is normalised by dividing each row
+by the sum of the row. Subsequently the data is changed to a coo sparse matrix format with
+the column indices in ascending order.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-name_matching.distance_metrics">
+<span id="distance-metrics"></span><h2><code class="docutils literal notranslate"><span class="pre">distance_metrics</span></code><a class="headerlink" href="#module-name_matching.distance_metrics" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="name_matching.distance_metrics.make_distance_metrics">
+<span class="sig-prename descclassname"><span class="pre">name_matching.distance_metrics.</span></span><span class="sig-name descname"><span class="pre">make_distance_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">discounted_levenshtein</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tichy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cormodel_z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iterative_sub_string</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baulieu_xiii</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clement</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dice_asymmetrici</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kuhns_iii</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overlap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pearson_ii</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weighted_jaccard</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warrens_iv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rouge_l</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ratcliff_obershelp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncd_bz2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fuzzy_wuzzy_partial_string</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fuzzy_wuzzy_token_sort</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fuzzy_wuzzy_token_set</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">editex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lig_3</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssk</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">refined_soundex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double_metaphone</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#name_matching.distance_metrics.make_distance_metrics" title="Permalink to this definition">¶</a></dt>
+<dd><p>A function which returns a dict containing the distance metrics that should be 
+used during the fuzzy string matching</p>
+<dl class="simple">
+<dt>Levenshtein edit distance</dt><dd><ul class="simple">
+<li><p>Indel</p></li>
+<li><p>Discounted Levenshtein</p></li>
+<li><p>LIG3</p></li>
+</ul>
+</dd>
+<dt>Block edit distances</dt><dd><ul class="simple">
+<li><p>Tichy</p></li>
+<li><p>CormodeLZ</p></li>
+</ul>
+</dd>
+<dt>Multi-set token-based distance</dt><dd><ul class="simple">
+<li><p>BaulieuXIII</p></li>
+<li><p>Clement</p></li>
+<li><p>DiceAsymmetricI</p></li>
+<li><p>KuhnsIII</p></li>
+<li><p>Overlap</p></li>
+<li><p>PearsonII</p></li>
+<li><p>WeightedJaccard</p></li>
+<li><p>WarrensIV</p></li>
+<li><p>Bag</p></li>
+<li><p>RougeL</p></li>
+</ul>
+</dd>
+<dt>Subsequence distances</dt><dd><ul class="simple">
+<li><p>IterativeSubString</p></li>
+<li><p>RatcliffObershelp</p></li>
+<li><p>SSK</p></li>
+</ul>
+</dd>
+<dt>Normalized compression distance</dt><dd><ul class="simple">
+<li><p>NCDbz2</p></li>
+</ul>
+</dd>
+<dt>FuzzyWuzzy distances</dt><dd><ul class="simple">
+<li><p>FuzzyWuzzyPartialString</p></li>
+<li><p>FuzzyWuzzyTokenSort</p></li>
+<li><p>FuzzyWuzzyTokenSet</p></li>
+</ul>
+</dd>
+<dt>Ponetic distances</dt><dd><ul class="simple">
+<li><p>RefinedSoundex</p></li>
+<li><p>DoubleMetaphone</p></li>
+</ul>
+</dd>
+<dt>Edit distances</dt><dd><ul class="simple">
+<li><p>Editex</p></li>
+<li><p>Typo</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>indel: bool</strong></dt><dd><p>Boolean indicating whether the Indel method should be used during the 
+fuzzy name matching. The indel method is equal to a regular levenshtein 
+distance with a twice as high substitution weight 
+default=False</p>
+</dd>
+<dt><strong>discounted_levenshtein: bool</strong></dt><dd><p>Boolean indicating whether the DiscountedLevenshtein method should be used 
+during the fuzzy name matching. Equal to the regular levenshtein distance,
+only errors later in the string are counted at a discounted rate. To for
+instance limit the importance of suffix differences
+default=False</p>
+</dd>
+<dt><strong>tichy: bool</strong></dt><dd><p>Boolean indicating whether the Tichy method should be used during the 
+fuzzy name matching. This algorithm provides a shortest edit distance based
+on substring and add operations.
+default=False</p>
+</dd>
+<dt><strong>cormodel_z: bool</strong></dt><dd><p>Boolean indicating whether the CormodeLZ method should be used during the 
+fuzzy name matching. The CormodeLZ distance between strings x and y, is the 
+minimum number of single characters or substrings of y or of the partially 
+built string which are required to produce x from left to right.
+default=False</p>
+</dd>
+<dt><strong>iterative_sub_string: bool</strong></dt><dd><p>Boolean indicating whether the IterativeSubString method should be used 
+during the fuzzy name matching. A method that counts the simularities 
+between two strings substrings and substracts the differences taking into
+acount the winkler similarity between the string and the substring.
+default=False</p>
+</dd>
+<dt><strong>baulieu_xiii: bool</strong></dt><dd><p>Boolean indicating whether the BaulieuXIII method should be used during 
+the fuzzy name matching. The Baulieu XIII distance between two strings is
+given by the following formula: (<a href="#id3"><span class="problematic" id="id4">|X \ Y|</span></a> + <a href="#id5"><span class="problematic" id="id6">|Y \ X|</span></a>) / (
+<a href="#id7"><span class="problematic" id="id8">|X ∩ Y|</span></a> + <a href="#id9"><span class="problematic" id="id10">|X \ Y|</span></a> + <a href="#id11"><span class="problematic" id="id12">|Y \ X|</span></a> + <a href="#id13"><span class="problematic" id="id14">|X ∩ Y|</span></a> ∙ (<a href="#id15"><span class="problematic" id="id16">|X ∩ Y|</span></a> - 4)^2)
+default=False</p>
+</dd>
+<dt><strong>clement: bool</strong></dt><dd><p>Boolean indicating whether the Clement method should be used during the
+fuzzy name matching. The Clement distance between two strings is given 
+by the following formula: (<a href="#id17"><span class="problematic" id="id18">|X ∩ Y|</span></a>/<a href="#id19"><span class="problematic" id="id20">|X|</span></a>)*(1-<a href="#id21"><span class="problematic" id="id22">|X|</span></a>/<a href="#id23"><span class="problematic" id="id24">|N|</span></a>) + (<a href="#id25"><span class="problematic" id="id26">|(N \ X) \ Y|</span></a>/<a href="#id27"><span class="problematic" id="id28">|N \ X|</span></a>) *
+(1-<a href="#id29"><span class="problematic" id="id30">|N \ X|</span></a>/<a href="#id31"><span class="problematic" id="id32">|N|</span></a>)
+default=False</p>
+</dd>
+<dt><strong>dice_asymmetrici: bool</strong></dt><dd><p>Boolean indicating whether the DiceAsymmetricI method should be used during 
+the fuzzy name matching. The Dice asymmetric similarity is given be <a href="#id33"><span class="problematic" id="id34">|X ∩ Y|</span></a>/<a href="#id35"><span class="problematic" id="id36">|X|</span></a>
+default=False</p>
+</dd>
+<dt><strong>kuhns_iii: bool</strong></dt><dd><p>Boolean indicating whether the KuhnsIII method should be used during the 
+fuzzy name matching
+default=False</p>
+</dd>
+<dt><strong>overlap: bool</strong></dt><dd><p>Boolean indicating whether the Overlap method should be used during the 
+fuzzy name matching. The overlap distance is given by: <a href="#id37"><span class="problematic" id="id38">|X ∩ Y|</span></a>/min(<a href="#id39"><span class="problematic" id="id40">|X|</span></a>,|Y|)
+default=True</p>
+</dd>
+<dt><strong>pearson_ii: bool</strong></dt><dd><p>Boolean indicating whether the PearsonII method should be used during the 
+fuzzy name matching. This algorithm is based on the Phi coefficient or the 
+mean square contingency
+default=False</p>
+</dd>
+<dt><strong>weighted_jaccard: bool</strong></dt><dd><p>Boolean indicating whether the WeightedJaccard method should be used during 
+the fuzzy name matching. This is the Jaccard distance only using a wheighing 
+for the differences of 3.
+default=True</p>
+</dd>
+<dt><strong>warrens_iv: bool</strong></dt><dd><p>Boolean indicating whether the WarrensIV method should be used during the 
+fuzzy name matching
+default=False</p>
+</dd>
+<dt><strong>bag: bool</strong></dt><dd><dl class="simple">
+<dt>Boolean indicating whether the Bag method should be used during the fuzzy</dt><dd><p>name matching. Is a simplification of the regular edit distance by using
+a similarity tree structure.</p>
+</dd>
+</dl>
+<p>default=False</p>
+</dd>
+<dt><strong>rouge_l: bool</strong></dt><dd><p>Boolean indicating whether the ROUGE-L method should be used during the 
+fuzzy name matching. The ROGUE-L method is a measure that counts the longest
+substring between to strings
+default=False</p>
+</dd>
+<dt><strong>ratcliff_obershelp: bool</strong></dt><dd><p>Boolean indicating whether the RatcliffObershelp method should be used 
+during the fuzzy name matching. This method finds the longest common substring
+and evaluates the longest common substrings to the right and the left of the 
+original longest common substring
+default=True</p>
+</dd>
+<dt><strong>ncd_bz2: bool</strong></dt><dd><p>Boolean indicating whether the NCDbz2 method should be used during the 
+fuzzy name matching. Applies the Burrows-Wheeler transform to hte strings and 
+subsequently returns the normalised compression distance.
+default=False</p>
+</dd>
+<dt><strong>fuzzy_wuzzy_partial_string: bool</strong></dt><dd><p>Boolean indicating whether the FuzzyWuzzyPartialString method should be used
+during the fuzzy name matching. This methods takes the length of the longest 
+common substring and divides it over the minimum of the length of each of 
+the two strings.
+default=False</p>
+</dd>
+<dt><strong>fuzzy_wuzzy_token_sort: bool</strong></dt><dd><p>Boolean indicating whether the FuzzyWuzzyTokenSort method should be used 
+during the fuzzy name matching. This tokenizes the words in the string
+and sorts them, subsequently a hamming distance is calculated
+default=True</p>
+</dd>
+<dt><strong>fuzzy_wuzzy_token_set: bool</strong></dt><dd><p>Boolean indicating whether the FuzzyWuzzyTokenSet method should be used 
+during the fuzzy name matching. This method tokenizes the strings and 
+find the largest intersection of the two substrings and divides it over 
+the length of the shortest string
+default=False</p>
+</dd>
+<dt><strong>editex: bool</strong></dt><dd><p>Boolean indicating whether the Editex method should be used during the 
+fuzzy name matching
+default=True</p>
+</dd>
+<dt><strong>typo: bool</strong></dt><dd><p>Boolean indicating whether the Typo method should be used during the 
+fuzzy name matching. The typo distance is calculated based on the distance
+on a keyboard between edits.
+default=False</p>
+</dd>
+<dt><strong>lig_3: bool</strong></dt><dd><p>Boolean indicating whether the LIG3 method should be used during the fuzzy 
+name matching
+default=False</p>
+</dd>
+<dt><strong>ssk: bool</strong></dt><dd><p>Boolean indicating whether the SSK method should be used during the fuzzy 
+name matching. The ssk algorithm looks at the string kernel generated by all 
+the possible different subsequences present between the two strings.
+default=False</p>
+</dd>
+<dt><strong>refined_soundex: bool</strong></dt><dd><p>Boolean indicating whether the string should be represented by the RefinedSoundex
+phonetix translation and the Levensthein distance of the translated strings should
+be included in the fuzzy matching process
+default=False</p>
+</dd>
+<dt><strong>double_metaphone: bool</strong></dt><dd><p>Boolean indicating whether the string should be represented by the DoubleMetaphone
+phonetix translation and the Levensthein distance of the translated strings should
+be included in the fuzzy matching process
+default=False</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-name_matching.sparse_cosine">
+<span id="sparse-cosine"></span><h2><code class="docutils literal notranslate"><span class="pre">sparse_cosine</span></code><a class="headerlink" href="#module-name_matching.sparse_cosine" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="name_matching.sparse_cosine.sparse_cosine_top_n">
+<span class="sig-prename descclassname"><span class="pre">name_matching.sparse_cosine.</span></span><span class="sig-name descname"><span class="pre">sparse_cosine_top_n</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matrix_a</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">csc_matrix</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">coo_matrix</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matrix_b</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">csc_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top_n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low_memory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_rows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#name_matching.sparse_cosine.sparse_cosine_top_n" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the top_n cosine matches between matrix_a and matrix_b. Takes into account
+the amount of  memory that should be used based on the low_memory int</p>
+<dl class="simple">
+<dt>matrix_a: csc_matric</dt><dd><p>The largest sparse csc matrix which should be multiplied</p>
+</dd>
+<dt>matrix_b: csc_matric</dt><dd><p>The smallest sparse csc matrix which should be multiplied</p>
+</dd>
+<dt>top_n: int</dt><dd><p>The best n matches that should be returned</p>
+</dd>
+<dt>low_memory: bool</dt><dd><p>A bool indicating whether the low memory sparse cosine approach should be used</p>
+</dd>
+<dt>number_of_rows: int</dt><dd><p>An int inidcating the number of rows which should be 
+processed at once when calculating the cosine simalarity</p>
+</dd>
+<dt>verbose: bool</dt><dd><p>A boolean indicating whether the progress should be printed</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>np.array</dt><dd><p>The indexes for the n best sparse cosine matches between matrix a and b</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">name matching</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">name_matching</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-name_matching.run_nm"><code class="docutils literal notranslate"><span class="pre">run_nm</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-name_matching.name_matcher"><code class="docutils literal notranslate"><span class="pre">name_matcher</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-name_matching.distance_metrics"><code class="docutils literal notranslate"><span class="pre">distance_metrics</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-name_matching.sparse_cosine"><code class="docutils literal notranslate"><span class="pre">sparse_cosine</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="distances.html"><code class="docutils literal notranslate"><span class="pre">distances</span></code></a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Welcome to name matching’s documentation!</a></li>
+      <li>Next: <a href="distances.html" title="next chapter"><code class="docutils literal notranslate"><span class="pre">distances</span></code></a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, m nijhuis.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/name_matching.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

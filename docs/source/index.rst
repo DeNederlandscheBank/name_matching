@@ -5,12 +5,14 @@
 
 Welcome to name matching's documentation!
 =========================================
+The ``name_matching`` package, is a package build to facilitate  the matching of company names across multiple datasets.
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-
+   name_matching
+   distances
 
 Indices and tables
 ==================
