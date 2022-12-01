@@ -14,10 +14,9 @@ setup(
    packages=['name_matching','distances'],
    install_requires = [
 			'cleanco',
-			'numba',
 			'scikit-learn', 
-         'pandas',
-         'numpy',
+                        'pandas',
+                        'numpy',
 			'tqdm'],
     long_description=long_description,
     long_description_content_type='text/markdown',
