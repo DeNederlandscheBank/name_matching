@@ -93,9 +93,9 @@ def make_distance_metrics(indel=False,
         default=False
     iterative_sub_string: bool
         Boolean indicating whether the IterativeSubString method should be used 
-        during the fuzzy name matching. A method that counts the simularities 
-        between two strings substrings and substracts the differences taking into
-        acount the winkler similarity between the string and the substring.
+        during the fuzzy name matching. A method that counts the similarities 
+        between two strings substrings and subtracts the differences taking into
+        account the winkler similarity between the string and the substring.
         default=False
     baulieu_xiii: bool
         Boolean indicating whether the BaulieuXIII method should be used during 
@@ -153,7 +153,7 @@ def make_distance_metrics(indel=False,
         default=True
     ncd_bz2: bool
         Boolean indicating whether the NCDbz2 method should be used during the 
-        fuzzy name matching. Applies the Burrows-Wheeler transform to hte strings and 
+        fuzzy name matching. Applies the Burrows-Wheeler transform to the strings and 
         subsequently returns the normalised compression distance.
         default=False
     fuzzy_wuzzy_partial_string: bool
