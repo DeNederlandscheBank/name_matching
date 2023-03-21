@@ -27,7 +27,7 @@ def make_distance_metrics(indel=False,
                           ssk=False,
                           refined_soundex=False,
                           double_metaphone=False) -> dict:
-    """
+    r"""
     A function which returns a dict containing the distance metrics that should be 
     used during the fuzzy string matching
 
