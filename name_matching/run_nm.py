@@ -117,14 +117,16 @@ def _match_names_combine_data(data_first: pd.DataFrame,
         dataframe is equal to the original index of data_first, the match index is the index in data_second
         for the matched name.
     """
-    matches = pd.merge(data_first, data_second, how='left',
+    matches = pd.merge(data_first, data_second.reset_index(), how='left',
                         left_on=left_cols, right_on=right_cols, suffixes=['', '_matched'])
     matches['score'] = 100
     matches = matches.dropna(subset=['index'])
-    matches = matches.rename(columns={'index':'match_index'})
-    matches = matches[['match_index', 'score']]
- 
-    return matches
+    if len(matches) > 1:
+      matches = matches.rename(columns={'index':'match_index'})
+      matches = matches[['match_index', 'score']] 
+      return matches
+    else:
+      return pd.DataFrame()
 
 def _match_names_match_single(matcher: NameMatcher,
                               data_first: pd.DataFrame,
