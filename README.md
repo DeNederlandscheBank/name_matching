@@ -25,28 +25,57 @@ pip install .
 
 To see example usage of the package you can use the notebook folder. An example of the usage is also given below
 ```python
+import pandas as pd
 from name_matching.name_matcher import NameMatcher
 
+# define a dataset with bank names
+df_companies_a = pd.DataFrame({'Company name': [
+        'Industrial and Commercial Bank of China Limited',
+        'China Construction Bank',
+        'Agricultural Bank of China',
+        'Bank of China',
+        'JPMorgan Chase',
+        'Mitsubishi UFJ Financial Group',
+        'Bank of America',
+        'HSBC',
+        'BNP Paribas',
+        'Crédit Agricole']})
+
+# alter each of the bank names a bit to test the matching
+df_companies_b = pd.DataFrame({'name': [
+        'Bank of China Limited',
+        'Mitsubishi Financial Group',
+        'Construction Bank China',
+        'Agricultural Bank',
+        'Bank of Amerika',
+        'BNP Parisbas',
+        'JP Morgan Chase',
+        'HSCB',
+        'Industrial and Commercial Bank of China',
+        'Credite Agricole']})
+
 # initialise the name matcher
-matcher = NameMatcher(column='name', 
-                      number_of_matches=3, 
+matcher = NameMatcher(number_of_matches=1, 
                       legal_suffixes=True, 
                       common_words=False, 
                       top_n=50, 
                       verbose=True)
 
 # adjust the distance metrics to use
-matcher.set_distance_metrics(discounted_levenshtein=False,
-                             bag=True,
-                             typo=True,
-                             refined_soundex=True)
+matcher.set_distance_metrics(['bag', 'typo', 'refined_soundex'])
 
 # load the data to which the names should be matched
-matcher.load_and_process_master_data(df_gleif, transform=True)
+matcher.load_and_process_master_data(column='Company name',
+                                     df_matching_data=df_companies_a, 
+                                     transform=True)
 
 # perform the name matching on the data you want matched
-matches = matcher.match_names(to_be_matched=unknown_counterparties, column_matching='name')
+matches = matcher.match_names(to_be_matched=df_companies_b, 
+                              column_matching='name')
 
+# combine the datasets based on the matches
+combined = pd.merge(df_companies_a, matches, how='left', left_index=True, right_on='match_index')
+combined = pd.merge(combined, df_companies_b, how='left', left_index=True, right_index=True)
 
 ```
 

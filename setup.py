@@ -10,7 +10,9 @@ setup(
    description='A package for the matching of company names',
    author='Michiel Nijhuis',
    author_email='m.nijhuis@dnb.nl',
-   url="https://github.com/DeNederlandscheBank/name_matching",
+   project_urls = {
+        'Documentation': 'https://name-matching.readthedocs.io/en/latest/index.html',
+        'Source Code': 'https://github.com/DeNederlandscheBank/name_matching'},
    packages=['name_matching','distances'],
    install_requires = [
 			'cleanco',
