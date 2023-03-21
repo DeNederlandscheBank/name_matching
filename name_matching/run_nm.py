@@ -120,7 +120,9 @@ def _match_names_combine_data(data_first: pd.DataFrame,
     matches = pd.merge(data_first, data_second, how='left',
                         left_on=left_cols, right_on=right_cols, suffixes=['', '_matched'])
     matches['score'] = 100
-    # matches = matches.dropna(subset=['index'])
+    matches = matches.dropna(subset=['index'])
+    matches = matches.rename(columns={'index':'match_index'})
+    matches = matches[['match_index', 'score']]
  
     return matches
 
@@ -154,8 +156,8 @@ def _match_names_match_single(matcher: NameMatcher,
     unmatched = data_first[~data_first.index.isin(matches.index)].copy()
     if len(unmatched) > 0:
         matcher.load_and_process_master_data(name_column, data_second, transform=True)
-        matches = matches.append(matcher.match_names(
-            to_be_matched=unmatched, column_matching=name_column))
+        matches = pd.concat([matches,(matcher.match_names(
+            to_be_matched=unmatched, column_matching=name_column))])
         return matches
     else:
         print('All data matched with basic string matching')
@@ -198,13 +200,12 @@ def _match_names_match_group(matcher: NameMatcher,
     if len(unmatched) > 0:
         matcher.load_and_process_master_data(name_column, data_second, transform=False)
         for group in data_first[group_column_first].unique():
-            data_second_group = data_second[data_second[group_column_second] == group].copy(
-            )
+            data_second_group = data_second[data_second[group_column_second] == group].copy()
             matcher.load_and_process_master_data(name_column, 
                 data_second_group, start_processing=False)
             matcher.transform_data()
-            matches = matches.append(matcher.match_names(
-                to_be_matched=unmatched[unmatched[group_column_first] == group].copy(), column_matching=name_column))
+            matches = pd.concat([matches, matcher.match_names(
+                to_be_matched=unmatched[unmatched[group_column_first] == group].copy(), column_matching=name_column)])
     else:
         print('All data matched with basic string matching')
         return matches
@@ -223,10 +224,10 @@ def match_names(data_first: Union[pd.DataFrame, pd.Series],
                 special_character_sensitive=False,
                 threshold=95,
                 **kwargs) -> pd.DataFrame:
-    """
-    Function which performs name matching. First a simple merge on the data is performed
+    """Function which performs name matching. First a simple merge on the data is performed
     to get the instances in which the name matches perfectly. Subsequently the matches are
     matched using the name matching algorithm as defined in name_matcher.
+
     Parameters
     ----------
     data_first: Union[pd.DataFrame, pd.Series]
@@ -278,9 +279,7 @@ def match_names(data_first: Union[pd.DataFrame, pd.Series],
         preprocessing, match_name_0: the name it is matched to from data_second after preprocessing,
         score_0: the score of the match, match_index_0: the index of the match in data_second. The 
         match_index_0 can be used to join the data from both dataframes. 
-
     """
-
     if 'number_of_matches' in kwargs:
         raise ValueError(
             'The number of matches can only be changed by using a custom matching approach')

@@ -184,8 +184,7 @@ class NameMatcher:
             [len(x) for x in self._distance_metrics.values()])
 
     def _select_top_words(self, word: str, word_counts: pd.Series, occurrence_count: int) -> str:
-        """
-        Remove the top words from the string word based on an occurrence_count threshold
+        """Remove the top words from the string word based on an occurrence_count threshold
 
         Parameters
         ----------
@@ -209,8 +208,7 @@ class NameMatcher:
     def _preprocess_reduce(self,
                            to_be_matched: pd.DataFrame,
                            occurrence_count: int = 3) -> pd.DataFrame:
-        """
-        Preprocesses and copies the data to obtain the data with reduced strings. The strings have all words
+        """Preprocesses and copies the data to obtain the data with reduced strings. The strings have all words
         removed which appear more than 3x as often as the least common word in the string and returns an adjusted 
         copy of the input 
 
@@ -245,8 +243,7 @@ class NameMatcher:
                                      df_matching_data: pd.DataFrame,
                                      start_processing: bool = True,
                                      transform: bool = True) -> None:
-        """
-        Load the matching data into the NameMatcher and start the preprocessing.
+        """Load the matching data into the NameMatcher and start the preprocessing.
 
         Parameters
         ----------
@@ -260,7 +257,6 @@ class NameMatcher:
         transform : bool 
             A boolean indicating whether or not the data should be transformed after the vectoriser is initialised 
             default: True
-
         """
         self._column = column
         self._df_matching_data = df_matching_data
@@ -269,8 +265,7 @@ class NameMatcher:
 
     def _process_matching_data(self,
                                transform: bool = True) -> None:
-        """
-        Function to process the matching data. First the matching data is preprocessed and assigned to 
+        """Function to process the matching data. First the matching data is preprocessed and assigned to 
         a variable within the NameMatcher. Next the data is used to initialise the TfidfVectorizer. 
 
         Parameters
@@ -278,7 +273,6 @@ class NameMatcher:
         transform : bool 
             A boolean indicating whether or not the data should be transformed after the vectoriser is initialised 
             default: True
-
         """
         self._df_matching_data = self.preprocess(
             self._df_matching_data, self._column)
@@ -291,8 +285,7 @@ class NameMatcher:
     def match_names(self,
                     to_be_matched: Union[pd.Series, pd.DataFrame],
                     column_matching: str) -> Union[pd.Series, pd.DataFrame]:
-        """
-        Performs the name matching operation on the to_be_matched data. First it does the preprocessing of the 
+        """Performs the name matching operation on the to_be_matched data. First it does the preprocessing of the 
         data to be matched as well as the matching data if this has not been performed. Subsequently based on 
         ngrams a cosine similarity is computed between the matching data and the data to be matched, to the top n
         matches fuzzy matching algorithms are performed to determine the best match and the quality of the match
@@ -311,7 +304,6 @@ class NameMatcher:
             the name in the to_be_matched data, the name to which the datapoint was matched and a score between 0 
             (no match) and 100(perfect match) to indicate the quality of the matches
         """
-
         if self._column == '':
             raise ValueError(
                 'Please first load the master data via the method: load_and_process_master_data')
@@ -357,9 +349,8 @@ class NameMatcher:
     def fuzzy_matches(self,
                       possible_matches: np.array,
                       to_be_matched: pd.Series) -> pd.Series:
-        """
-        A method which performs the fuzzy matching between the data in the to_be_matched series as well as
-        the indicated indexes of the matching_data points which are possible matching candidates.
+        """ A method which performs the fuzzy matching between the data in the to_be_matched series as well
+        as the indicated indexes of the matching_data points which are possible matching candidates.
 
         Parameters
         ----------
@@ -374,9 +365,7 @@ class NameMatcher:
             A series containing the match index from the matching_data dataframe. the name in the to_be_matched data,
             the name to which the datapoint was matched and a score between 0 (no match) and 100(perfect match) to 
             indicate the quality of the matches
-
         """
-
         if len(possible_matches.shape) > 1:
             possible_matches = possible_matches[0]
 
@@ -405,8 +394,7 @@ class NameMatcher:
     def _score_matches(self,
                        to_be_matched_instance: str,
                        possible_matches: list) -> np.array:
-        """
-        A method to score a name to_be_matched_instance to a list of possible matches. The scoring is done
+        """A method to score a name to_be_matched_instance to a list of possible matches. The scoring is done
         based on all the metrics which are enabled.
 
         Parameters
@@ -421,7 +409,6 @@ class NameMatcher:
         np.array
             The score of each of the matches with respect to the different metrics which are assessed.
         """
-
         match_score = np.zeros(
             (len(possible_matches), self._num_distance_metrics))
         idx = 0
@@ -435,8 +422,7 @@ class NameMatcher:
 
     def _rate_matches(self,
                       match_score: np.array) -> np.array:
-        """
-        Converts the match scores from the score_matches method to a list of indexes of the best scoring 
+        """Converts the match scores from the score_matches method to a list of indexes of the best scoring 
         matches limited to the _number_of_matches.
 
         Parameters
@@ -450,7 +436,6 @@ class NameMatcher:
         np.array
             The indexes of the best rated matches
         """
-
         if self._number_of_matches == 1:
             ind = [np.argmax(np.mean(match_score, axis=1))]
         elif self._number_of_matches == len(self._distance_metrics):
@@ -470,8 +455,7 @@ class NameMatcher:
         return np.array(ind, dtype=int)
 
     def _get_alternative_names(self, match: pd.Series) -> list:
-        """
-        Gets all the possible match names from the match.
+        """Gets all the possible match names from the match.
 
         Parameters
         ----------
@@ -491,8 +475,7 @@ class NameMatcher:
         return alt_names
 
     def _process_words(self, org_name: str, alt_names: list) -> Tuple[str, list]:
-        """
-        Removes the words from the word list from the org_name and all the names in alt_names .
+        """Removes the words from the word list from the org_name and all the names in alt_names .
 
         Parameters
         ----------
@@ -517,8 +500,7 @@ class NameMatcher:
         return org_name, alt_names
 
     def _adjust_scores(self, match_score: np.array, match: pd.Series) -> pd.Series:
-        """
-        Adjust the scores to be between 0 and 100
+        """Adjust the scores to be between 0 and 100
 
         Parameters
         ----------
@@ -539,9 +521,8 @@ class NameMatcher:
 
     def postprocess(self,
                     match: pd.Series) -> pd.Series:
-        """
-        Postprocesses the scores to exclude certain specific company words or the most common words. In 
-        this method only the scores are adjusted, the matches still stand.
+        """Postprocesses the scores to exclude certain specific company words or the most 
+        common words. In this method only the scores are adjusted, the matches still stand.
 
         Parameters
         ----------
@@ -553,7 +534,6 @@ class NameMatcher:
         pd.Series
             A new version of the input series with updated scores
         """
-
         alt_names = self._get_alternative_names(match)
         org_name = str(match['original_name'])
 
@@ -567,8 +547,7 @@ class NameMatcher:
 
     def _vectorise_data(self,
                         transform: bool = True):
-        """
-        Initialises the TfidfVectorizer, which generates ngrams and weights them based on the occurrance.
+        """Initialises the TfidfVectorizer, which generates ngrams and weights them based on the occurrance.
         Subsequently the matching data will be used to fit the vectoriser and the matching data might also be send
         to the transform_data function depending on the transform boolean.
 
@@ -577,19 +556,16 @@ class NameMatcher:
         transform : bool 
             A boolean indicating whether or not the data should be transformed after the vectoriser is initialised 
             default: True
-
         """
         self._vec.fit(self._df_matching_data[self._column].values.flatten())
         if transform:
             self.transform_data()
 
     def transform_data(self):
-        """
-        A method which transforms the matching data based on the ngrams transformer. After the 
+        """A method which transforms the matching data based on the ngrams transformer. After the 
         transformation (the generation of the ngrams), the data is normalised by dividing each row
         by the sum of the row. Subsequently the data is changed to a coo sparse matrix format with
         the column indices in ascending order.
-
         """
         ngrams = self._vec.transform(
             self._df_matching_data[self._column].astype(str))
@@ -601,8 +577,7 @@ class NameMatcher:
 
     def _search_for_possible_matches(self,
                                      to_be_matched: pd.DataFrame) -> np.array:
-        """
-        Generates ngrams from the data which should be matched, calculate the cosine simularity
+        """Generates ngrams from the data which should be matched, calculate the cosine simularity
         between these data and the matching data. Hereafter a top n of the matches is selected and
         returned.
 
@@ -616,7 +591,6 @@ class NameMatcher:
         np.array
             An array of top n values which are most closely matched to the to be matched data based
             on the ngrams
-
         """
         if self._n_grams_matching is None:
             raise RuntimeError(
@@ -641,8 +615,7 @@ class NameMatcher:
     def preprocess(self,
                    df: pd.DataFrame,
                    column_name: str) -> pd.DataFrame:
-        """
-        Preprocess a dataframe before applying a name matching algorithm. The preprocessing consists of 
+        """Preprocess a dataframe before applying a name matching algorithm. The preprocessing consists of 
         removing special characters, spaces, converting all characters to lower case and removing the
         words given in the word lists
 
@@ -657,9 +630,7 @@ class NameMatcher:
         -------
         pd.DataFrame
             The preprocessed dataframe or series depending on the input
-
         """
-
         df.loc[:, column_name] = df[column_name].astype(str)
         if self._preprocess_lowercase:
             df.loc[:, column_name] = df[column_name].str.lower()
@@ -675,8 +646,7 @@ class NameMatcher:
         return df
 
     def _preprocess_word_list(self, terms: dict) -> list:
-        """
-        Preprocess legal words to remove punctuations and trailing leading space
+        """Preprocess legal words to remove punctuations and trailing leading space
 
         Parameters
         -------
@@ -687,7 +657,6 @@ class NameMatcher:
         -------
         list
             A list of preprocessed legal words  
-
         """
         if self._preprocess_punctuations:
             return [re.sub(r'[^\w\s]', '', s).strip() for s in functools.reduce(
@@ -697,8 +666,7 @@ class NameMatcher:
                     operator.iconcat, terms.values(), [])]
 
     def _process_legal_words(self, word_set: set) -> set:
-        """
-        Preprocess legal words and add them to the word_set
+        """Preprocess legal words and add them to the word_set
 
         Parameters
         -------
@@ -709,7 +677,6 @@ class NameMatcher:
         -------
         Set
             The original word_set with the legal words added
-
         """
         terms_type = self._preprocess_word_list(terms_by_type)
         terms_country = self._preprocess_word_list(terms_by_country)
@@ -718,8 +685,7 @@ class NameMatcher:
         return word_set
 
     def _process_common_words(self, word_set: set, cut_off: float) -> set:
-        """
-        A method to select the most common words from the matching_data.
+        """A method to select the most common words from the matching_data.
 
         Parameters
         -------
@@ -733,7 +699,6 @@ class NameMatcher:
         -------
         Set
             The current word set with the most common words from the matching_data added
-
         """
         word_counts = self._df_matching_data[self._column].str.split(
             expand=True).stack().value_counts()
@@ -746,8 +711,7 @@ class NameMatcher:
                                indicator: str,
                                word_set: set,
                                cut_off: float) -> set:
-        """
-        A method to make a set of words which are not taken into account when scoring matches.
+        """A method to make a set of words which are not taken into account when scoring matches.
 
         Parameters
         -------
@@ -764,9 +728,7 @@ class NameMatcher:
         -------
         Set
             The set of no scoring words
-
         """
-
         if indicator == 'legal':
             word_set = self._process_legal_words(word_set)
         if indicator == 'common':
