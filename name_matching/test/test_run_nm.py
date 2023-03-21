@@ -7,12 +7,12 @@ import name_matching.run_nm as run_nm
 @pytest.fixture
 def original_name():
     package_dir = path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
-    return pd.read_csv(path.join(package_dir, 'test','test_names.csv'))
+    return pd.read_csv(path.join(package_dir, 'test','test_names.csv'), index_col=0)
 
 @pytest.fixture
 def adjusted_name():
     package_dir = path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
-    return pd.read_csv(path.join(package_dir, 'test','adjusted_test_names.csv'))
+    return pd.read_csv(path.join(package_dir, 'test','adjusted_test_names.csv'), index_col=0)
 
 @pytest.mark.parametrize("series, column, group_column",
                         [[False, '', ''],
