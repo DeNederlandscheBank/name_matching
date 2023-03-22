@@ -91,7 +91,7 @@ def _match_names_preprocess_data(column: str,
             'NFKD', string).encode('ASCII', 'ignore').decode())
 
     data_second = data_second.rename_axis('index').reset_index(drop=False)
-
+    
     return data_first, data_second
 
 def _match_names_combine_data(data_first: pd.DataFrame, 
@@ -117,16 +117,14 @@ def _match_names_combine_data(data_first: pd.DataFrame,
         dataframe is equal to the original index of data_first, the match index is the index in data_second
         for the matched name.
     """
-    matches = pd.merge(data_first, data_second.reset_index(), how='left',
+    matches = pd.merge(data_first, data_second, how='left',
                         left_on=left_cols, right_on=right_cols, suffixes=['', '_matched'])
     matches['score'] = 100
     matches = matches.dropna(subset=['index'])
-    if len(matches) > 1:
-      matches = matches.rename(columns={'index':'match_index'})
-      matches = matches[['match_index', 'score']] 
-      return matches
-    else:
-      return pd.DataFrame()
+    matches = matches.rename(columns={'index':'match_index'})
+    matches = matches[['match_index', 'score']] 
+
+    return matches
 
 def _match_names_match_single(matcher: NameMatcher,
                               data_first: pd.DataFrame,

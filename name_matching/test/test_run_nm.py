@@ -55,10 +55,15 @@ def test_match_names_preprocess_data(original_name, adjusted_name, case_sensitiv
     assert data_a['company_name'][432] == result_1
     assert data_b['company_name'][432] == result_2
 
-@pytest.mark.parametrize("n_equal",
-                        [341, 342])
-def test_match_names_combine_data(original_name, adjusted_name, n_equal):
-    if n_equal ==342:
-        adjusted_name.loc[89,'company_name'] = original_name.loc[89,'company_name']
+def test_match_names_combine_data_1(original_name, adjusted_name):
+    adjusted_name.loc[89,'company_name'] = original_name.loc[89,'company_name']
+    original_name, adjusted_name = run_nm._match_names_preprocess_data('company_name', original_name, adjusted_name, False, False, False)
     data_a = run_nm._match_names_combine_data(original_name, adjusted_name, 'company_name', 'company_name')
-    assert data_a['score'][432] == 100
+    assert len(data_a) == 87 
+    assert 342 not in data_a.index
+    
+def test_match_names_combine_data_2(original_name, adjusted_name):
+    original_name, adjusted_name = run_nm._match_names_preprocess_data('company_name', original_name, adjusted_name, False, False, False)
+    data_a = run_nm._match_names_combine_data(original_name, adjusted_name, 'company_name', 'company_name')
+    assert len(data_a) == 86 
+    assert data_a.loc[341,'score'] == 100
