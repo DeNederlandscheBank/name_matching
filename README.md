@@ -83,7 +83,7 @@ combined = pd.merge(combined, df_companies_b, how='left', left_index=True, right
 All contributions are welcome. For more substantial changes, please open an issue first to discuss what you would like to change.
 
 ## License
-[MIT](https://choosealicense.com/licenses/mit/)
+The code is licensed under the MIT/X license an extended version of the licence: [MIT](https://choosealicense.com/licenses/mit/)
 
 ## Thanks
 Thanks to the work of implementing name matching algorithms done in the [Abydos package](https://github.com/chrislit/abydos). These form the basis of the name matching algorithms used in this package.
