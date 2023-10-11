@@ -371,7 +371,7 @@ class NameMatcher:
 
         indexes = np.array([[f'match_name_{num}', f'score_{num}', f'match_index_{num}']
                             for num in range(self._number_of_matches)]).flatten()
-        match = pd.Series(index=np.append('original_name', indexes), dtype=float)
+        match = pd.Series(index=np.append('original_name', indexes), dtype=object)
         match['original_name'] = to_be_matched[self._column_matching]
         list_possible_matches = self._df_matching_data.iloc[
             possible_matches.flatten(), :][self._column].values
