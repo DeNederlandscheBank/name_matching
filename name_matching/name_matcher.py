@@ -80,7 +80,10 @@ class NameMatcher:
         A list of The distance metrics to be used during the fuzzy matching. For a list of possible distance
         metrics see the distance_metrics.py file. By default the following metrics are used: overlap, weighted_jaccard, 
                 ratcliff_obershelp, fuzzy_wuzzy_token_sort and editex.
-
+    row_numbers : bool
+        Bool indicating whether the row number should be used as match_index rather than the original index as
+        was the default case before version 0.8.8  
+        default=False
     """
 
     def __init__(self,
@@ -98,7 +101,8 @@ class NameMatcher:
                  preprocess_split: bool = False,
                  verbose: bool = True,
                  distance_metrics: Union[list, tuple] = ['overlap', 'weighted_jaccard', 'ratcliff_obershelp',
-                                                         'fuzzy_wuzzy_token_sort', 'editex']):
+                                                         'fuzzy_wuzzy_token_sort', 'editex'],
+                 row_numbers: bool = False):
 
         self._possible_matches = None
         self._preprocessed = False
@@ -128,6 +132,8 @@ class NameMatcher:
         if self._postprocess_company_legal_id:
             self._word_set = self._make_no_scoring_words(
                 'legal', self._word_set, self._cut_off)
+            
+        self._original_indexes = not row_numbers
 
         self.set_distance_metrics(distance_metrics)
 
@@ -312,12 +318,16 @@ class NameMatcher:
             tqdm.write('preprocessing...\n')
         self._column_matching = column_matching
 
+        is_dataframe = True
         if isinstance(to_be_matched, pd.Series):
+            is_dataframe = False
             to_be_matched = pd.DataFrame(
                 [to_be_matched.values], columns=to_be_matched.index.to_list())
         if not self._preprocessed:
             self._process_matching_data()
         to_be_matched = self.preprocess(to_be_matched, self._column_matching)
+
+        original_index = to_be_matched.index
 
         if self._verbose:
             tqdm.write('preprocessing complete \n searching for matches...\n')
@@ -340,6 +350,9 @@ class NameMatcher:
         if self._number_of_matches == 1:
             data_matches = data_matches.rename(columns={'match_name_0': 'match_name',
                                                         'score_0': 'score', 'match_index_0': 'match_index'})
+        if is_dataframe and self._original_indexes:
+            for col in data_matches.columns[data_matches.columns.str.contains('match_index')]:
+                data_matches[col] = original_index[data_matches[col].astype(int).fillna(0)]
 
         if self._verbose:
             tqdm.write('done')

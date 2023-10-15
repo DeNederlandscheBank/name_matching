@@ -21,6 +21,11 @@ def name_match():
         'company_name', data, start_processing=False, transform=False)
     return name_matcher
 
+@pytest.fixture
+def original_name():
+    package_dir = path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
+    return pd.read_csv(path.join(package_dir, 'test','test_names.csv'))
+
 
 @pytest.fixture
 def adjusted_name():
@@ -414,11 +419,6 @@ def test_fuzzy_matches(name_match, common_words, num_matches, possible_matches, 
     assert match['match_index_1'] in possible_matches
 
 
-def test_do_name_matching_full(name_match, adjusted_name):
-    result = name_match.match_names(adjusted_name, 'company_name')
-    assert np.sum(result['match_index'] == result.index) == 491
-
-
 def test_do_name_matching_split(name_match, adjusted_name):
     name_match._preprocess_split = True
     result = name_match.match_names(adjusted_name.iloc[44, :], 'company_name')
@@ -429,6 +429,24 @@ def test_do_name_matching_series(name_match, adjusted_name):
     result = name_match.match_names(adjusted_name.iloc[44, :], 'company_name')
     assert np.any(result['match_index'] == 44)
 
+def test_do_name_matching_full(name_match, adjusted_name):
+    result = name_match.match_names(adjusted_name, 'company_name')
+    assert np.sum(result['match_index'] == result.index) == 491
+    
+def test_do_name_matching_full(name_match, adjusted_name):
+    new_index = np.random.choice(range(100000), size=len(adjusted_name), replace=False)
+    adjusted_name_random_index = adjusted_name.set_index(new_index)
+    result = name_match.match_names(adjusted_name_random_index, 'company_name')
+    assert np.sum(result['match_index'] == result.index) == 491
+    
+def test_do_name_matching_full(adjusted_name, original_name):
+    new_index = np.random.choice(range(100000), size=len(adjusted_name), replace=False)
+    adjusted_name_random_index = adjusted_name.set_index(new_index)
+    name_match = nm.NameMatcher(row_numbers=True)
+    name_match.load_and_process_master_data(
+        'company_name', original_name, start_processing=False, transform=False)
+    result = name_match.match_names(adjusted_name_random_index, 'company_name')
+    assert np.max(result['match_index']) <= len(adjusted_name_random_index)
 
 def test_do_name_matching_error(adjusted_name):
     name_match = nm.NameMatcher()
