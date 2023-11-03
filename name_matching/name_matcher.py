@@ -125,7 +125,6 @@ class NameMatcher:
         self._postprocess_company_legal_id = legal_suffixes
         self._postprocess_common_words = common_words
 
-        self._preprocess_common_words = pd.Series(dtype=float)
         self._preprocess_split = preprocess_split
         self._cut_off = cut_off_no_scoring_words
 
@@ -134,6 +133,7 @@ class NameMatcher:
                 'legal', self._word_set, self._cut_off)
             
         self._original_indexes = not row_numbers
+        self._original_index = None
 
         self.set_distance_metrics(distance_metrics)
 
@@ -235,12 +235,10 @@ class NameMatcher:
         individual_words = to_be_matched[self._column_matching].str.split(
             expand=True).stack()
         word_counts = individual_words.value_counts()
-        preprocess_common_words_inst = pd.concat([self._preprocess_common_words,
-            word_counts]).fillna(0)
         to_be_matched_new = to_be_matched.copy()
         name = to_be_matched[self._column_matching].str.split()
         to_be_matched_new[self._column_matching] = name.apply(
-            lambda word: self._select_top_words(word, preprocess_common_words_inst, occurrence_count))
+            lambda word: self._select_top_words(word, word_counts, occurrence_count))
 
         return to_be_matched_new
 
@@ -265,7 +263,8 @@ class NameMatcher:
             default: True
         """
         self._column = column
-        self._df_matching_data = df_matching_data
+        self._df_matching_data = df_matching_data        
+        self._original_index = df_matching_data.index
         if start_processing:
             self._process_matching_data(transform)
 
@@ -327,8 +326,6 @@ class NameMatcher:
             self._process_matching_data()
         to_be_matched = self.preprocess(to_be_matched, self._column_matching)
 
-        original_index = to_be_matched.index
-
         if self._verbose:
             tqdm.write('preprocessing complete \n searching for matches...\n')
 
@@ -338,7 +335,7 @@ class NameMatcher:
         if self._preprocess_split:
             self._possible_matches = np.hstack((self._search_for_possible_matches(
                 self._preprocess_reduce(to_be_matched)), self._possible_matches))
-
+        
         if self._verbose:
             tqdm.write('possible matches found   \n fuzzy matching...\n')
             data_matches = to_be_matched.progress_apply(lambda x: self.fuzzy_matches(
@@ -352,7 +349,7 @@ class NameMatcher:
                                                         'score_0': 'score', 'match_index_0': 'match_index'})
         if is_dataframe and self._original_indexes:
             for col in data_matches.columns[data_matches.columns.str.contains('match_index')]:
-                data_matches[col] = original_index[data_matches[col].astype(int).fillna(0)]
+                data_matches[col] = self._original_index[data_matches[col].astype(int).fillna(0)]
 
         if self._verbose:
             tqdm.write('done')

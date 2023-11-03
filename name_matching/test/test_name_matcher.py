@@ -433,20 +433,24 @@ def test_do_name_matching_full(name_match, adjusted_name):
     result = name_match.match_names(adjusted_name, 'company_name')
     assert np.sum(result['match_index'] == result.index) == 491
     
-def test_do_name_matching_full(name_match, adjusted_name):
-    new_index = np.random.choice(range(100000), size=len(adjusted_name), replace=False)
-    adjusted_name_random_index = adjusted_name.set_index(new_index)
-    result = name_match.match_names(adjusted_name_random_index, 'company_name')
-    assert np.sum(result['match_index'] == result.index) == 491
-    
-def test_do_name_matching_full(adjusted_name, original_name):
-    new_index = np.random.choice(range(100000), size=len(adjusted_name), replace=False)
-    adjusted_name_random_index = adjusted_name.set_index(new_index)
-    name_match = nm.NameMatcher(row_numbers=True)
+@pytest.mark.parametrize("old_index, new_index, adjust, size_a, size_b, match_result",
+                        [[10, 'new', False, 20, 20, 'new'],
+                         [10, 'new', True, 20, 20, 10],
+                         [10, 526, False, 20, 20, 526],
+                         [10, 526, True, 20, 20, 10],
+                         [4, 201, True, 20, 50, 4],
+                         [8, 201, False, 20, 50, 201],
+                         [8, 44, True, 50, 20, 8],
+                         [4, 44, False, 50, 20, 44],
+                        ])
+def test_do_name_matching_switch_index(original_name, old_index, new_index, adjust, size_a, size_b, match_result):
+    name_match = nm.NameMatcher(row_numbers=adjust, verbose=False)
+    adjusted_name = original_name.copy()
+    original_name = original_name.rename(index={old_index:new_index})
     name_match.load_and_process_master_data(
-        'company_name', original_name, start_processing=False, transform=False)
-    result = name_match.match_names(adjusted_name_random_index, 'company_name')
-    assert np.max(result['match_index']) <= len(adjusted_name_random_index)
+        'company_name', original_name.iloc[:size_a,:], start_processing=False, transform=False)
+    result = name_match.match_names(adjusted_name.iloc[:size_b,:], 'company_name')
+    assert result.loc[old_index, 'match_index'] == match_result
 
 def test_do_name_matching_error(adjusted_name):
     name_match = nm.NameMatcher()
@@ -526,7 +530,7 @@ def test_preprocess_word_list(preprocess_punctuations, output, input, x):
 def test_adjust_scores(num_matches, match_score, match, result, y):
     name_match = nm.NameMatcher(number_of_matches=num_matches)
     match = name_match._adjust_scores(match_score, match)
-    assert match[y] == result
+    assert match.iloc[y] == result
 
 
 @pytest.mark.parametrize("string, stringlist, result_1, result_2, y",
