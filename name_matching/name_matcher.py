@@ -84,6 +84,9 @@ class NameMatcher:
         Bool indicating whether the row number should be used as match_index rather than the original index as
         was the default case before version 0.8.8  
         default=False
+    return_algorithms_score : bool
+        Bool indicating whether the scores of all the algorithms should be returned instead of a combined score
+        default=False
     """
 
     def __init__(self,
@@ -102,7 +105,8 @@ class NameMatcher:
                  verbose: bool = True,
                  distance_metrics: Union[list, tuple] = ['overlap', 'weighted_jaccard', 'ratcliff_obershelp',
                                                          'fuzzy_wuzzy_token_sort', 'editex'],
-                 row_numbers: bool = False):
+                 row_numbers: bool = False,
+                 return_algorithms_score: bool = False):
 
         self._possible_matches = None
         self._preprocessed = False
@@ -118,6 +122,7 @@ class NameMatcher:
         self._verbose = verbose
         self._number_of_matches = number_of_matches
         self._top_n = top_n
+        self._return_algorithms_score = return_algorithms_score
 
         self._preprocess_lowercase = lowercase
         self._preprocess_punctuations = punctuations
@@ -343,7 +348,9 @@ class NameMatcher:
         else:
             data_matches = to_be_matched.apply(lambda x: self.fuzzy_matches(
                 self._possible_matches[to_be_matched.index.get_loc(x.name), :], x), axis=1)
-
+        if self._return_algorithms_score:
+            return data_matches
+            
         if self._number_of_matches == 1:
             data_matches = data_matches.rename(columns={'match_name_0': 'match_name',
                                                         'score_0': 'score', 'match_index_0': 'match_index'})
@@ -388,6 +395,8 @@ class NameMatcher:
 
         match_score = self._score_matches(
             to_be_matched[self._column_matching], list_possible_matches)
+        if self._return_algorithms_score:
+            return match_score
         ind = self._rate_matches(match_score)
 
         for num, col_num in enumerate(ind):
