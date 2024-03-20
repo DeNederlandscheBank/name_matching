@@ -55,7 +55,7 @@ class NameMatcher:
         default=False
     cut_off_no_scoring_words: float
         the cut off percentage of the occurrence of the most occurring word for which words are still included 
-        in the no_soring_words set
+        in the no_scoring_words set
         default=0.01
     lowercase : bool
         A boolean indicating whether during the preprocessing all characters should be converted to
