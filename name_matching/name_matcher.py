@@ -49,9 +49,11 @@ class NameMatcher:
         Boolean indicating whether the most common company legal terms should be excluded when calculating 
         the final score. The terms are still included in determining the best match.
         default=False
-    common_words : bool
+    common_words : bool or list
         Boolean indicating whether the most common words from the matching data should be excluded 
         when calculating the final score. The terms are still included in determining the best match.
+        If common_words is given as a list, the words in the list are excluded from the calculation of
+        the final score, downgrading matches that predominatly rely on these words.
         default=False
     cut_off_no_scoring_words: float
         the cut off percentage of the occurrence of the most occurring word for which words are still included 
@@ -79,7 +81,7 @@ class NameMatcher:
     distance_metrics: list
         A list of The distance metrics to be used during the fuzzy matching. For a list of possible distance
         metrics see the distance_metrics.py file. By default the following metrics are used: overlap, weighted_jaccard, 
-                ratcliff_obershelp, fuzzy_wuzzy_token_sort and editex.
+        ratcliff_obershelp, fuzzy_wuzzy_token_sort and editex.
     row_numbers : bool
         Bool indicating whether the row number should be used as match_index rather than the original index as
         was the default case before version 0.8.8  
@@ -99,7 +101,7 @@ class NameMatcher:
                  punctuations: bool = True,
                  remove_ascii: bool = True,
                  legal_suffixes: bool = False,
-                 common_words: bool = False,
+                 common_words: Union[bool, list] = False,
                  cut_off_no_scoring_words: float = 0.01,
                  preprocess_split: bool = False,
                  verbose: bool = True,
@@ -110,7 +112,6 @@ class NameMatcher:
 
         self._possible_matches = None
         self._preprocessed = False
-        self._word_set = set()
         self._df_matching_data = pd.DataFrame()
 
         self._number_of_rows = number_of_rows
@@ -128,7 +129,15 @@ class NameMatcher:
         self._preprocess_punctuations = punctuations
         self._preprocess_ascii = remove_ascii
         self._postprocess_company_legal_id = legal_suffixes
-        self._postprocess_common_words = common_words
+                
+        if isinstance(common_words, bool):
+            self._postprocess_common_words = common_words
+            self._word_set = set()
+        elif isinstance(common_words, (list, tuple, set)):
+            self._postprocess_common_words = False
+            self._word_set = set(common_words)
+        else:
+            raise TypeError('Please provide common_words as a list or a bool')
 
         self._preprocess_split = preprocess_split
         self._cut_off = cut_off_no_scoring_words

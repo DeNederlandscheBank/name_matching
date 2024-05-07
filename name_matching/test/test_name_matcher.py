@@ -575,6 +575,38 @@ def test_process_common_words(name_match, word_set, cut_off, result_1, result_2)
     assert len(words) == result_1
 
 
+@pytest.mark.parametrize("common_words, error", [[True, False], 
+                                                 [[], False], 
+                                                 [set(), False], 
+                                                 [dict(), True], 
+                                                 ["", True]])
+def test_common_words_type_error(common_words, error):
+    if error:
+        with pytest.raises(TypeError):
+            nm.NameMatcher(common_words=common_words)
+    else:
+        name_matcher = nm.NameMatcher(common_words=common_words)
+        if isinstance(common_words, bool):
+            assert name_matcher._postprocess_common_words == True
+        else:
+            assert name_matcher._word_set == set(common_words)
+
+
+@pytest.mark.parametrize("common_words, legal_suffixes", [[['Cherry', 'Stream', 'Puzzle', 'Balloon', 'Candle', 'Mirror'], False], 
+                                                          [['Cherry', 'Stream', 'Puzzle', 'Balloon', 'Candle', 'Mirror'], True], 
+                                                          [['Cherry'], False], 
+                                                          [['Cherry'], True], 
+                                                          [['limited', 'gmbh'], False],
+                                                          [['limited', 'gmbh'], True],])
+def test_common_words_addition(original_name, common_words, legal_suffixes):
+        name_matcher = nm.NameMatcher(common_words=common_words, legal_suffixes=legal_suffixes)
+        name_matcher.load_and_process_master_data(
+            'company_name', original_name, start_processing=False, transform=False)
+        name_matcher._process_matching_data(transform=False)
+        for word in common_words:
+            assert word in name_matcher._word_set
+
+
 @pytest.mark.parametrize("word_set, preprocess, result_1, result_2, result_3",
                          [[set(), True, 0, 'company', True],
                           [set(), True, 0, '3ao', True],
