@@ -6,7 +6,7 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
    name='name_matching',
-   version='0.8.9',
+   version='0.8.10',
    description='A package for the matching of company names',
    author='Michiel Nijhuis',
    author_email='m.nijhuis@dnb.nl',

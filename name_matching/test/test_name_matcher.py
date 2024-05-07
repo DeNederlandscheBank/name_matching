@@ -402,6 +402,8 @@ def test_search_for_possible_matches(name_match, adjusted_name, top_n, low_memor
                               ['Company and Sons'], index=['company_name']), 71.28, 68.6),
                           (False, 2, np.array([29, 343]), pd.Series(
                               ['Company and Sons'], index=['company_name']), 71.28, 68.6),
+                          (['Sons', 'and'], 3, np.array([29, 343, 126, 238, 445]), pd.Series(
+                              ['Company and Sons'], index=['company_name']), 31.33, 31.77),
                           (False, 2, np.array([[29, 343], [0, 0]]), pd.Series(
                               ['Company and Sons'], index=['company_name']), 71.28, 68.6),
                           (False, 2, np.array([29, 343, 126, 238, 445]), pd.Series(
@@ -411,7 +413,12 @@ def test_fuzzy_matches(name_match, common_words, num_matches, possible_matches, 
     name_match._column_matching = 'company_name'
     name_match._number_of_matches = num_matches
     name_match._postprocess_common_words = common_words
-    name_match._word_set = set(['Sons', 'and'])
+    if isinstance(common_words, list):
+        name_match._word_set = set(common_words)
+    elif common_words:
+        name_match._word_set = set(['Sons', 'and'])
+    else:
+        name_match._word_set = set()
     match = name_match.fuzzy_matches(possible_matches, matching_series)
     assert match['score_0'] == pytest.approx(result_0, 0.0001)
     assert match['score_1'] == pytest.approx(result_1, 0.0001)
