@@ -49,9 +49,11 @@ class NameMatcher:
         Boolean indicating whether the most common company legal terms should be excluded when calculating 
         the final score. The terms are still included in determining the best match.
         default=False
-    common_words : bool
+    common_words : bool or list
         Boolean indicating whether the most common words from the matching data should be excluded 
         when calculating the final score. The terms are still included in determining the best match.
+        If common_words is given as a list, the words in the list are excluded from the calculation of
+        the final score, downgrading matches that predominatly rely on these words.
         default=False
     cut_off_no_scoring_words: float
         the cut off percentage of the occurrence of the most occurring word for which words are still included 
@@ -79,10 +81,13 @@ class NameMatcher:
     distance_metrics: list
         A list of The distance metrics to be used during the fuzzy matching. For a list of possible distance
         metrics see the distance_metrics.py file. By default the following metrics are used: overlap, weighted_jaccard, 
-                ratcliff_obershelp, fuzzy_wuzzy_token_sort and editex.
+        ratcliff_obershelp, fuzzy_wuzzy_token_sort and editex.
     row_numbers : bool
         Bool indicating whether the row number should be used as match_index rather than the original index as
         was the default case before version 0.8.8  
+        default=False
+    return_algorithms_score : bool
+        Bool indicating whether the scores of all the algorithms should be returned instead of a combined score
         default=False
     """
 
@@ -96,17 +101,17 @@ class NameMatcher:
                  punctuations: bool = True,
                  remove_ascii: bool = True,
                  legal_suffixes: bool = False,
-                 common_words: bool = False,
+                 common_words: Union[bool, list] = False,
                  cut_off_no_scoring_words: float = 0.01,
                  preprocess_split: bool = False,
                  verbose: bool = True,
                  distance_metrics: Union[list, tuple] = ['overlap', 'weighted_jaccard', 'ratcliff_obershelp',
                                                          'fuzzy_wuzzy_token_sort', 'editex'],
-                 row_numbers: bool = False):
+                 row_numbers: bool = False,
+                 return_algorithms_score: bool = False):
 
         self._possible_matches = None
         self._preprocessed = False
-        self._word_set = set()
         self._df_matching_data = pd.DataFrame()
 
         self._number_of_rows = number_of_rows
@@ -118,12 +123,21 @@ class NameMatcher:
         self._verbose = verbose
         self._number_of_matches = number_of_matches
         self._top_n = top_n
+        self._return_algorithms_score = return_algorithms_score
 
         self._preprocess_lowercase = lowercase
         self._preprocess_punctuations = punctuations
         self._preprocess_ascii = remove_ascii
         self._postprocess_company_legal_id = legal_suffixes
-        self._postprocess_common_words = common_words
+                
+        if isinstance(common_words, bool):
+            self._postprocess_common_words = common_words
+            self._word_set = set()
+        elif isinstance(common_words, (list, tuple, set)):
+            self._postprocess_common_words = False
+            self._word_set = set(common_words)
+        else:
+            raise TypeError('Please provide common_words as a list or a bool')
 
         self._preprocess_split = preprocess_split
         self._cut_off = cut_off_no_scoring_words
@@ -343,7 +357,9 @@ class NameMatcher:
         else:
             data_matches = to_be_matched.apply(lambda x: self.fuzzy_matches(
                 self._possible_matches[to_be_matched.index.get_loc(x.name), :], x), axis=1)
-
+        if self._return_algorithms_score:
+            return data_matches
+            
         if self._number_of_matches == 1:
             data_matches = data_matches.rename(columns={'match_name_0': 'match_name',
                                                         'score_0': 'score', 'match_index_0': 'match_index'})
@@ -388,6 +404,8 @@ class NameMatcher:
 
         match_score = self._score_matches(
             to_be_matched[self._column_matching], list_possible_matches)
+        if self._return_algorithms_score:
+            return match_score
         ind = self._rate_matches(match_score)
 
         for num, col_num in enumerate(ind):
@@ -396,7 +414,7 @@ class NameMatcher:
 
         match = self._adjust_scores(match_score[ind, :], match)
 
-        if self._postprocess_common_words or self._postprocess_company_legal_id:
+        if len(self._word_set):
             match = self.postprocess(match)
 
         return match
