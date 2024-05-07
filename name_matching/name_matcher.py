@@ -414,7 +414,7 @@ class NameMatcher:
 
         match = self._adjust_scores(match_score[ind, :], match)
 
-        if self._postprocess_common_words or self._postprocess_company_legal_id:
+        if len(self._word_set):
             match = self.postprocess(match)
 
         return match
