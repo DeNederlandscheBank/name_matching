@@ -11,6 +11,7 @@ For a more in-depth discussion of the name matching package please see the [comp
 ## Requirements
 
 The following package needs to install before running this package.
+
 1.fuzzychinese
 ```bash
 pip install fuzzychinese
