@@ -1,6 +1,6 @@
 [![name_matching](https://github.com/DeNederlandscheBank/name_matching/actions/workflows/python-app.yml/badge.svg?branch=main)](https://github.com/DeNederlandscheBank/name_matching/actions/workflows/python-app.yml)
 
-# Name matching
+# Name matching for company
 
 Name matching is a Python package for the matching of company names. This package has been developed to match the names of companies from different databases together to allow them to be merged. The package has a number of options to determine how exact the matches should be and also for the selection of different name matching algorithms.
 
