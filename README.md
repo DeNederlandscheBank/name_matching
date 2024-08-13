@@ -12,7 +12,7 @@ For a more in-depth discussion of the name matching package please see the [comp
 
 The following package needs to install before running this package.
 
-1.fuzzychinese[![fuzzychinese]([https://github.com/DeNederlandscheBank/name_matching/actions/workflows/python-app.yml/badge.svg?branch=main](https://github.com/znwang25/fuzzychinese/tree/master))]
+1.fuzzychinese[![fuzzychinese]([[https://github.com/DeNederlandscheBank/name_matching/actions/workflows/python-app.yml/badge.svg?branch=main]](https://github.com/znwang25/fuzzychinese/tree/master))]
 ```bash
 pip install fuzzychinese
 ```
