@@ -8,12 +8,17 @@ Name matching is a Python package for the matching of company names. This packag
 For a more in-depth discussion of the name matching package please see the [company name matching](https://medium.com/dnb-data-science-hub/company-name-matching-6a6330710334) medium post
 
 
-## Installation
+## Requirements
 
-The package can be installed via PiPy:
-
+The following package needs to install before running this package.
+1.fuzzychinese
 ```bash
-pip install name_matching
+pip install fuzzychinese
+```
+
+2.jieba
+```bash
+pip install jieba
 ```
 
 Alternatively you could install the package by downloading the repo, navigating to the folder and run the setup in pip locally
