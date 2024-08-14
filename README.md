@@ -2,17 +2,23 @@
 [![name_matching](https://github.com/DeNederlandscheBank/name_matching/actions/workflows/python-app.yml/badge.svg?branch=main)](https://github.com/DeNederlandscheBank/name_matching/actions/workflows/python-app.yml)
 
 # Name matching for company
+This is a forked repository from:
+[![name_matching](https://github.com/DeNederlandscheBank/name_matching/actions/workflows/python-app.yml/badge.svg?branch=main)](https://github.com/DeNederlandscheBank/name_matching/actions/workflows/python-app.yml)
 
-Name matching is a Python package for the matching of company names. This package has been developed to match the names of companies from different databases together to allow them to be merged. The package has a number of options to determine how exact the matches should be and also for the selection of different name matching algorithms.
+This is a package that use to match company names in your database. You should be providing:
+        - a database that has all company names, and
+        - It's aliases and search string
 
-For a more in-depth discussion of the name matching package please see the [company name matching](https://medium.com/dnb-data-science-hub/company-name-matching-6a6330710334) medium post
+This package only supports any alphabetical language and Chinese, please make sure to not contain any other language in the database.
+
+
 
 
 ## Requirements
 
 The following package needs to install before running this package.
 
-1.fuzzychinese[![fuzzychinese]([[https://github.com/DeNederlandscheBank/name_matching/actions/workflows/python-app.yml/badge.svg?branch=main]](https://github.com/znwang25/fuzzychinese/tree/master))]
+fuzzychinese[![fuzzychinese]([[https://github.com/DeNederlandscheBank/name_matching/actions/workflows/python-app.yml/badge.svg?branch=main]]([https://github.com/znwang25/fuzzychinese/tree/master](https://github.com/DeNederlandscheBank/name_matching/actions/workflows/python-app.yml)))]
 ```bash
 pip install fuzzychinese
 ```
