@@ -525,7 +525,7 @@ class NameMatcher:
                 ind[num] = np.argmax(np.mean(method_grouped_results, axis=1))
                 idx = idx + len(method_list)
         elif self._number_of_matches == self._num_distance_metrics:
-            ind = np.argmax(match_score, axis=1)
+            ind = np.argmax(match_score, axis=0).reshape(-1)
         else:
             ind = np.argsort(np.mean(match_score, axis=1))[-self._number_of_matches :][
                 ::-1
@@ -618,8 +618,9 @@ class NameMatcher:
         org_name, alt_names = self._process_words(org_name, alt_names)
 
         match_score = self._score_matches(org_name, alt_names)
+        ind = self._rate_matches(match_score)
 
-        match = self._adjust_scores(match_score, match)
+        match = self._adjust_scores(match_score[ind, :], match)
 
         return match
 
@@ -723,7 +724,7 @@ class NameMatcher:
             df.loc[:, column_name] = df[column_name].str.lower()
         if self._preprocess_punctuations:
             df.loc[:, column_name] = df[column_name].str.replace(
-                "[^\w\s]", "", regex=True
+                r"[^\w\s]", "", regex=True
             )
             df.loc[:, column_name] = df[column_name].str.replace("  ", " ").str.strip()
         if self._preprocess_ascii:
