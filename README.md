@@ -1,5 +1,4 @@
 # Please Note: This package is in progress!
-[![name_matching](https://github.com/DeNederlandscheBank/name_matching/actions/workflows/python-app.yml/badge.svg?branch=main)](https://github.com/DeNederlandscheBank/name_matching/actions/workflows/python-app.yml)
 
 # Name matching for company
 This is a forked repository from:
@@ -18,7 +17,7 @@ This package only supports any alphabetical language and Chinese, please make su
 
 The following package needs to install before running this package.
 
-fuzzychinese[![fuzzychinese]([[https://github.com/DeNederlandscheBank/name_matching/actions/workflows/python-app.yml/badge.svg?branch=main]]([https://github.com/znwang25/fuzzychinese/tree/master](https://github.com/DeNederlandscheBank/name_matching/actions/workflows/python-app.yml)))]
+fuzzychinese[([[https://github.com/DeNederlandscheBank/name_matching/actions/workflows/python-app.yml/badge.svg?branch=main]]([https://github.com/znwang25/fuzzychinese/tree/master]))]
 ```bash
 pip install fuzzychinese
 ```
