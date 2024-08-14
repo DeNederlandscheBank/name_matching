@@ -22,7 +22,9 @@ pip install fuzzychinese
 
 ## Usage
 The user should upload it's database(recommend in jsonl form) with those required information. Import them into the code. When run the code, the user will be asked to enter a company name, when finished enter the name press<kbd>return</kbd>, the name matching package will run and give you the best match.
+
 input: Alibaba
+
 output:alibabacom
 
 
