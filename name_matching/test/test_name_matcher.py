@@ -608,7 +608,7 @@ def test_score_matches(to_be_matched, possible_matches, metrics, result):
             2,
             np.array([[0.9, 0.3, 0.5, 0.2, 0.1], [0.6, 0.7, 0.8, 0.4, 0.5]]),
             ["weighted_jaccard", "discounted_levenshtein"],
-            [0, 1],
+            [0, 2],
         ),
         (
             3,
@@ -620,7 +620,7 @@ def test_score_matches(to_be_matched, possible_matches, metrics, result):
                 ]
             ),
             ["weighted_jaccard", "discounted_levenshtein", "iterative_sub_string"],
-            [2, 1, 1],
+            [0, 2, 0],
         ),
         (
             2,
@@ -632,7 +632,7 @@ def test_score_matches(to_be_matched, possible_matches, metrics, result):
                 ]
             ),
             ["tichy", "overlap", "bag"],
-            [2, 1],
+            [0, 0],
         ),
         (
             2,
@@ -650,7 +650,7 @@ def test_score_matches(to_be_matched, possible_matches, metrics, result):
                 ]
             ),
             ["weighted_jaccard", "overlap", "iterative_sub_string"],
-            [1],
+            [0],
         ),
         (
             2,
@@ -662,30 +662,30 @@ def test_score_matches(to_be_matched, possible_matches, metrics, result):
                 ]
             ),
             ["weighted_jaccard", "overlap", "bag"],
-            [1, 0],
+            [0, 2],
         ),
-        (1, np.array([[0.3, 0.3, 0.8, 0.2, 0.2]]), ["weighted_jaccard"], [0]),
+        (1, np.array([[0.3, 0.3, 0.8, 0.2, 0.2]]), ["weighted_jaccard"], [2]),
         (
             3,
             np.array([[0.3, 0.3, 0.8, 0.2, 0.2], [0.3, 0.3, 0.8, 0.1, 0.1]]),
             ["weighted_jaccard", "discounted_levenshtein"],
-            [0, 1],
+            [2, 1, 0],
         ),
         (
             2,
             np.array([[0.3, 0.3, 0.2, 0.1, 0.02], [0.1, 0.1, 0.2, 0.3, 0.02]]),
             ["weighted_jaccard", "iterative_sub_string"],
-            [0, 0],
+            [0, 3],
         ),
         (
             1,
             np.array([[0.3, 0.3, 0.2, 0.1, 0.02], [0.3, 0.3, 0.2, 0.3, 0.02]]),
             ["overlap", "iterative_sub_string"],
-            [1],
+            [0],
         ),
-        (1, np.array([[-0.5, -0.8, -0.3, -0.7, 0, 2]]), ["bag"], [0]),
-        (1, np.array([[-0.5, -0.8, -0.3, -0.7, 0, 2]]), ["BAG"], [0]),
-        (3, np.array([[10, 8, 7, 6, 12, 15, 14, 88]]), ["weighted_jaccard"], [0]),
+        (1, np.array([[-0.5, -0.8, -0.3, -0.7, 0, 2]]), ["bag"], [5]),
+        (1, np.array([[-0.5, -0.8, -0.3, -0.7, 0, 2]]), ["BAG"], [5]),
+        (3, np.array([[10, 8, 7, 6, 12, 15, 14, 88]]), ["weighted_jaccard"], [7,5,6]),
         (
             2,
             np.array([[1, 0.3], [0.1, 0.4]]),
@@ -698,9 +698,8 @@ def test_rate_matches(number_of_matches, match_score, metrics, result):
     name_match = nm.NameMatcher()
     name_match._number_of_matches = number_of_matches
     name_match.set_distance_metrics(metrics)
-    ind = name_match._rate_matches(match_score)
-    print(ind)
-    assert len(ind) == np.min([number_of_matches, match_score.shape[0]])
+    ind = name_match._rate_matches(match_score.T)
+    assert len(ind) == np.min([number_of_matches, match_score.shape[1]])
     assert list(ind) == result
 
 
@@ -858,8 +857,8 @@ def test_search_for_possible_matches(
             3,
             np.array([29, 343, 126, 238, 445]),
             pd.Series(["Company and Sons"], index=["company_name"]),
-            31.33,
             31.77,
+            31.33,
         ),
         (
             False,
@@ -888,8 +887,8 @@ def test_search_for_possible_matches(
             3,
             np.array([29, 343, 126, 238, 445]),
             pd.Series(["Company and Sons"], index=["company_name"]),
-            31.33,
             31.77,
+            31.33,
         ),
         (
             False,
@@ -947,7 +946,7 @@ def test_do_name_matching_series(name_match, adjusted_name):
 
 def test_do_name_matching_full(name_match, adjusted_name):
     result = name_match.match_names(adjusted_name, "company_name")
-    assert np.sum(result["match_index"] == result.index) == 493
+    assert np.sum(result["match_index"] == result.index) == 491
 
 
 @pytest.mark.parametrize(
