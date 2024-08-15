@@ -685,7 +685,7 @@ def test_score_matches(to_be_matched, possible_matches, metrics, result):
         ),
         (1, np.array([[-0.5, -0.8, -0.3, -0.7, 0, 2]]), ["bag"], [5]),
         (1, np.array([[-0.5, -0.8, -0.3, -0.7, 0, 2]]), ["BAG"], [5]),
-        (3, np.array([[10, 8, 7, 6, 12, 15, 14, 88]]), ["weighted_jaccard"], [7,5,6]),
+        (3, np.array([[10, 8, 7, 6, 12, 15, 14, 88]]), ["weighted_jaccard"], [7, 5, 6]),
         (
             2,
             np.array([[1, 0.3], [0.1, 0.4]]),
