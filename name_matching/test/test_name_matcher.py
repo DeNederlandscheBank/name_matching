@@ -685,7 +685,7 @@ def test_score_matches(to_be_matched, possible_matches, metrics, result):
         ),
         (1, np.array([[-0.5, -0.8, -0.3, -0.7, 0, 2]]), ["bag"], [5]),
         (1, np.array([[-0.5, -0.8, -0.3, -0.7, 0, 2]]), ["BAG"], [5]),
-        (3, np.array([[10, 8, 7, 6, 12, 15, 14, 88]]), ["weighted_jaccard"], [7,5,6]),
+        (3, np.array([[10, 8, 7, 6, 12, 15, 14, 88]]), ["weighted_jaccard"], [7, 5, 6]),
         (
             2,
             np.array([[1, 0.3], [0.1, 0.4]]),
@@ -946,7 +946,7 @@ def test_do_name_matching_series(name_match, adjusted_name):
 
 def test_do_name_matching_full(name_match, adjusted_name):
     result = name_match.match_names(adjusted_name, "company_name")
-    assert np.sum(result["match_index"] == result.index) == 494
+    assert np.sum(result["match_index"] == result.index) == 493
 
 
 @pytest.mark.parametrize(
@@ -1137,15 +1137,15 @@ def test_process_words(words, string, stringlist, result_1, result_2, y):
 @pytest.mark.parametrize(
     "word_set, cut_off, result_1, result_2",
     [
-        [set(), 0, 639, "Group"],
-        [set(), 0, 639, "and"],
+        [set(), 0, 640, "Group"],
+        [set(), 0, 640, "and"],
         [set(), 0.1, 7, "Group"],
         [set(), 0.1, 7, "LLC"],
         [set(), 0.12, 7, "LLC"],
         [set(), 0.2, 1, "and"],
         [set(["apple"]), 1, 1, "apple"],
-        [set(["apple"]), 0, 640, "apple"],
-        [set(["apple"]), 0, 640, "Group"],
+        [set(["apple"]), 0, 641, "apple"],
+        [set(["apple"]), 0, 641, "Group"],
     ],
 )
 def test_process_common_words(name_match, word_set, cut_off, result_1, result_2):

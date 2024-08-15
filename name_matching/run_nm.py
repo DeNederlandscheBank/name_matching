@@ -85,7 +85,9 @@ def _match_names_preprocess_data(
         data_second[column] = data_second[column].str.lower().str.strip()
     if not punctuation_sensitive:
         data_first[column] = data_first[column].str.replace(r"[^\w\s]", "", regex=True)
-        data_second[column] = data_second[column].str.replace(r"[^\w\s]", "", regex=True)
+        data_second[column] = data_second[column].str.replace(
+            r"[^\w\s]", "", regex=True
+        )
     if not special_character_sensitive:
         data_first[column] = data_first[column].apply(
             lambda string: normalize("NFKD", string).encode("ASCII", "ignore").decode()
