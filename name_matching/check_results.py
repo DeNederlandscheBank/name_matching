@@ -16,17 +16,21 @@ class ResultsChecker:
             self,
             results: pd.DataFrame,
             name_col: str = 'original_name',
-            annotated_results: pd.DataFrame|None = None,
+            annotated_results: dict|None = None,
     ) -> None:
         """
         """
         self._results_data = results
         self._name_col = name_col
-        if annotated_results is None:
+        if self._annotated_results is None:
             self._annotated_results = {}
         else:
             self._annotated_results = annotated_results
             self._check_annotated_results()
+
+    @property
+    def annotated_results(self) -> dict:
+        return self._annotated_results
 
     def _check_annotated_results(self):
         pass
@@ -80,10 +84,11 @@ class ResultsChecker:
     def _define_possible_nodes(self, selection) -> list:
 
         if selection == 'random':
-            return self._results_data.index.to_series().sample(n=500).to_list()
+            return self._results_data.index.to_series().sample(n=len(self._results_data)).to_list()
 
-    def start(self, selection: str = 'random'):
+    def start(self, selection: str = 'random', fresh_start: bool = False):
         self._index = -1
         self._possible_nodes = self._define_possible_nodes(selection)
-        self.annotated_results = {}
+        if fresh_start:
+            self._annotated_results = {}
         self._skip(None)
