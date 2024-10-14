@@ -16,6 +16,7 @@ setup(
     },
     packages=["name_matching", "distances"],
     install_requires=["cleanco", "scikit-learn", "pandas", "numpy", "tqdm"],
+    package_data={'name_matching':['data/*.csv']},
     long_description=long_description,
     long_description_content_type="text/markdown",
 )

@@ -22,7 +22,7 @@ class ResultsChecker:
         """
         self._results_data = results
         self._name_col = name_col
-        if self._annotated_results is None:
+        if annotated_results is None:
             self._annotated_results = {}
         else:
             self._annotated_results = annotated_results

@@ -1,0 +1,418 @@
+abbriviation,full_name
+sh.a.,Shoqëri Aksionare
+sh.p.k.,Shoqëri me Përgjegjësi të Kufizuar
+s.a.,Sociedad Anónima
+s.r.l.,Sociedad de Responsabilidad Limitada
+s.c.p.a,Sociedad en Comandita por Acciones
+scpa,Sociedad en Comandita por Acciones
+s.c.e i.,Sociedad de Capital e Industria
+s.e.,Sociedad del Estado
+s.g.r,Sociedad de Garantía Recíproca
+soc.col.,Sociedad Colectiva
+nl,No Liability
+pty. ltd.,Proprietary Limited
+pty ltd,Proprietary Limited
+e.u.,Einzelunternehmen
+stg,Stille Gesellschaft
+gesbr,Gesellschaft bürgerlichen Rechts
+a.g.,Aktiengesellschaft
+ag,Aktiengesellschaft
+og,Offene Gesellschaft 
+kg,Kommanditgesellschaft
+aat,Aktsyyanernaye atkrytae tavarystva
+3at,Zakrytae aktsyyanernae tavarystva
+esv,Economische Samenwerkingsverband 
+vzw,Vereniging zonder winstoogmerk 
+vof,Vennootschap onder firma
+snc,Société en nom collectif
+comm.v,Commanditaire vennootschap
+scs,Société en commandite simple 
+bvba,Besloten vennootschap met beperkte aansprakelijkheid 
+sprl,Société privée à responsabilité limitée 
+cvba,Coöperatieve vennootschap met beperkte aansprakelijkheid 
+cvoa,Coöperatieve vennootschap zonder beperkte aansprakelijkheid 
+sca,Société en commandite par actions 
+sep,Société européenne privée 
+gie,Groepering van economisch belang
+d.d.,drushtvo s ogranichenom odgovornoshtyu
+a.d.,aktsionerno drushtvo
+d.n.o.,drushtvo s neogranichenom odgovornoshtyu
+d.o.o.,drushtvo s ogranichenom odgovornoshtyu
+k.v.,komanditno drushtvo
+s.p.,samostalni preduzetnik
+ltda,Limitada 
+s.a.,Sociedade Anônima 
+pllc,Professional Limited Liability Co. 
+ad,Assembleia de Deus
+adsitz,Not applicable in Brazil 
+ead,Educação a Distância
+et,Empresa de Transporte 
+kd,Not applicable in Brazil 
+kda,Not applicable in Brazil 
+sd,Sociedade em Descomandita
+ad,aktsionerno druzhestvo
+adsitz,aktsionerno druzhestvo s iztsialena otgovornost
+ead,ednolichno aktsionerno druzhestvo
+et,ednolichen turgovets
+kd,komanditno druzhestvo
+kda,komanditno druzhestvo s aktsii
+sd,sabiratelno druzhestvo
+gp,Groupement de Promotion 
+sm pte ltd.,Societe a Responsabilite Limitee Privee 
+pte ltd.,Societe a Responsabilite Limitee 
+plc ltd.,Societe Anonyme Publique Limitee 
+peec,Partenariat d'Entreprise d'Economie Mixte 
+sp,Societe en Participation
+gp,General Partnership
+lp,Limited Partnership
+sp,Sole Proprietorship
+EIRL,Empresa Individual de Responsabilidad Limitada 
+S.A.,Sociedad Anónima 
+SGR,Sociedad de Garantía Recíproca 
+S.G.R.,Sociedad de Garantía Recíproca 
+LTDA,Sociedad de Responsabilidad Limitada 
+S.P.A.,Sociedad por Acciones 
+SA,Sociedad Anónima 
+S. en C.,Sociedad en Comandita 
+LTDA.,Sociedad de Responsabilidad Limitada
+s.a.,Sociedad Anónima
+e.u.,Empresa Unipersonal
+s.a.s.,Sociedad por Acciones Simplificada
+suc. de descendants,Sucesión de Descendientes
+sca,Sociedad en Comandita por Acciones
+d.d.,dioničko društvo
+d.o.o.,društvo s ograničenom odgovornošću
+obrt,obrt
+a.s.,akciová společnost
+akc. spol.,akciová společnost
+s.r.o.,společnost s ručením omezeným
+spol. s r.o.,společnost s ručením omezeným
+v.o.s.,veřejná obchodní společnost
+veř. obch. spol.,veřejná obchodní společnost
+a spol.,a společníci
+k.s.,komanditní společnost
+kom. spol.,komanditní společnost
+kom. spol.,komanditní společnost
+i/s,Interessentskab 
+a/s,Aktieselskab 
+k/s,Kommanditselskab
+p/s,Partnerselskab 
+amba,Andelsselskab med begrænset ansvar 
+a.m.b.a.,Andelsselskab med begrænset ansvar 
+fmba,Forening med begrænset ansvar 
+f.m.b.a.,Forening med begrænset ansvar 
+smba,Selvstændigt erhvervsdrivende med begrænset ansvar 
+s.m.b.a.,Selvstændigt erhvervsdrivende med begrænset ansvar 
+g/s,Grundejerforening
+c. por a.,Compañía por Acciones
+cxa,Compañía Anónima
+s.a.,Sociedad Anónima
+s.a.s.,Sociedad por Acciones Simplificada
+srl.,Sociedad de Responsabilidad Limitada
+srl,Sociedad de Responsabilidad Limitada
+eirl.,Empresa Individual de Responsabilidad Limitada
+sa,Sociedad Anónima
+sas,Sociedad por Acciones Simplificada
+s.a.,Sociedad Anónima
+c.a.,Compañía Anónima
+sa ,Sociedad Anónima
+ep ,Empresa Pública
+sae,Sharikat Almas'ouliya Almahdouda
+fie,füüsilisest isikust ettevõtja
+oü,osaühing
+as,aktsiaselts
+t:mi,Toiminimi
+tmi,Toiminimi
+as oy,Asunto-osakeyhtiö 
+as.oy,Asunto-osakeyhtiö 
+ay,Avoin yhtiö
+ky,Kommandiittiyhtiö 
+oy,Osakeyhtiö 
+oyj,Julkinen osakeyhtiö 
+ok,Osuuskunta 
+SICAV,Société d'Investissement à Capital Variable 
+SARL,Société à Responsabilité Limitée 
+SOGEPA,Société de Gestion de Patrimoines 
+EI,Entreprise Individuelle 
+EURL,Entreprise Unipersonnelle à Responsabilité Limitée 
+SASU,Société par Actions Simplifiée Unipersonnelle 
+FCP,Fonds Commun de Placement 
+GIE,Groupement d'Intérêt Économique 
+SEP,Société en Participation
+SNC,Société en Nom Collectif 
+SCS,Société en Commandite Simple
+SCA,Société en Commandite par Actions 
+SCOP,Société Coopérative et Participative 
+SEM,Société d'Économie Mixte
+SAS,Société par Actions Simplifiée 
+GmbH & Co. KG,Gesellschaft mit beschränkter Haftung & Compagnie Kommanditgesellschaft 
+e.G.,eingetragene Genossenschaft 
+e.V.,eingetragener Verein 
+GbR,Gesellschaft bürgerlichen Rechts
+OHG,Offene Handelsgesellschaft 
+PartG,Partnerschaftsgesellschaft 
+KGaA,Kommanditgesellschaft auf Aktien
+GmbH,Gesellschaft mit beschränkter Haftung
+G.m.b.H.,Gesellschaft mit beschränkter Haftung
+AG,Aktiengesellschaft 
+mbH & Co. KG,mit beschränkter Haftung & Compagnie Kommanditgesellschaft 
+a.e.,Anonymos Etairia
+ae,Anonymos Etairia
+e.e.,Eteria Eterochronon 
+ee,Eteria Eterochronon 
+epe,Etaireia Periorismenis Efthinis 
+e.p.e.,Etaireia Periorismenis Efthinis 
+mepe,Monoprosopi Etaireia Periorismenis Efthinis 
+m.e.p.e.,Monoprosopi Etaireia Periorismenis Efthinis 
+o.e.,Omorythmos Etaireia 
+oe,Omorythmos Etaireia 
+ovee,Omilos Viomichanikon kai Emporikon Etaireion 
+o.v.e.e.,Omilos Viomichanikon kai Emporikon Etaireion
+s.a.,Sociedad Anónima
+sa,Sociedad Anónima
+sa,Sosyete Anonim
+ltd,You Xian Gong Si
+unltd,Wu Xian Ze Ren Gong Si
+ultd,You Xian Ze Ren Gong Si
+limited,You Xian Gong Si
+e.v.,Egyéni vállalkozó 
+e.c.,Egyéni cég 
+bt.,Betéti társaság 
+kft.,Korlátolt felelősségű társaság 
+kht.,Közhasznú társaság 
+kkt.,Közkereseti társaság 
+k.v.,Közös vállalat
+zrt.,Zártkörűen működő részvénytársaság 
+nyrt.,Nyilvánosan működő részvénytársaság 
+ev,Egyéni vállalkozó 
+ec,Egyéni cég 
+rt.,Részvénytársaság
+ehf.,Einkahlutafélag 
+hf.,Hlutafélag 
+ohf.,Opinbert hlutafélag 
+s.f.,Sameignarfélag 
+ses.,Sameignarfélags með takmarkaða ábyrgð
+pvt. ltd.,Niji Seemit Dayitva
+ltd.,Seemit Dayitva
+psu,Sarkari Upakram
+pse,Sarkari Udyam
+ud,Usaha Dagang
+fa,Firma
+pt,Perseroan Terbatas
+cpt,Cuideachta Phoibli Teoranta
+teo,Teoranta
+b.m.,Ba'am 
+bm,Ba'am 
+ltd,Privatei 
+limited,Privatei 
+s.n.c.,Società in Nome Collettivo 
+s.a.s.,Società in Accomandita Semplice 
+s.p.a.,Società per Azioni 
+s.a.p.a.,Società in Accomandita per Azioni 
+s.r.l.,Società a Responsabilità Limitata 
+s.c.r.l.,Società Cooperativa a Responsabilità Limitata 
+s.s.,Società Semplice
+k.k.,Kabushiki Kaisha
+g.k.,Godo Kaisha
+gk,Godo Kaisha
+y.k.,Yugen Kaisha
+as,Akciju sabiedrība
+sia,Sabiedrība ar ierobežotu atbildību
+ik,Individuālais komersants
+ps,Pilnsabiedrība
+ks,Komandītsabiedrība
+sal,Sharikat Al-Mossahama
+uab,Uždaroji akcinė bendrovė
+ab,Akcinė bendrovė
+ij,Individuali įmonė
+mb,Mažoji bendrija
+s.a.,société anonyme
+s.a.r.l.,société à responsabilité limitée
+secs,société en commandite par actions
+bhd.,Berhad
+sdn. bhd.,Sendirian Berhad
+s.a.,Sociedad Anónima
+s. de r.l.,Sociedad de Responsabilidad Limitada
+s. en c.,Sociedad en Comandita
+s.a.b.,Sociedad Anónima Bursátil
+s.a.p.i.,Sociedad Anónima Promotora de Inversiones
+s.a. de c.v.,Sociedad Anónima de Capital Variable
+xk,Xususiy kompani
+xxk,Xavtsal xususiy kompani
+v.o.f.,Vennootschap onder firma 
+c.v.,Commanditaire vennootschap 
+b.v.,Besloten vennootschap 
+n.v.,Naamloze vennootschap
+tapui,Te Aka Pūtaiao Umanga Iwi
+ltd,Limited
+limited,Limited 
+gte.,Gidajen Tattalin Arziki 
+plc,Kamfanin Jama'a 
+ltd.,Kamfanin Iyaka 
+ultd.,Kamfanin Alhakin Iyaka 
+asa,Allmennaksjeselskap 
+as,Aksjeselskap 
+ans,Ansvarlig selskap 
+ba,Borettslag 
+bl,Boligbyggelag
+da,Delt ansvar
+etat,Etat
+fkf,Fylkeskommunalt foretak 
+hf,Helseforetak 
+iks,Interkommunalt selskap
+kf,Kommunalt foretak 
+ks,Kommunesammenslutning 
+nuf,Norskregistrert utenlandsk foretak 
+rhf,Regionalt helseforetak
+sf,Statsforetak
+saog,Shirkat Al'Aam Omaniyah Musahamah
+saoc,Shirkat Al'Aam Omaniyah Musahamah
+ltd.,limited
+pvt. ltd.,private limited
+ltd,limited
+limited,limited
+sa,Sociedad Anónima
+s.a.,Sociedad Anónima
+s.a.a.,Sociedad Anónima Abierta
+coop.,Kooperatiba
+corp.,Korporasyon
+corp,Korporasyon
+ent.,Negosyo
+inc.,Inkorporada
+inc,Inkorporada
+llc,Limitadong Pananagutan Kumpanya
+l.l.c.,Limitadong Pananagutan Kumpanya
+ltd.,Limitado
+p.p.,przedsiebiorstwo panstwowe
+s.k.a.,spolka komandytowo-akcyjna
+sp.j.,spolka jawna
+sp.k.,spolka komandytowa
+sp.p.,spolka partnerska
+sp. z.o.o.,spolka z ograniczona odpowiedzialnoscia
+s.c.,spolka cywilna
+s.a.,spolka akcyjna
+lda.,Limitada
+crl,Cooperativa de Responsabilidade Limitada
+s.a.,Sociedade Anónima
+s.f.,Sociedade em Nome Colectivo
+sgps,Sociedade Gestora de Participações Sociais
+s.c.a.,societate în comandită pe acţiuni
+s.c.s.,societate în comandită simplă
+s.n.c.,societate în nume colectiv
+s.r.l.,societate cu răspundere limitată
+o.n.g.,organizaţie non-guvernamentală
+s.a.,societate pe acţiuni
+OOO,Obshchestvo s ogranichennoy otvetstvennost'yu 
+OAO,Otkrytoe aktsionernoe obshchestvo 
+ZAO,Zakrytoe aktsionernoe obshchestvo 
+3AO,Zakrytoe aktsionernoe obshchestvo 
+ПАО,Publichnoe aktsionernoe obshchestvo 
+ОАО,Otkrytoe aktsionernoe obshchestvo 
+ООО,Obshchestvo s ogranichennoy otvetstvennost'yu
+d.o.o.,drushtvo s ograničenom odgovornošću
+a.d.,akcionarsko drushtvo
+k.d.,komanditno drushtvo
+o.d.,ortachko drushtvo
+bhd,Berhad
+pte ltd,Private Limited
+sdn bhd,Sendirian Berhad
+llp,Limited Liability Partnership
+l.l.p.,Limited Liability Partnership
+ltd.,Limited
+pte,Private
+pte. ltd.,Private Limited
+d.d.,delniška družba
+d.o.o.,družba z omejeno odgovornostjo
+d.n.o.,družba z neomejeno odgovornostjo
+k.d.,komanditna družba
+s.p.,samostojni podjetnik
+a.s.,akciová spoločnosť
+akc. spol.,akciová spoločnosť
+s.r.o.,spoločnosť s ručením obmedzeným 
+spol. s r.o.,spoločnosť s ručením obmedzeným 
+k.s.,komanditná spoločnosť 
+kom. spol.,komanditná spoločnosť 
+v.o.s.,verejná obchodná spoločnosť 
+a spol.,a spoločníci 
+S.A.,Sociedad Anónima 
+S.A.D.,Sociedad Anónima Deportiva 
+S.L.,Sociedad Limitada 
+S.L.L.,Sociedad Limitada Laboral 
+S.L.N.E.,Sociedad Limitada Nueva Empresa 
+S.C.,Sociedad Colectiva
+S.Cra,Sociedad Comanditaria 
+S.Coop.,Sociedad Cooperativa
+SAL,Sociedad Anónima Laboral 
+SCCL,Sociedad Cooperativa Catalana Limitada
+ab,aktiebolag
+hb,handelsbolag
+kb,kommanditbolag
+AB,Aktiengesellschaft 
+SA,Société Anonyme 
+GmbH,Gesellschaft mit beschränkter Haftung 
+G.M.B.H.,Gesellschaft mit beschränkter Haftung 
+SARL,Société à responsabilité limitée 
+SAGL,Società a garanzia limitata
+koop.,Kooperatif
+DAT,Derzhavne Aktsionerne Tovarystvo 
+FOP,Fizychna Osoba-Pidpryyemets 
+KT,Kooperatyvne Tovarystvo 
+PT,Pryvatne Tovarystvo 
+TDV,Tovarystvo z Dodatkovoyu Vidpovidalnistyu 
+TOV,Tovarystvo z Obmezhenoyu Vidpovidalnistyu 
+PP,Pryvatne Pidpryyemstvo 
+VAT,Vidkryte Aktsionerne Tovarystvo 
+ZAT,Zakryte Aktsionerne Tovarystvo 
+AT,Aktsionerne Tovarystvo 
+plc.,Public Limited Company 
+plc,Public Limited Company 
+cic,Community Interest Company 
+cio,Charitable Incorporated Organisation 
+l.l.p.,Limited Liability Partnership 
+llp,Limited Liability Partnership 
+l.p.,Limited Partnership 
+lp,Limited Partnership 
+ltd.,Limited
+ltd,Limited
+limited,Limited
+LLC,Limited Liability Company 
+Inc.,Incorporated 
+Corporation,Corporation
+Incorporated,Incorporated 
+Company,Company 
+Limited,Limited 
+Corp.,Corporation
+Inc.,Incorporated 
+Inc,Incorporated 
+LLP,Limited Liability Partnership 
+L.L.P.,Limited Liability Partnership 
+PLLC,Professional Limited Liability Company 
+And Company,And Company
+& Company,And Company
+Inc,Incorporated 
+Inc.,Incorporated 
+Corp.,Corporation
+Corp,Corporation
+Ltd.,Limited 
+Ltd,Limited 
+& Co.,And Company
+& Co,And Company
+Co.,Company 
+Co,Company 
+LP,Limited Partnership
+mchj,Mas'uliyati Cheklangan Jamiyat
+qmj,Qo'shma Mas'uliyati Jamiyat
+aj,Aksiyadorlik Jamiyat
+oaj,Ochiq Aksiyadorlik Jamiyat
+yoaj,Yopiq Aksiyadorlik Jamiyat
+xk,Xususiy Korxona
+xt,Xorijiy Tijorat
+ok,Ommaviy Korxona
+uk,Unitar Korxona
+qk,Qo'shma Korxona
+d.o.o,drustvo so ogranicena odgovornost
+d.o.o.e.l.,drustvo so ogranicena odgovornost osnovano od edno lice
+j.t.d.,javno trgovsko drustvo
+a.d.,akcionersko drustvo
+k.d.a.,komanditno drustvo so akcii
+k.d.,komanditno drustvo
