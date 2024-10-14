@@ -137,7 +137,7 @@ class NameMatchingOptimiser:
         name_filter = annotated_names!='_________'
         classes = (annotated_names == match_names).astype(int)
         self._classes = classes[name_filter]
-        features = np.stack(matches.to_numpy()).reshape(-1, nm._number_of_matches)
+        features = np.stack(matches.to_numpy()).reshape(-1, nm._num_distance_metrics)
         self._features = features[name_filter, :]
 
         if model_args is None:
@@ -146,6 +146,6 @@ class NameMatchingOptimiser:
             self._model_args = model_args
 
         mod = self._model(**self._model_args)
-        mod.fit(self._features, self._classes)
+        mod.fit(self._features.reshape(-1, nm._num_distance_metrics), self._classes.reshape(-1))
 
         return mod
