@@ -29,7 +29,6 @@ class NameMatchingOptimiser:
         self._df_to_be_matched = df_to_be_matched
         self._to_be_matched_col = to_be_matched_col
         self._annotated_data = annotated_data
-        self._score_cols = []
         self._features = None 
         self._classes = None
 
@@ -39,32 +38,37 @@ class NameMatchingOptimiser:
             nm.load_and_process_master_data(self._matching_col, self._df_matching_data)
             nm.set_distance_metrics(metrics)
             matches = nm.match_names(self._df_to_be_matched, self._to_be_matched_col)
-            self._score_cols = matches.columns.str.contains('score')
             return matches
 
-    def _annotate(self, matches) -> dict:
+    def _annotate(self, matches):
         if self._annotated_data is None:
-            self._annotated_data = {}
             filtered_matches = self._preselect_matches(matches)
-            rc = ResultsChecker(filtered_matches, annotated_results=self._annotated_data)
+            rc = ResultsChecker(filtered_matches)
             rc.start()
+            self._annotated_data.update(rc.annotated_results)
         else:
             rc = ResultsChecker(filtered_matches, annotated_results=self._annotated_data)
 
-        return rc.annotated_results
 
-    def _annotate_matches(self, series) -> None:
-        self._annotated_data[series.name] = series['match_name_' + series[self._score_cols].idxmax().split('_')[1]]
+    def _annotate_matches(self, data: pd.DataFrame) -> None:
+        names = data['original_name']
+        score_cols = data.columns.str.contains('score')
+        print(data.head())
+        max_col = data.loc[:, score_cols].idxmax(axis=1)
+        max_col = max_col.str.split(' ')
+        max_col = max_col.apply(lambda x: 'match_name_' + x[1])
+        for key, idx, val in zip(names.values, names.index, max_col.values):
+            self._annotated_data[key] = data.loc[idx, val]
 
     def _preselect_matches(self, matches) -> pd.DataFrame:
 
-        matches['max_score'] = matches[matches.columns[matches.columns.str.contains('score')]].sum(axis=1)
+        matches['max_scr'] = matches[matches.columns[matches.columns.str.contains('score')]].max(axis=1)
 
         # annotate 100% matches as correct
-        matches[matches['max_score']==100].apply(self._annotate_matches, axis=1)
+        self._annotate_matches(matches[matches['max_scr']==100])
 
         # select matches between 80 and 100% for manual inspection
-        return matches[(matches['max_score']>80) & (matches['max_score']<100)]
+        return matches[(matches['max_scr']>80) & (matches['max_scr']<100)]
 
     def select_metrics(
         self,
@@ -114,24 +118,25 @@ class NameMatchingOptimiser:
         print(f"recall - max: {accuracy.max():.2f} mean: {accuracy.mean():.2f} min: {accuracy.min():.2f}")
         print(f"precision - max: {accuracy.max():.2f} mean: {accuracy.mean():.2f} min: {accuracy.min():.2f}")
 
-        
 
-    def optimise(self, model: sklearnModel = GradientBoostingRegressor, model_args: dict|None=None, check_additional_names:bool=True):
+    def annotate(self, model_args: dict|None=None):
+        nm_annotate = NameMatcher(number_of_matches=5, return_algorithms_score=False)
+        nm_annotate.load_and_process_master_data(self._matching_col, self._df_matching_data)
+        annotate_matches = nm_annotate.match_names(self._df_to_be_matched, self._to_be_matched_col)
+        self._annotate(annotate_matches)
+
+
+    def optimise(self, model: sklearnModel = GradientBoostingRegressor, model_args: dict|None=None)->sklearnModel:
         self._model = model
         nm = NameMatcher(number_of_matches=5, return_algorithms_score=True)
         nm.load_and_process_master_data(self._matching_col, self._df_matching_data)
         matches, possible_names = nm.match_names(self._df_to_be_matched, self._to_be_matched_col)
-        if check_additional_names:
-            nm_annotate = NameMatcher(number_of_matches=5, return_algorithms_score=False)
-            nm_annotate.load_and_process_master_data(self._matching_col, self._df_matching_data)
-            annotate_matches = nm_annotate.match_names(self._df_to_be_matched, self._to_be_matched_col)
-            annotated = self._annotate(annotate_matches)
         names = np.repeat(nm._df_matching_data[nm._column].to_numpy(), nm._top_n)
         match_names = possible_names.reshape(-1)
         annotated_names = []
         for idx, name in enumerate(names):
-            if name in annotated.keys():
-                annotated_names.append(annotated[name])
+            if name in self._annotated_data.keys():
+                annotated_names.append(self._annotated_data[name])
             else:
                 annotated_names.append('_________')
         name_filter = annotated_names!='_________'
