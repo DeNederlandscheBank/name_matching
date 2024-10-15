@@ -18,10 +18,10 @@ class NameMatchingOptimiser:
 
     def __init__(
         self,
-        df_matching_data,
-        matching_col,
-        df_to_be_matched,
-        to_be_matched_col,
+        df_matching_data:pd.DataFrame,
+        matching_col:str,
+        df_to_be_matched:pd.DataFrame,
+        to_be_matched_col:str,
         annotated_data: dict | None = None,
     ):
         self._df_matching_data = df_matching_data
@@ -42,6 +42,7 @@ class NameMatchingOptimiser:
 
     def _annotate(self, matches):
         if self._annotated_data is None:
+            self._annotated_data = {}
             filtered_matches = self._preselect_matches(matches)
             rc = ResultsChecker(filtered_matches)
             rc.start()
@@ -53,9 +54,8 @@ class NameMatchingOptimiser:
     def _annotate_matches(self, data: pd.DataFrame) -> None:
         names = data['original_name']
         score_cols = data.columns.str.contains('score')
-        print(data.head())
         max_col = data.loc[:, score_cols].idxmax(axis=1)
-        max_col = max_col.str.split(' ')
+        max_col = max_col.str.split('_')
         max_col = max_col.apply(lambda x: 'match_name_' + x[1])
         for key, idx, val in zip(names.values, names.index, max_col.values):
             self._annotated_data[key] = data.loc[idx, val]
@@ -68,7 +68,7 @@ class NameMatchingOptimiser:
         self._annotate_matches(matches[matches['max_scr']==100])
 
         # select matches between 80 and 100% for manual inspection
-        return matches[(matches['max_scr']>80) & (matches['max_scr']<100)]
+        return matches[(matches['max_scr']>70) & (matches['max_scr']<100)]
 
     def select_metrics(
         self,
@@ -119,10 +119,11 @@ class NameMatchingOptimiser:
         print(f"precision - max: {accuracy.max():.2f} mean: {accuracy.mean():.2f} min: {accuracy.min():.2f}")
 
 
-    def annotate(self, model_args: dict|None=None):
+    def annotate(self, data_percentage:float=0.2, model_args: dict|None=None):
         nm_annotate = NameMatcher(number_of_matches=5, return_algorithms_score=False)
         nm_annotate.load_and_process_master_data(self._matching_col, self._df_matching_data)
-        annotate_matches = nm_annotate.match_names(self._df_to_be_matched, self._to_be_matched_col)
+        reduced_data = self._df_to_be_matched.sample(frac=data_percentage, replace=False)
+        annotate_matches = nm_annotate.match_names(reduced_data, self._to_be_matched_col)
         self._annotate(annotate_matches)
 
 
