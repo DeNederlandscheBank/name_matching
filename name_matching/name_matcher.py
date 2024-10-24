@@ -306,6 +306,7 @@ class NameMatcher:
                 warrens_iv
                 bag
                 rouge_l
+                q_grams
                 ratcliff_obershelp
                 ncd_bz2
                 fuzzy_wuzzy_partial_string

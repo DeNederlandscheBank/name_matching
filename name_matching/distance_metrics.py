@@ -18,6 +18,7 @@ def make_distance_metrics(
     warrens_iv=False,
     bag=False,
     rouge_l=False,
+    q_grams=False,
     ratcliff_obershelp=False,
     ncd_bz2=False,
     fuzzy_wuzzy_partial_string=False,
@@ -52,6 +53,7 @@ def make_distance_metrics(
         - WarrensIV
         - Bag
         - RougeL
+        - Q-grams
     Subsequence distances
         - IterativeSubString
         - RatcliffObershelp
@@ -148,6 +150,10 @@ def make_distance_metrics(
         fuzzy name matching. The ROGUE-L method is a measure that counts the longest
         substring between to strings
         default=False
+    q_grams: bool
+        Boolean indicating whether the Q-grams method should be used during the
+        fuzzy name matching. 
+        default=False
     ratcliff_obershelp: bool
         Boolean indicating whether the RatcliffObershelp method should be used
         during the fuzzy name matching. This method finds the longest common substring
@@ -237,6 +243,8 @@ def make_distance_metrics(
         distance_metrics["multiset"].append(nm_dist.Bag())
     if rouge_l:
         distance_metrics["multiset"].append(nm_dist.RougeL())
+    if q_grams:
+        distance_metrics["multiset"].append(nm_dist.QGrams())
     if ratcliff_obershelp:
         distance_metrics["Subsequence"].append(nm_dist.RatcliffObershelp())
     if ncd_bz2:
