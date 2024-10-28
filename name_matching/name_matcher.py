@@ -924,7 +924,7 @@ class NameMatcher:
             df.loc[:, column_name] = df[column_name].str.lower()
         if self._preprocess_punctuations:
             df.loc[:, column_name] = df[column_name].str.replace(
-                r"[^\w\s]", "", regex=True
+                r"[^\w\s]", " ", regex=True
             )
             df.loc[:, column_name] = df[column_name].str.replace("  ", " ").str.strip()
         if self._preprocess_ascii:
