@@ -1,3 +1,4 @@
+import re
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -5,7 +6,7 @@ from operator import iconcat
 from functools import reduce
 from unicodedata import normalize
 from re import escape, sub, split as rsplit
-from typing import Union, Tuple
+from typing import List, Optional, Union, Tuple
 from itertools import compress
 from sklearn.feature_extraction.text import TfidfVectorizer
 from name_matching.distance_metrics import make_distance_metrics
@@ -73,7 +74,7 @@ class NameMatcher:
         A boolean indicating whether during the preprocessing all characters should be 
         converted to ascii characters
         default=True : bool
-    make_abbriviations : bool
+    make_abbreviations : bool
         A boolean indicating whether common words and legal names should be abbriviated
         default=True : bool
     preprocess_split
@@ -111,7 +112,7 @@ class NameMatcher:
         punctuations: bool = True,
         remove_ascii: bool = True,
         legal_suffixes: bool = False,
-        make_abbrivations: bool = True,
+        make_abbreviations: bool = True,
         common_words: Union[bool, list] = False,
         cut_off_no_scoring_words: float = 0.01,
         preprocess_split: bool = False,
@@ -145,7 +146,7 @@ class NameMatcher:
         self._preprocess_lowercase = lowercase
         self._preprocess_punctuations = punctuations
         self._preprocess_ascii = remove_ascii
-        self._preprocess_abbriviations = make_abbrivations
+        self._preprocess_abbreviations = make_abbreviations
         self._postprocess_company_legal_id = legal_suffixes
 
         if isinstance(common_words, bool):
@@ -175,112 +176,173 @@ class NameMatcher:
         )
         self._n_grams_matching = None
 
-    def _generate_combinations(self, list_a:list, list_b:list, ind:int=0, result:None|list=None) -> list[list]:
+    def _generate_combinations(self, list_a: List, list_b: List, ind: int = 0, result: Optional[List] = None) -> None:
+        """
+        Recursively generate combinations of elements from two lists by swapping elements at the same index.
+
+        Parameters
+        ----------
+        list_a : List
+            The first list from which elements are taken.
+        list_b : List
+            The second list from which elements are taken.
+        ind : int, optional
+            The current index in the lists to consider for swapping.
+        result : List, optional
+            The current combination of elements being built.
+
+        Returns
+        -------
+        None
+        """
         if result is None:
             result = []
-        
+
         if ind == len(list_a):
             self._temp.append(result)
-            return None
-        
-        self._generate_combinations(list_a, list_b, ind+1, result + [list_a[ind]])
-        self._generate_combinations(list_b, list_a, ind+1, result + [list_b[ind]])
+            return
 
+        self._generate_combinations(list_a, list_b, ind + 1, result + [list_a[ind]])
+        self._generate_combinations(list_b, list_a, ind + 1, result + [list_b[ind]])
 
-    def _replace_substring(self, name:str, abbriviations: list, long_names: list, begin_end: bool=True) -> str:
+    def _replace_substring(self, name: str, abbreviations: List[str], long_names: List[str], begin_end: bool = True) -> str:
         """
+        Replace substrings in a given name with their corresponding abbreviations based on specified conditions.
+
+        Parameters
+        ----------
+        name : str
+            The name in which substrings are to be replaced.
+        abbreviations : List[str]
+            List of abbreviation strings.
+        long_names : List[str]
+            List of long names corresponding to the abbreviations.
+        begin_end : bool, optional
+            If True, replace only if the substring is at the beginning or end of the name.
+
+        Returns
+        -------
+        str
+            The modified name after replacements.
         """
         if begin_end:
             for idx, long_name in enumerate(long_names):
                 if name.startswith(long_name):
-                    name = name.replace(long_name, abbriviations[idx], 1)
-                    return name
+                    return name.replace(long_name, abbreviations[idx], 1)
                 elif name.endswith(long_name):
-                    name = name[::-1].replace(long_name[::-1], abbriviations[idx][::-1], 1)[::-1]
-                    return name
+                    return name[::-1].replace(long_name[::-1], abbreviations[idx][::-1], 1)[::-1]
         else:
             for idx, long_name in enumerate(long_names):
                 if long_name in name:
-                    name = name.replace(long_name, abbriviations[idx], 1)
-                    return name
+                    return name.replace(long_name, abbreviations[idx], 1)
 
         return name
-    
 
-    def _replace_common_strings(self, data:pd.DataFrame, column_name:str) -> str:
+    def _replace_common_strings(self, data: pd.DataFrame, column_name: str) -> pd.DataFrame:
         """
+        Replace common long strings in a specified column of a DataFrame with their abbreviated forms.
+
+        Parameters
+        ----------
+        data : pd.DataFrame
+            The DataFrame containing the data.
+        column_name : str
+            The name of the column in which replacements are to be made.
+
+        Returns
+        -------
+        pd.DataFrame
+            The DataFrame with modified column data.
         """
-        with pkg_path('name_matching.data','common_words.csv') as path:
+        with pkg_path('name_matching.data', 'common_words.csv') as path:
             common_words = pd.read_csv(path)
         common_words['length'] = common_words['word'].apply(len)
-        common_words = common_words.sort_values(by=['length'],ascending=True)
-        short_names = common_words['short_form'].to_list()
-        long_names = common_words['word'].to_list()
-        data[column_name] = data.apply(lambda x: self._replace_substring(x[column_name], short_names, long_names, begin_end=False), axis=1)
+        common_words = common_words.sort_values(by=['length'], ascending=False)
+        short_names = common_words['short_form'].tolist()
+        long_names = common_words['word'].tolist()
+        data[column_name] = data[column_name].apply(lambda x: self._replace_substring(x, short_names, long_names, begin_end=False))
 
         return data
 
-    def _replace_legal_pre_suffixes_with_abbreviations(self, data, column_name) -> pd.DataFrame:
+    def _replace_legal_pre_suffixes_with_abbreviations(self, data: pd.DataFrame, column_name: str) -> pd.DataFrame:
         """
+        Replace legal prefixes and suffixes in a specified column of a DataFrame with their abbreviations.
+
+        Parameters
+        ----------
+        data : pd.DataFrame
+            The DataFrame containing the data where replacements need to be made.
+        column_name : str
+            The name of the column in the DataFrame where the replacements will be applied.
+
+        Returns
+        -------
+        pd.DataFrame
+            The DataFrame with the replacements made.
         """
-        abbriviations = []
+        abbreviations = []
         possible_names = []
-        with pkg_path('name_matching.data','legal_names.csv') as path:
+        with pkg_path('name_matching.data', 'legal_names.csv') as path:
             legal_words = pd.read_csv(path)
+
         for _, legal_word in legal_words.iterrows():
-            abbr = rsplit(r'[. ]',legal_word['abbriviation'].strip().lower())
-            abbr = list(filter(lambda x: x != '', abbr))
+            abbr = re.split(r'[. ]', legal_word['abbreviation'].strip().lower())
+            abbr = list(filter(None, abbr))
             lgl = legal_word['full_name'].lower().strip().split(' ')
-            if (len(abbr)==1) | (len(lgl)==1):
-                self._temp = [legal_word['full_name']]
-            elif len(abbr)==len(lgl):
+
+            if len(abbr) == len(lgl):
                 self._temp = []
                 self._generate_combinations(abbr, lgl)
             elif len(abbr) < len(lgl):
-                ind = 0 #TODO fix for case in which filler word starts with next letter
-                new_lgl = []
-                combined_name = ''
-                for letter in abbr:
-                    if lgl[ind].startswith(letter):
-                        if combined_name != '':
-                            new_lgl.append(combined_name)            
-                        combined_name =lgl[ind] 
-                        ind = ind + 1
-                    else:
-                        while not lgl[ind].startswith(letter):
-                            combined_name = combined_name + ' ' + lgl[ind]
-                            ind = ind + 1
-                            if ind == len(lgl):
-                                break
-                        if ind < len(lgl):
-                            if (lgl[ind].startswith(letter)):
-                                if combined_name != '':
-                                    new_lgl.append(combined_name)            
-                                combined_name =lgl[ind] 
-                                ind = ind + 1
-                    if ind == len(lgl):
-                        break
-                new_lgl.append(combined_name)
-                if len(new_lgl) != len(abbr):
-                    self._temp = [lgl]
-                else:
-                    self._temp=[]
+                new_lgl = self._combine_legal_words(abbr, lgl)
+                if len(new_lgl) == len(abbr):
+                    self._temp = []
                     self._generate_combinations(abbr, new_lgl)
+                else:
+                    self._temp = [legal_word['full_name']]
             else:
                 self._temp = [legal_word['full_name']]
 
             for option in self._temp:
-                abbriviations.append(legal_word['abbriviation'].lower())
-                if isinstance(option, str):
-                    possible_names.append(option.strip())    
-                else:
-                    possible_names.append(' '.join(option).strip())
+                abbreviations.append(legal_word['abbreviation'].lower())
+                possible_names.append(option.strip() if isinstance(option, str) else ' '.join(option).strip())
 
-        data[column_name] = data.apply(lambda x: self._replace_substring(x[column_name], abbriviations, possible_names, begin_end=True), axis=1)
+        data[column_name] = data.apply(lambda x: self._replace_substring(x[column_name], abbreviations, possible_names, begin_end=True), axis=1)
 
         return data
 
-    def set_distance_metrics(self, metrics: list) -> None:
+    def _combine_legal_words(self, abbr: List[str], lgl: List[str]) -> List[str]:
+        """Combine legal words based on their abbreviations.
+        
+        Parameters
+        ----------
+        abbr : List[str]
+            The parts of the abbreviation
+        lgl : List[str]
+            The parts of the full legal name
+
+        Returns
+        -------
+        List[str]
+            The new parts of the legal name.
+        """
+        ind = 0
+        new_lgl = []
+        combined_name = ''
+        for letter in abbr:
+            while ind < len(lgl) and not lgl[ind].startswith(letter):
+                combined_name += ' ' + lgl[ind]
+                ind += 1
+            if ind < len(lgl) and lgl[ind].startswith(letter):
+                if combined_name:
+                    new_lgl.append(combined_name.strip())
+                combined_name = lgl[ind]
+                ind += 1
+        if combined_name:
+            new_lgl.append(combined_name.strip())
+        return new_lgl
+
+    def set_distance_metrics(self, metrics: List) -> None:
         """
         A method to set which of the distance metrics should be employed during the
         fuzzy matching. For very short explanations of most of the name matching
@@ -288,7 +350,7 @@ class NameMatcher:
 
         Parameters
         ----------
-        metrics: list
+        metrics: List
             The list with the distance metrics to be used during the name matching. The
             distance metrics can be chosen from the list below:
                 indel
@@ -601,7 +663,7 @@ class NameMatcher:
         return match
 
     def _score_matches(
-        self, to_be_matched_instance: str, possible_matches: list
+        self, to_be_matched_instance: str, possible_matches: List
     ) -> np.array:
         """A method to score a name to_be_matched_instance to a list of possible matches. 
         The scoring is done based on all the metrics which are enabled.
@@ -610,7 +672,7 @@ class NameMatcher:
         ----------
         to_be_matched_instance : str
             The name which should match one of the possible matches
-        possible_matches : list
+        possible_matches : List
             list of the names of the possible matches
 
         Returns
@@ -665,7 +727,7 @@ class NameMatcher:
 
         return np.array(ind, dtype=int)
 
-    def _get_alternative_names(self, match: pd.Series) -> list:
+    def _get_alternative_names(self, match: pd.Series) -> List:
         """Gets all the possible match names from the match.
 
         Parameters
@@ -685,7 +747,7 @@ class NameMatcher:
 
         return alt_names
 
-    def _process_words(self, org_name: str, alt_names: list) -> Tuple[str, list]:
+    def _process_words(self, org_name: str, alt_names: List) -> Tuple[str, List]:
         """Removes the words from the word list from the org_name and all the names in 
         alt_names .
 
@@ -860,10 +922,6 @@ class NameMatcher:
         df.loc[:, column_name] = df[column_name].astype(str)
         if self._preprocess_lowercase:
             df.loc[:, column_name] = df[column_name].str.lower()
-        if self._preprocess_abbriviations:
-            df = self._replace_legal_pre_suffixes_with_abbreviations(df, column_name)
-            df = self._replace_common_strings(df, column_name)
-
         if self._preprocess_punctuations:
             df.loc[:, column_name] = df[column_name].str.replace(
                 r"[^\w\s]", "", regex=True
@@ -875,10 +933,13 @@ class NameMatcher:
                 .encode("ASCII", "ignore")
                 .decode()
             )
+        if self._preprocess_abbreviations:
+            df = self._replace_legal_pre_suffixes_with_abbreviations(df, column_name)
+            df = self._replace_common_strings(df, column_name)
 
         return df
 
-    def _preprocess_word_list(self, terms: dict) -> list:
+    def _preprocess_word_list(self, terms: dict) -> List:
         """Preprocess legal words to remove punctuations and trailing leading space
 
         Parameters
@@ -914,7 +975,7 @@ class NameMatcher:
         """
         with pkg_path('name_matching.data','legal_names.csv') as path:
             legal_words = pd.read_csv(path)
-        word_set = word_set.union(set(legal_words['abbriviation'].values))
+        word_set = word_set.union(set(legal_words['abbreviation'].values))
 
         return word_set
 
