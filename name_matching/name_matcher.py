@@ -16,46 +16,46 @@ from importlib.resources import path as pkg_path
 
 class NameMatcher:
     """
-    A class for the name matching of data based on the strings in a single column. The 
-    NameMatcher first applies a cosine similarity on the ngrams of the strings to get 
-    an approximate match followed by a fuzzy matching based on a number of different 
+    A class for the name matching of data based on the strings in a single column. The
+    NameMatcher first applies a cosine similarity on the ngrams of the strings to get
+    an approximate match followed by a fuzzy matching based on a number of different
     algorithms.
 
     Parameters
     ----------
     ngrams : tuple of integers
-        The length of the ngrams which should be used for the generation of ngrams for 
+        The length of the ngrams which should be used for the generation of ngrams for
         the cosine similarity comparison of the possible matches
         default=(2, 3)
     top_n : integer
-        The number of possible matches that should be included in the group which will 
+        The number of possible matches that should be included in the group which will
         be analysed with the fuzzy matching algorithms
         default=50
     low_memory : bool
-        Bool indicating if the a low memory approach should be taken in the sparse 
+        Bool indicating if the a low memory approach should be taken in the sparse
         cosine similarity step.
         default=False
     number_of_rows : integer
-        Determines how many rows should be calculated at once with the sparse cosine 
+        Determines how many rows should be calculated at once with the sparse cosine
         similarity step. If the low_memory bool is True this number is unused.
         default=5000
     number_of_matches : int
-        The number of matches which should be returned by the matching algorithm. If a 
+        The number of matches which should be returned by the matching algorithm. If a
         number higher than 1 is given, a number of alternative matches are also returned.
-        If the number is equal to the number of algorithms used, the best match for each 
-        algorithm is returned. If the number is equal to the number of algorithm groups 
+        If the number is equal to the number of algorithms used, the best match for each
+        algorithm is returned. If the number is equal to the number of algorithm groups
         which are included the best match for each group is returned.
         default=1
     legal_suffixes : bool
-        Boolean indicating whether the most common company legal terms should be excluded 
+        Boolean indicating whether the most common company legal terms should be excluded
         when calculating the final score. The terms are still included in determining the
         best match.
         default=False
     common_words : bool or list
         Boolean indicating whether the most common words from the matching data should be
-        excluded when calculating the final score. The terms are still included in 
+        excluded when calculating the final score. The terms are still included in
         determining the best match. If common_words is given as a list, the words in the
-        list are excluded from the calculation of the final score, downgrading matches 
+        list are excluded from the calculation of the final score, downgrading matches
         that predominatly rely on these words.
         default=False
     cut_off_no_scoring_words: float
@@ -63,36 +63,36 @@ class NameMatcher:
         are still included in the no_scoring_words set
         default=0.01
     lowercase : bool
-        A boolean indicating whether during the preprocessing all characters should be 
+        A boolean indicating whether during the preprocessing all characters should be
         converted to lowercase, to generate case insensitive matching
         default=True
     punctuations : bool
-        A boolean indicating whether during the preprocessing all punctuations should be 
+        A boolean indicating whether during the preprocessing all punctuations should be
         ignored
         default=True
     remove_ascii : bool
-        A boolean indicating whether during the preprocessing all characters should be 
+        A boolean indicating whether during the preprocessing all characters should be
         converted to ascii characters
         default=True : bool
     make_abbreviations : bool
         A boolean indicating whether common words and legal names should be abbriviated
         default=True : bool
     preprocess_split
-        Indicating whether during the preprocessing an additional step should be taken in 
-        which only the most common words out of a name are isolated and used in the 
-        matching process. The removing of the common words is only done for the n-grams 
+        Indicating whether during the preprocessing an additional step should be taken in
+        which only the most common words out of a name are isolated and used in the
+        matching process. The removing of the common words is only done for the n-grams
         cosine matching part.
         default=False
     verbose : bool
         A boolean indicating whether progress printing should be done
         default=True
     distance_metrics: list
-        A list of The distance metrics to be used during the fuzzy matching. For a list of 
-        possible distance metrics see the distance_metrics.py file. By default the 
-        following metrics are used: overlap, weighted_jaccard, ratcliff_obershelp, 
+        A list of The distance metrics to be used during the fuzzy matching. For a list of
+        possible distance metrics see the distance_metrics.py file. By default the
+        following metrics are used: overlap, weighted_jaccard, ratcliff_obershelp,
         fuzzy_wuzzy_token_sort and editex.
     row_numbers : bool
-        Bool indicating whether the row number should be used as match_index rather than 
+        Bool indicating whether the row number should be used as match_index rather than
         the original index as was the default case before version 0.8.8
         default=False
     return_algorithms_score : bool
@@ -176,7 +176,9 @@ class NameMatcher:
         )
         self._n_grams_matching = None
 
-    def _generate_combinations(self, list_a: List, list_b: List, ind: int = 0, result: Optional[List] = None) -> None:
+    def _generate_combinations(
+        self, list_a: List, list_b: List, ind: int = 0, result: Optional[List] = None
+    ) -> None:
         """
         Recursively generate combinations of elements from two lists by swapping elements at the same index.
 
@@ -205,7 +207,13 @@ class NameMatcher:
         self._generate_combinations(list_a, list_b, ind + 1, result + [list_a[ind]])
         self._generate_combinations(list_b, list_a, ind + 1, result + [list_b[ind]])
 
-    def _replace_substring(self, name: str, abbreviations: List[str], long_names: List[str], begin_end: bool = True) -> str:
+    def _replace_substring(
+        self,
+        name: str,
+        abbreviations: List[str],
+        long_names: List[str],
+        begin_end: bool = True,
+    ) -> str:
         """
         Replace substrings in a given name with their corresponding abbreviations based on specified conditions.
 
@@ -230,14 +238,18 @@ class NameMatcher:
                 if name.startswith(long_name):
                     return name.replace(long_name, abbreviation, 1)
                 elif name.endswith(long_name):
-                    return name[::-1].replace(long_name[::-1], abbreviation[::-1], 1)[::-1]
+                    return name[::-1].replace(long_name[::-1], abbreviation[::-1], 1)[
+                        ::-1
+                    ]
         else:
             for abbreviation, long_name in zip(abbreviations, long_names):
-                name = re.sub(fr'\b{long_name}\b', abbreviation, name)
+                name = re.sub(rf"\b{long_name}\b", abbreviation, name)
 
         return name
 
-    def _replace_common_strings(self, data: pd.DataFrame, column_name: str) -> pd.DataFrame:
+    def _replace_common_strings(
+        self, data: pd.DataFrame, column_name: str
+    ) -> pd.DataFrame:
         """
         Replace common long strings in a specified column of a DataFrame with their abbreviated forms.
 
@@ -253,17 +265,24 @@ class NameMatcher:
         pd.DataFrame
             The DataFrame with modified column data.
         """
-        with pkg_path('name_matching.data', 'common_words.csv') as path:
+        with pkg_path("name_matching.data", "common_words.csv") as path:
             common_words = pd.read_csv(path)
-        common_words['length'] = common_words['word'].apply(len)
-        common_words = common_words.sort_values(by=['length'], ascending=False)
-        short_names = common_words['short_form'].tolist()
-        long_names = common_words['word'].tolist()
-        data[column_name] = data[column_name].apply(lambda x: self._replace_substring(x, short_names, long_names, begin_end=False))
+        # common_words["length"] = common_words["word"].apply(len)
+        # common_words = common_words.sort_values(by=["length"], ascending=False)
+        data[column_name] = data[column_name].apply(
+            lambda x: self._replace_substring(
+                x,
+                common_words["short_form"].tolist(),
+                common_words["word"].tolist(),
+                begin_end=False,
+            )
+        )
 
         return data
 
-    def _replace_legal_pre_suffixes_with_abbreviations(self, data: pd.DataFrame, column_name: str) -> pd.DataFrame:
+    def _replace_legal_pre_suffixes_with_abbreviations(
+        self, data: pd.DataFrame, column_name: str
+    ) -> pd.DataFrame:
         """
         Replace legal prefixes and suffixes in a specified column of a DataFrame with their abbreviations.
 
@@ -281,13 +300,13 @@ class NameMatcher:
         """
         abbreviations = []
         possible_names = []
-        with pkg_path('name_matching.data', 'legal_names.csv') as path:
+        with pkg_path("name_matching.data", "legal_names.csv") as path:
             legal_words = pd.read_csv(path)
 
         for _, legal_word in legal_words.iterrows():
-            abbr = re.split(r'[. ]', legal_word['abbreviation'].strip().lower())
+            abbr = re.split(r"[. ]", legal_word["abbreviation"].strip().lower())
             abbr = list(filter(None, abbr))
-            lgl = legal_word['full_name'].lower().strip().split(' ')
+            lgl = legal_word["full_name"].lower().strip().split(" ")
 
             if len(abbr) == len(lgl):
                 self._temp = []
@@ -298,21 +317,30 @@ class NameMatcher:
                     self._temp = []
                     self._generate_combinations(abbr, new_lgl)
                 else:
-                    self._temp = [legal_word['full_name']]
+                    self._temp = [legal_word["full_name"]]
             else:
-                self._temp = [legal_word['full_name']]
+                self._temp = [legal_word["full_name"]]
 
             for option in self._temp:
-                abbreviations.append(legal_word['abbreviation'].lower())
-                possible_names.append(option.strip() if isinstance(option, str) else ' '.join(option).strip())
+                abbreviations.append(legal_word["abbreviation"].lower())
+                possible_names.append(
+                    option.strip()
+                    if isinstance(option, str)
+                    else " ".join(option).strip()
+                )
 
-        data[column_name] = data.apply(lambda x: self._replace_substring(x[column_name], abbreviations, possible_names, begin_end=True), axis=1)
+        data[column_name] = data.apply(
+            lambda x: self._replace_substring(
+                x[column_name], abbreviations, possible_names, begin_end=True
+            ),
+            axis=1,
+        )
 
         return data
 
     def _combine_legal_words(self, abbr: List[str], lgl: List[str]) -> List[str]:
         """Combine legal words based on their abbreviations.
-        
+
         Parameters
         ----------
         abbr : List[str]
@@ -327,10 +355,10 @@ class NameMatcher:
         """
         ind = 0
         new_lgl = []
-        combined_name = ''
+        combined_name = ""
         for letter in abbr:
             while ind < len(lgl) and not lgl[ind].startswith(letter):
-                combined_name += ' ' + lgl[ind]
+                combined_name += " " + lgl[ind]
                 ind += 1
             if ind < len(lgl) and lgl[ind].startswith(letter):
                 if combined_name:
@@ -387,7 +415,7 @@ class NameMatcher:
         except TypeError:
             raise TypeError(
                 "Not all of the supplied distance metrics are available. Please check the"
-                + "list of options in the make_distance_metrics function and adjust" 
+                + "list of options in the make_distance_metrics function and adjust"
                 + " your list accordingly"
             )
         self._num_distance_metrics = sum(
@@ -425,8 +453,8 @@ class NameMatcher:
     def _preprocess_reduce(
         self, to_be_matched: pd.DataFrame, occurrence_count: int = 3
     ) -> pd.DataFrame:
-        """Preprocesses and copies the data to obtain the data with reduced strings. The 
-        strings have all words removed which appear more than 3x as often as the least 
+        """Preprocesses and copies the data to obtain the data with reduced strings. The
+        strings have all words removed which appear more than 3x as often as the least
         common word in the string and returns an adjusted copy of the input
 
         Parameters
@@ -471,11 +499,11 @@ class NameMatcher:
         df_matching_data: pd.DataFrame
             The dataframe which is used to match the data to.
         start_processing : bool
-            A boolean indicating whether to start the preprocessing step after 
+            A boolean indicating whether to start the preprocessing step after
             loading the matching data
             default: True
         transform : bool
-            A boolean indicating whether or not the data should be transformed after 
+            A boolean indicating whether or not the data should be transformed after
             the vectoriser is initialised
             default: True
         """
@@ -486,14 +514,14 @@ class NameMatcher:
             self._process_matching_data(transform)
 
     def _process_matching_data(self, transform: bool = True) -> None:
-        """Function to process the matching data. First the matching data is preprocessed 
-        and assigned to a variable within the NameMatcher. Next the data is used to 
+        """Function to process the matching data. First the matching data is preprocessed
+        and assigned to a variable within the NameMatcher. Next the data is used to
         initialise the TfidfVectorizer.
 
         Parameters
         ----------
         transform : bool
-            A boolean indicating whether or not the data should be transformed after the 
+            A boolean indicating whether or not the data should be transformed after the
             vectoriser is initialised
             default: True
         """
@@ -507,11 +535,11 @@ class NameMatcher:
 
     def match_names(
         self, to_be_matched: Union[pd.Series, pd.DataFrame], column_matching: str
-    ) -> Union[pd.Series, pd.DataFrame]|Tuple[pd.DataFrame,pd.DataFrame]:
-        """Performs the name matching operation on the to_be_matched data. First it does 
-        the preprocessing of the data to be matched as well as the matching data if this 
-        has not been performed. Subsequently based on ngrams a cosine similarity is 
-        computed between the matching data and the data to be matched, to the top n 
+    ) -> Union[pd.Series, pd.DataFrame] | Tuple[pd.DataFrame, pd.DataFrame]:
+        """Performs the name matching operation on the to_be_matched data. First it does
+        the preprocessing of the data to be matched as well as the matching data if this
+        has not been performed. Subsequently based on ngrams a cosine similarity is
+        computed between the matching data and the data to be matched, to the top n
         matches fuzzy matching algorithms are performed to determine the best match and
         the quality of the match.
 
@@ -525,16 +553,16 @@ class NameMatcher:
         Returns
         -------
         Union[pd.Series, pd.DataFrame]|Tuple[pd.DataFrame,pd.DataFrame]
-            A series or dataframe depending on the input containing the match index from 
-            the matching_data dataframe. the name in the to_be_matched data, the name to 
-            which the datapoint was matched and a score between 0 (no match) and 100 
+            A series or dataframe depending on the input containing the match index from
+            the matching_data dataframe. the name in the to_be_matched data, the name to
+            which the datapoint was matched and a score between 0 (no match) and 100
             (perfect match) to indicate the quality of the matches. If the algorithm scores
             should be returned, the results will be a Tuple[pd.DataFrame,pd.DataFrame] with
             the first dataframe the scores and the second dataframe the names.
         """
         if self._column == "":
             raise ValueError(
-                "Please first load the master data via the method: " 
+                "Please first load the master data via the method: "
                 + "load_and_process_master_data"
             )
         if self._verbose:
@@ -583,7 +611,9 @@ class NameMatcher:
                 axis=1,
             )
         if self._return_algorithms_score:
-            return data_matches, self._df_matching_data.iloc[self._possible_matches.flatten(), :][self._column].values.reshape((-1, self._top_n))
+            return data_matches, self._df_matching_data.iloc[
+                self._possible_matches.flatten(), :
+            ][self._column].values.reshape((-1, self._top_n))
 
         if self._number_of_matches == 1:
             data_matches = data_matches.rename(
@@ -609,7 +639,7 @@ class NameMatcher:
     def fuzzy_matches(
         self, possible_matches: np.array, to_be_matched: pd.Series
     ) -> pd.Series:
-        """A method which performs the fuzzy matching between the data in the 
+        """A method which performs the fuzzy matching between the data in the
         to_be_matched series as well as the indicated indexes of the matching_data points
         which are possible matching candidates.
 
@@ -623,9 +653,9 @@ class NameMatcher:
         Returns
         -------
         pd.Series
-            A series containing the match index from the matching_data dataframe. the name 
-            in the to_be_matched data, the name to which the datapoint was matched and a 
-            score between 0 (no match) and 100(perfect match) to indicate the quality of 
+            A series containing the match index from the matching_data dataframe. the name
+            in the to_be_matched data, the name to which the datapoint was matched and a
+            score between 0 (no match) and 100(perfect match) to indicate the quality of
             the matches.
         """
         if len(possible_matches.shape) > 1:
@@ -664,7 +694,7 @@ class NameMatcher:
     def _score_matches(
         self, to_be_matched_instance: str, possible_matches: List
     ) -> np.array:
-        """A method to score a name to_be_matched_instance to a list of possible matches. 
+        """A method to score a name to_be_matched_instance to a list of possible matches.
         The scoring is done based on all the metrics which are enabled.
 
         Parameters
@@ -677,7 +707,7 @@ class NameMatcher:
         Returns
         -------
         np.array
-            The score of each of the matches with respect to the different metrics which 
+            The score of each of the matches with respect to the different metrics which
             are assessed.
         """
         match_score = np.zeros((len(possible_matches), self._num_distance_metrics))
@@ -692,7 +722,7 @@ class NameMatcher:
         return match_score
 
     def _rate_matches(self, match_score: np.array) -> np.array:
-        """Converts the match scores from the score_matches method to a list of indexes of 
+        """Converts the match scores from the score_matches method to a list of indexes of
         the best scoring matches limited to the _number_of_matches.
 
         Parameters
@@ -747,7 +777,7 @@ class NameMatcher:
         return alt_names
 
     def _process_words(self, org_name: str, alt_names: List) -> Tuple[str, List]:
-        """Removes the words from the word list from the org_name and all the names in 
+        """Removes the words from the word list from the org_name and all the names in
         alt_names .
 
         Parameters
@@ -794,8 +824,8 @@ class NameMatcher:
         return match
 
     def postprocess(self, match: pd.Series) -> pd.Series:
-        """Postprocesses the scores to exclude certain specific company words or the 
-        most common words. In this method only the scores are adjusted, the matches 
+        """Postprocesses the scores to exclude certain specific company words or the
+        most common words. In this method only the scores are adjusted, the matches
         still stand.
 
         Parameters
@@ -821,15 +851,15 @@ class NameMatcher:
         return match
 
     def _vectorise_data(self, transform: bool = True):
-        """Initialises the TfidfVectorizer, which generates ngrams and weights them 
-        based on the occurrance. Subsequently the matching data will be used to fit 
-        the vectoriser and the matching data might also be send to the transform_data 
+        """Initialises the TfidfVectorizer, which generates ngrams and weights them
+        based on the occurrance. Subsequently the matching data will be used to fit
+        the vectoriser and the matching data might also be send to the transform_data
         function depending on the transform boolean.
 
         Parameters
         ----------
         transform : bool
-            A boolean indicating whether or not the data should be transformed after the 
+            A boolean indicating whether or not the data should be transformed after the
             vectoriser is initialised
             default: True
         """
@@ -839,8 +869,8 @@ class NameMatcher:
 
     def transform_data(self):
         """A method which transforms the matching data based on the ngrams transformer.
-        After the transformation (the generation of the ngrams), the data is normalised 
-        by dividing each row by the sum of the row. Subsequently the data is changed to 
+        After the transformation (the generation of the ngrams), the data is normalised
+        by dividing each row by the sum of the row. Subsequently the data is changed to
         a coo sparse matrix format with the column indices in ascending order.
         """
         ngrams = self._vec.transform(self._df_matching_data[self._column].astype(str))
@@ -851,8 +881,8 @@ class NameMatcher:
             self._n_grams_matching = self._n_grams_matching.tocoo()
 
     def _search_for_possible_matches(self, to_be_matched: pd.DataFrame) -> np.array:
-        """Generates ngrams from the data which should be matched, calculate the cosine 
-        simularity between these data and the matching data. Hereafter a top n of the 
+        """Generates ngrams from the data which should be matched, calculate the cosine
+        simularity between these data and the matching data. Hereafter a top n of the
         matches is selected and returned.
 
         Parameters
@@ -863,7 +893,7 @@ class NameMatcher:
         Returns
         -------
         np.array
-            An array of top n values which are most closely matched to the to be matched 
+            An array of top n values which are most closely matched to the to be matched
             data based on the ngrams
         """
         if self._n_grams_matching is None:
@@ -902,8 +932,8 @@ class NameMatcher:
         return results
 
     def preprocess(self, df: pd.DataFrame, column_name: str) -> pd.DataFrame:
-        """Preprocess a dataframe before applying a name matching algorithm. The 
-        preprocessing consists of removing special characters, spaces, converting all 
+        """Preprocess a dataframe before applying a name matching algorithm. The
+        preprocessing consists of removing special characters, spaces, converting all
         characters to lower case and removing the words given in the word lists
 
         Parameters
@@ -972,9 +1002,9 @@ class NameMatcher:
         Set
             The original word_set with the legal words added
         """
-        with pkg_path('name_matching.data','legal_names.csv') as path:
+        with pkg_path("name_matching.data", "legal_names.csv") as path:
             legal_words = pd.read_csv(path)
-        word_set = word_set.union(set(legal_words['abbreviation'].values))
+        word_set = word_set.union(set(legal_words["abbreviation"].values))
 
         return word_set
 
@@ -986,7 +1016,7 @@ class NameMatcher:
         word_set: str
             the current word list which should be extended with additional words
         cut_off: float
-            the cut_off percentage of the occurrence of the most occurring word for 
+            the cut_off percentage of the occurrence of the most occurring word for
             which words are still included in the no_soring_words set
 
         Returns
@@ -1009,7 +1039,7 @@ class NameMatcher:
     def _make_no_scoring_words(
         self, indicator: str, word_set: set, cut_off: float
     ) -> set:
-        """A method to make a set of words which are not taken into account when 
+        """A method to make a set of words which are not taken into account when
         scoring matches.
 
         Parameters
@@ -1020,7 +1050,7 @@ class NameMatcher:
         word_set: str
             the current word list which should be extended with additional words
         cut_off: float
-            the cut_off percentage of the occurrence of the most occurring word for 
+            the cut_off percentage of the occurrence of the most occurring word for
             which words are still included in the no_soring_words set
 
         Returns
