@@ -228,13 +228,12 @@ class NameMatcher:
         if begin_end:
             for abbreviation, long_name in zip(abbreviations, long_names):
                 if name.startswith(long_name):
-                    return name.replace(long_name, abbreviations[idx], 1)
+                    return name.replace(long_name, abbreviation, 1)
                 elif name.endswith(long_name):
-                    return name[::-1].replace(long_name[::-1], abbreviations[idx][::-1], 1)[::-1]
+                    return name[::-1].replace(long_name[::-1], abbreviation[::-1], 1)[::-1]
         else:
-            for idx, long_name in enumerate(long_names):
-                if long_name in name:
-                    return name.replace(long_name, abbreviations[idx], 1)
+            for abbreviation, long_name in zip(abbreviations, long_names):
+                name = re.sub(fr'\b{long_name}\b', abbreviation, name)
 
         return name
 
