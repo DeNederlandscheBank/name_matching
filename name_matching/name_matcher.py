@@ -1,3 +1,4 @@
+import re
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -187,22 +188,20 @@ class NameMatcher:
         self._generate_combinations(list_b, list_a, ind+1, result + [list_b[ind]])
 
 
-    def _replace_substring(self, name:str, abbriviations: list, long_names: list, begin_end: bool=True) -> str:
+    def _replace_substring(self, name:str, abbreviations: list, long_names: list, begin_end: bool=True) -> str:
         """
         """
         if begin_end:
-            for idx, long_name in enumerate(long_names):
+            for abbreviation, long_name in zip(abbreviations, long_names):
                 if name.startswith(long_name):
-                    name = name.replace(long_name, abbriviations[idx], 1)
+                    name = name.replace(long_name, abbreviation, 1)
                     return name
                 elif name.endswith(long_name):
-                    name = name[::-1].replace(long_name[::-1], abbriviations[idx][::-1], 1)[::-1]
+                    name = name[::-1].replace(long_name[::-1], abbreviation[::-1], 1)[::-1]
                     return name
         else:
-            for idx, long_name in enumerate(long_names):
-                if long_name in name:
-                    name = name.replace(long_name, abbriviations[idx], 1)
-                    return name
+            for abbreviation, long_name in zip(abbreviations, long_names):
+                name = re.sub(fr'\b{long_name}\b', abbreviation, name)
 
         return name
     
@@ -214,8 +213,8 @@ class NameMatcher:
             common_words = pd.read_csv(path)
         common_words['length'] = common_words['word'].apply(len)
         common_words = common_words.sort_values(by=['length'],ascending=True)
-        short_names = common_words['short_form'].to_list()
-        long_names = common_words['word'].to_list()
+        short_names = common_words['short_form'].str.strip().to_list()
+        long_names = common_words['word'].str.strip().to_list()
         data[column_name] = data.apply(lambda x: self._replace_substring(x[column_name], short_names, long_names, begin_end=False), axis=1)
 
         return data
