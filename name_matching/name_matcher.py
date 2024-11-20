@@ -68,7 +68,7 @@ class NameMatcher:
         default=True
     non_word_characters : bool
         A boolean indicating whether during the preprocessing all non_word_characters 
-        should be ignored, excluding the & and -
+        should be ignored, excluding & # -
         default=True
     remove_ascii : bool
         A boolean indicating whether during the preprocessing all characters should be
@@ -953,7 +953,7 @@ class NameMatcher:
             df.loc[:, column_name] = df[column_name].str.lower()
         if self._preprocess_non_word_characters:
             df.loc[:, column_name] = df[column_name].str.replace(
-                r"[^\w\-\&]", " ", regex=True
+                r"[^\w\-\&\#]", " ", regex=True
             )
             df.loc[:, column_name] = df[column_name].str.replace("  ", " ").str.strip()
         if self._preprocess_ascii:
@@ -983,7 +983,7 @@ class NameMatcher:
         """
         if self._preprocess_non_word_characters:
             return [
-                sub(r"[^\w\-\&]", "", s).strip()
+                sub(r"[^\w\-\&\#]", "", s).strip()
                 for s in reduce(iconcat, terms.values(), [])
             ]
         else:
