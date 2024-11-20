@@ -66,9 +66,9 @@ class NameMatcher:
         A boolean indicating whether during the preprocessing all characters should be
         converted to lowercase, to generate case insensitive matching
         default=True
-    punctuations : bool
-        A boolean indicating whether during the preprocessing all punctuations should be
-        ignored
+    non_word_characters : bool
+        A boolean indicating whether during the preprocessing all non_word_characters 
+        should be ignored, excluding the & and -
         default=True
     remove_ascii : bool
         A boolean indicating whether during the preprocessing all characters should be
@@ -109,7 +109,7 @@ class NameMatcher:
         number_of_rows: int = 5000,
         number_of_matches: int = 1,
         lowercase: bool = True,
-        punctuations: bool = True,
+        non_word_characters: bool = True,
         remove_ascii: bool = True,
         legal_suffixes: bool = False,
         make_abbreviations: bool = True,
@@ -144,7 +144,7 @@ class NameMatcher:
         self._return_algorithms_score = return_algorithms_score
 
         self._preprocess_lowercase = lowercase
-        self._preprocess_punctuations = punctuations
+        self._preprocess_non_word_characters = non_word_characters
         self._preprocess_ascii = remove_ascii
         self._preprocess_abbreviations = make_abbreviations
         self._postprocess_company_legal_id = legal_suffixes
@@ -951,9 +951,9 @@ class NameMatcher:
         df.loc[:, column_name] = df[column_name].astype(str)
         if self._preprocess_lowercase:
             df.loc[:, column_name] = df[column_name].str.lower()
-        if self._preprocess_punctuations:
+        if self._preprocess_non_word_characters:
             df.loc[:, column_name] = df[column_name].str.replace(
-                r"[^\w\s]", " ", regex=True
+                r"[^\w\-\&]", " ", regex=True
             )
             df.loc[:, column_name] = df[column_name].str.replace("  ", " ").str.strip()
         if self._preprocess_ascii:
@@ -969,7 +969,7 @@ class NameMatcher:
         return df
 
     def _preprocess_word_list(self, terms: dict) -> List:
-        """Preprocess legal words to remove punctuations and trailing leading space
+        """Preprocess legal words to remove non-word-characters and trailing leading space
 
         Parameters
         -------
@@ -981,9 +981,9 @@ class NameMatcher:
         list
             A list of preprocessed legal words
         """
-        if self._preprocess_punctuations:
+        if self._preprocess_non_word_characters:
             return [
-                sub(r"[^\w\s]", "", s).strip()
+                sub(r"[^\w\-\&]", "", s).strip()
                 for s in reduce(iconcat, terms.values(), [])
             ]
         else:
