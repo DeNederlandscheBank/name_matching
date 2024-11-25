@@ -100,10 +100,12 @@ class IterativeSubString(_Distance):
         def _winkler_improvement(
             src: str, tar: str, commonality: float
         ) -> float:
+            idx = min(len(src), len(tar))
             for i in range(min(len(src), len(tar))):
                 if src[i] != tar[i]:
+                    idx = i
                     break
-            return min(4.0, i) * 0.1 * (1.0 - commonality)
+            return min(4.0, idx) * 0.1 * (1.0 - commonality)
 
         if self._normalize_strings:
             src = src.lower()
