@@ -45,7 +45,7 @@ class ResultsChecker:
         return [button_nm, button_dn, button_stop]
 
     def _no_match(self, button: ipyw.Button):
-        self._annotated_results[self._possible_nodes[self._index]] = -1
+        self._annotated_results[self._results_data.loc[self._possible_nodes[self._index], 'original_name']] = -1
         self._skip(None)
 
     def _possible_names(self):
@@ -54,7 +54,7 @@ class ResultsChecker:
 
     def _skip(self, button: ipyw.Button|None):
         self._index = self._index + 1
-        if self._index not in self._possible_nodes:
+        if self._index >= len(self._possible_nodes):
             self._stop(None)
         else:
             buttons = self._initiate_buttons()
@@ -63,7 +63,7 @@ class ResultsChecker:
             self._show_data(buttons)
 
     def _save_result(self, button):
-        self._annotated_results[self._possible_nodes[self._index]] = button.description
+        self._annotated_results[self._results_data.loc[self._possible_nodes[self._index], 'original_name']] = button.description
         self._skip(None)
 
     def _add_button(self, buttons: list, name: str):

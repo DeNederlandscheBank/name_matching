@@ -23,6 +23,7 @@ class NameMatchingOptimiser:
         df_to_be_matched:pd.DataFrame,
         to_be_matched_col:str,
         annotated_data: dict | None = None,
+        name_matcher: NameMatcher| None = None,
     ):
         self._df_matching_data = df_matching_data
         self._matching_col = matching_col
@@ -31,24 +32,28 @@ class NameMatchingOptimiser:
         self._annotated_data = annotated_data
         self._features = None 
         self._classes = None
+        if name_matcher is None:
+            self._nm = NameMatcher()
+        else:
+            self._nm = name_matcher
+        self._nm._number_of_matches = self._nm._num_distance_metrics
 
-    def _perform_name_matching(self, metrics: list[str]|None) -> pd.DataFrame|tuple[pd.DataFrame,pd.DataFrame]:
-        if metrics is not None:
-            nm = NameMatcher(number_of_matches=len(metrics))
-            nm.load_and_process_master_data(self._matching_col, self._df_matching_data)
-            nm.set_distance_metrics(metrics)
-            matches = nm.match_names(self._df_to_be_matched, self._to_be_matched_col)
-            return matches
+
+    def _perform_name_matching(self, metrics: list[str]|None) -> pd.Series|pd.DataFrame|tuple[pd.DataFrame,pd.DataFrame]:
+        if metrics is None:
+            raise ValueError('no metrics supplied!')
+        self._nm.load_and_process_master_data(self._matching_col, self._df_matching_data)
+        self._nm.set_distance_metrics(metrics)
+        matches = self._nm.match_names(self._df_to_be_matched, self._to_be_matched_col)
+        return matches
 
     def _annotate(self, matches):
         if self._annotated_data is None:
             self._annotated_data = {}
-            filtered_matches = self._preselect_matches(matches)
-            rc = ResultsChecker(filtered_matches)
-            rc.start()
-            self._annotated_data.update(rc.annotated_results)
-        else:
-            rc = ResultsChecker(filtered_matches, annotated_results=self._annotated_data)
+        filtered_matches = self._preselect_matches(matches)
+        rc = ResultsChecker(filtered_matches, annotated_results=self._annotated_data)
+        rc.start()
+        self._annotated_data.update(rc.annotated_results)
 
 
     def _annotate_matches(self, data: pd.DataFrame) -> None:
@@ -120,30 +125,47 @@ class NameMatchingOptimiser:
 
 
     def annotate(self, data_percentage:float=0.2, model_args: dict|None=None):
-        nm_annotate = NameMatcher(number_of_matches=5, return_algorithms_score=False)
-        nm_annotate.load_and_process_master_data(self._matching_col, self._df_matching_data)
+        self._nm._return_algorithms_score = False
+        self._nm.load_and_process_master_data(self._matching_col, self._df_matching_data)
         reduced_data = self._df_to_be_matched.sample(frac=data_percentage, replace=False)
-        annotate_matches = nm_annotate.match_names(reduced_data, self._to_be_matched_col)
+        annotate_matches = self._nm.match_names(reduced_data, self._to_be_matched_col)
         self._annotate(annotate_matches)
+
+    def export_annotation(self, file_name: None|str=None):
+        annotations = pd.DataFrame({'original_name':self._annotated_data.keys(),'match_name':self._annotated_data.values()})
+        if file_name is None:
+            return annotations
+        else:
+            annotations.to_csv(file_name, index=False)
+
+    def import_annotation(self, annotations: pd.DataFrame|str):
+        if isinstance(annotations, str):
+            annotations = pd.read_csv(annotations)
+        annotations_dict = annotations.set_index('original_name').to_dict()['match_name']
+        if self._annotated_data is None:
+            self._annotated_data = annotations_dict
+        else:
+            self._annotated_data.update(annotations_dict)
 
 
     def optimise(self, model: sklearnModel = GradientBoostingRegressor, model_args: dict|None=None)->sklearnModel:
+        empty_string = '_________'
         self._model = model
-        nm = NameMatcher(number_of_matches=5, return_algorithms_score=True)
-        nm.load_and_process_master_data(self._matching_col, self._df_matching_data)
-        matches, possible_names = nm.match_names(self._df_to_be_matched, self._to_be_matched_col)
-        names = np.repeat(nm._df_matching_data[nm._column].to_numpy(), nm._top_n)
+        self._nm._return_algorithms_score = True
+        self._nm.load_and_process_master_data(self._matching_col, self._df_matching_data)
+        matches, possible_names = self._nm.match_names(self._df_to_be_matched, self._to_be_matched_col)
+        names = np.repeat(self._nm._df_matching_data[self._nm._column].to_numpy(), self._nm._top_n)
         match_names = possible_names.reshape(-1)
         annotated_names = []
         for idx, name in enumerate(names):
             if name in self._annotated_data.keys():
                 annotated_names.append(self._annotated_data[name])
             else:
-                annotated_names.append('_________')
-        name_filter = annotated_names!='_________'
+                annotated_names.append(empty_string)
+        name_filter = annotated_names!=empty_string
         classes = (annotated_names == match_names).astype(int)
         self._classes = classes[name_filter]
-        features = np.stack(matches.to_numpy()).reshape(-1, nm._num_distance_metrics)
+        features = np.stack(matches.to_numpy()).reshape(-1, self._nm._num_distance_metrics)
         self._features = features[name_filter, :]
 
         if model_args is None:
@@ -152,6 +174,6 @@ class NameMatchingOptimiser:
             self._model_args = model_args
 
         mod = self._model(**self._model_args)
-        mod.fit(self._features.reshape(-1, nm._num_distance_metrics), self._classes.reshape(-1))
+        mod.fit(self._features.reshape(-1, self._nm._num_distance_metrics), self._classes.reshape(-1))
 
         return mod
