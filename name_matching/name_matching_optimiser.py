@@ -154,7 +154,7 @@ class NameMatchingOptimiser:
         self._nm._return_algorithms_score = True
         self._nm.load_and_process_master_data(self._matching_col, self._df_matching_data)
         matches, possible_names = self._nm.match_names(self._df_to_be_matched, self._to_be_matched_col)
-        names = np.repeat(self._nm._df_matching_data[self._nm._column].to_numpy(), self._nm._top_n)
+        names = np.repeat(self._df_to_be_matched[self._to_be_matched_col].to_numpy(), self._nm._top_n)
         match_names = possible_names.reshape(-1)
         annotated_names = []
         for idx, name in enumerate(names):
