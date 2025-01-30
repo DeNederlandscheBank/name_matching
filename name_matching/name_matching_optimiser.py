@@ -1,10 +1,11 @@
 from name_matching.check_results import ResultsChecker
 from name_matching.name_matcher import NameMatcher
-from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.linear_model import Lasso
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, recall_score, precision_score
+from sklearn.metrics import accuracy_score, recall_score, precision_score, precision_recall_curve
 from typing import Protocol
+import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 
@@ -24,12 +25,14 @@ class NameMatchingOptimiser:
         to_be_matched_col:str,
         annotated_data: dict | None = None,
         name_matcher: NameMatcher| None = None,
+        minimum_mean_algorithm_score: float = 0.8,
     ):
         self._df_matching_data = df_matching_data
         self._matching_col = matching_col
         self._df_to_be_matched = df_to_be_matched
         self._to_be_matched_col = to_be_matched_col
         self._annotated_data = annotated_data
+        self._algo_threshold = minimum_mean_algorithm_score
         self._features = None 
         self._classes = None
         if name_matcher is None:
@@ -37,7 +40,6 @@ class NameMatchingOptimiser:
         else:
             self._nm = name_matcher
         self._nm._number_of_matches = self._nm._num_distance_metrics
-
 
     def _perform_name_matching(self, metrics: list[str]|None) -> pd.Series|pd.DataFrame|tuple[pd.DataFrame,pd.DataFrame]:
         if metrics is None:
@@ -100,7 +102,7 @@ class NameMatchingOptimiser:
             "fuzzy_wuzzy_token_set",
         ],
         number_of_algorithms: int = 3,
-        model: sklearnModel = GradientBoostingRegressor,
+        model: sklearnModel = GradientBoostingClassifier,
     ):
         matches = self._perform_name_matching(None)
         self._annotate(matches)
@@ -147,8 +149,42 @@ class NameMatchingOptimiser:
         else:
             self._annotated_data.update(annotations_dict)
 
+    def plot_curves(self):
+        # Get the predicted probabilities for the positive class
+        y_scores = self.model.predict_proba(self._X_test)[:, 1]
 
-    def optimise(self, model: sklearnModel = GradientBoostingRegressor, model_args: dict|None=None)->sklearnModel:
+        # Compute the precision and recall values
+        precision, recall, _ = precision_recall_curve(self._y_test, y_scores)
+
+        # Plot the Precision-Recall curve
+        plt.figure(figsize=(8, 6))
+        plt.plot(recall, precision, color='b', label='Precision-Recall curve')
+        plt.xlabel('Recall')
+        plt.ylabel('Precision')
+        plt.title('Precision-Recall Curve')
+        plt.legend()
+        plt.show()
+        
+        x = np.linspace(0,1,100,True)
+        y_true_positives = []
+        y_false_positives = []
+        for i in x:
+            positives = y_scores > i
+            y_true_positives.append(np.sum(np.bitwise_and(positives, self._y_test==1))/np.sum(self._y_test))
+            y_false_positives.append(np.sum(np.bitwise_and(positives, self._y_test==0))/len(self._y_test))
+
+        # Plot the Precision-Recall curve
+        plt.figure(figsize=(8, 6))
+        plt.plot(x, y_true_positives, color='b', label='True positives')
+        plt.plot(x, y_false_positives, color='r', label='False positives')
+        plt.xlabel('Threshold')
+        plt.ylabel('Percentage')
+        plt.legend()
+        plt.show()
+
+
+
+    def fit(self, model: sklearnModel = GradientBoostingClassifier, model_args: dict|None=None, print_results: bool=True)->sklearnModel:
         empty_string = '_________'
         self._model = model
         self._nm._return_algorithms_score = True
@@ -173,7 +209,36 @@ class NameMatchingOptimiser:
         else:
             self._model_args = model_args
 
-        mod = self._model(**self._model_args)
-        mod.fit(self._features.reshape(-1, self._nm._num_distance_metrics), self._classes.reshape(-1))
+        self.model = self._model(**self._model_args)
+        features = self._features.reshape(-1, self._nm._num_distance_metrics)
+        classes = self._classes.reshape(-1)[features.mean(axis=1) > self._algo_threshold]
+        features = features[features.mean(axis=1) > self._algo_threshold]
+        X_train, X_test, y_train, y_test = train_test_split(features, classes, test_size=0.3)
+        self.model.fit(X_train, y_train)
+        y_pred = self.model.predict(X_test)
+        self._X_test = X_test
+        self._y_test = y_test
+        self._X_train = X_train
+        self._y_train = y_train
 
-        return mod
+        if print_results:
+            print(f"accuracy - {accuracy_score(y_test, y_pred)}")
+            print(f"recall - {recall_score(y_test, y_pred)}")
+            print(f"precision - {precision_score(y_test, y_pred)}")
+
+
+    def predict(self, threshold:float = 0.5):
+
+        self._nm._return_algorithms_score = True
+        self._nm.load_and_process_master_data(self._matching_col, self._df_matching_data)
+        algorithm_scores, names = self._nm.match_names(self._df_to_be_matched, self._to_be_matched_col)
+        probabilities = self.model.predict_proba(np.stack(algorithm_scores.to_numpy()).reshape(-1, self._nm._num_distance_metrics))[:,1]
+        probabilities = probabilities.reshape(-1, self._nm._top_n)
+        results = {}
+        for idx, name in enumerate(self._df_to_be_matched[self._to_be_matched_col]):
+            best_match = np.argmax(probabilities[idx, :])
+            if probabilities[idx, best_match] > threshold:
+                results[name] = names[idx, best_match]
+            else:
+                results[name] = ''
+        return results
