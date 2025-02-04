@@ -994,7 +994,7 @@ member function, such as Levenshtein."
 
         """
         self._tokenize(src, tar)
-        return (self._tar_only_card() + self._src_only_card())/self._union_card()
+        return  1 - (self._tar_only_card() + self._src_only_card())/self._union_card()
 
 if __name__ == '__main__':
     import doctest

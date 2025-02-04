@@ -101,7 +101,9 @@ class Levenshtein(_Distance):
         self._cost = cost
         self._normalizer = normalizer
         self._taper_enabled = taper
-        self.sim = self.dist
+
+    def sim(self, src: str, tar: str):
+        return 1 - self.dist(src, tar)
 
     def _taper(self, pos: int, length: int) -> float:
         return (

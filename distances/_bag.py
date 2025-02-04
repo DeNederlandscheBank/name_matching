@@ -177,8 +177,7 @@ class Bag(_TokenDistance):
         if not src or not tar:
             return 1.0
 
-        return self.dist_abs(src, tar, normalized=True)
-
+        return 1 - self.dist_abs(src, tar, normalized=True)
 
 if __name__ == '__main__':
     import doctest
