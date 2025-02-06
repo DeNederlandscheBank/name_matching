@@ -4,6 +4,7 @@ from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.linear_model import Lasso
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, recall_score, precision_score, precision_recall_curve
+from sklearn.preprocessing import StandardScaler
 from typing import Protocol
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -11,8 +12,13 @@ import numpy as np
 
 
 class sklearnModel(Protocol):
-    def fit(): ...
-    def predict(): ...
+    def fit(self): ...
+    def predict(self): ...
+
+
+class scaler(Protocol):
+    def fit(self): ...
+    def transform(self): ...
 
 
 class NameMatchingOptimiser:
@@ -25,14 +31,12 @@ class NameMatchingOptimiser:
         to_be_matched_col:str,
         annotated_data: dict | None = None,
         name_matcher: NameMatcher| None = None,
-        minimum_mean_algorithm_score: float = 0.8,
     ):
         self._df_matching_data = df_matching_data
         self._matching_col = matching_col
         self._df_to_be_matched = df_to_be_matched
         self._to_be_matched_col = to_be_matched_col
         self._annotated_data = annotated_data
-        self._algo_threshold = minimum_mean_algorithm_score
         self._features = None 
         self._classes = None
         if name_matcher is None:
@@ -65,66 +69,14 @@ class NameMatchingOptimiser:
         max_col = max_col.str.split('_')
         max_col = max_col.apply(lambda x: 'match_name_' + x[1])
         for key, idx, val in zip(names.values, names.index, max_col.values):
-            self._annotated_data[key] = data.loc[idx, val]
+            self._annotated_data[key] = data.loc[idx, val] # type: ignore
 
     def _preselect_matches(self, matches) -> pd.DataFrame:
 
         matches['max_scr'] = matches[matches.columns[matches.columns.str.contains('score')]].max(axis=1)
 
-        # annotate 100% matches as correct
-        self._annotate_matches(matches[matches['max_scr']==100])
-
-        # select matches between 80 and 100% for manual inspection
+        # select matches between 70 and 100% for manual inspection
         return matches[(matches['max_scr']>70) & (matches['max_scr']<100)]
-
-    def select_metrics(
-        self,
-        metrics: list[str] = [
-            "indel",
-            "discounted_levenshtein",
-            "tichy",
-            "cormodeL_z",
-            "iterative_sub_string",
-            "baulieu_xiii",
-            "clement",
-            "dice_asymmetricI",
-            "kuhns_iii",
-            "overlap",
-            "pearson_ii",
-            "weighted_jaccard",
-            "warrens_iv",
-            "bag",
-            "rouge_l",
-            "ratcliff_obershelp",
-            "ncd_bz2",
-            "fuzzy_wuzzy_partial_string",
-            "fuzzy_wuzzy_token_sort",
-            "fuzzy_wuzzy_token_set",
-        ],
-        number_of_algorithms: int = 3,
-        model: sklearnModel = GradientBoostingClassifier,
-    ):
-        matches = self._perform_name_matching(None)
-        self._annotate(matches)
-
-    def evaluate_model(self, retries: int = 5):
-        accuracy = []
-        recall = []
-        precision = []
-        if (self._features is not None) & (self._classes is not None):
-            for _ in retries:
-                X_train, X_test, y_train, y_test = train_test_split(self._features, self._classes, test_size=0.3)
-                mod = self._model(**self._model_args)
-                mod.fit(X_train, y_train)
-                y_pred = mod.predict(X_test)
-                precision.append(precision_score(y_test, y_pred))
-                recall.append(recall_score(y_test, y_pred))
-                accuracy.append(accuracy_score(y_test, y_pred))
-
-        print(f"accuracy - max: {accuracy.max():.2f} mean: {accuracy.mean():.2f} min: {accuracy.min():.2f}")
-        print(f"recall - max: {accuracy.max():.2f} mean: {accuracy.mean():.2f} min: {accuracy.min():.2f}")
-        print(f"precision - max: {accuracy.max():.2f} mean: {accuracy.mean():.2f} min: {accuracy.min():.2f}")
-
 
     def annotate(self, data_percentage:float=0.2, model_args: dict|None=None):
         self._nm._return_algorithms_score = False
@@ -134,7 +86,7 @@ class NameMatchingOptimiser:
         self._annotate(annotate_matches)
 
     def export_annotation(self, file_name: None|str=None):
-        annotations = pd.DataFrame({'original_name':self._annotated_data.keys(),'match_name':self._annotated_data.values()})
+        annotations = pd.DataFrame({'original_name':self._annotated_data.keys(),'match_name':self._annotated_data.values()}) # type: ignore
         if file_name is None:
             return annotations
         else:
@@ -184,36 +136,51 @@ class NameMatchingOptimiser:
 
 
 
-    def fit(self, model: sklearnModel = GradientBoostingClassifier, model_args: dict|None=None, print_results: bool=True)->sklearnModel:
-        empty_string = '_________'
+    def fit(self, 
+            model: sklearnModel = GradientBoostingClassifier,  # type: ignore
+            dataScaler: scaler = StandardScaler, # type: ignore
+            model_args: dict|None=None, 
+            print_results: bool=True)-> None:
+        
         self._model = model
+        # Generate matches
         self._nm._return_algorithms_score = True
         self._nm.load_and_process_master_data(self._matching_col, self._df_matching_data)
         matches, possible_names = self._nm.match_names(self._df_to_be_matched, self._to_be_matched_col)
-        names = np.repeat(self._df_to_be_matched[self._to_be_matched_col].to_numpy(), self._nm._top_n)
-        match_names = possible_names.reshape(-1)
-        annotated_names = []
-        for idx, name in enumerate(names):
-            if name in self._annotated_data.keys():
-                annotated_names.append(self._annotated_data[name])
-            else:
-                annotated_names.append(empty_string)
-        name_filter = annotated_names!=empty_string
-        classes = (annotated_names == match_names).astype(int)
-        self._classes = classes[name_filter]
-        features = np.stack(matches.to_numpy()).reshape(-1, self._nm._num_distance_metrics)
-        self._features = features[name_filter, :]
+
+        # Select matches for model training and fitting
+        true_index = {}
+        false_index = {}
+        if isinstance(self._annotated_data, dict):
+            for idx, name in enumerate(self._df_to_be_matched[self._to_be_matched_col]):
+                if isinstance(self._annotated_data, dict):
+                    if name in self._annotated_data.keys():
+                        if name != self._annotated_data[name]:
+                            temp_idx = possible_names[idx] == self._annotated_data[name] # type: ignore
+                            if np.sum(temp_idx) > 0:
+                                true_index[idx] = matches[idx][temp_idx][0] # type: ignore
+                                matches_temp = matches[idx].copy() # type: ignore
+                                matches_temp[temp_idx] = matches_temp[temp_idx]*0
+                                false_index[idx] = matches_temp[np.argmax(np.mean(matches_temp, axis=1))] # type: ignore
+                            else:
+                                print(f"{idx} has no match in names")
+        else:
+            raise ValueError("Please first annotate some data or provide ",
+                                "annotated data so the model can be fitted")
+        a = np.array(list(true_index.values()))
+        b = np.array(list(false_index.values()))
+        X = np.vstack((a, b))
+        Y = np.hstack([np.ones(len(true_index)), np.zeros(len(false_index))])
+        self.scaler = dataScaler().fit(X) # type: ignore
+        features = self.scaler.transform(X)
 
         if model_args is None:
             self._model_args = {}
         else:
             self._model_args = model_args
 
-        self.model = self._model(**self._model_args)
-        features = self._features.reshape(-1, self._nm._num_distance_metrics)
-        classes = self._classes.reshape(-1)[features.mean(axis=1) > self._algo_threshold]
-        features = features[features.mean(axis=1) > self._algo_threshold]
-        X_train, X_test, y_train, y_test = train_test_split(features, classes, test_size=0.3)
+        self.model = self._model(**self._model_args) # type: ignore
+        X_train, X_test, y_train, y_test = train_test_split(features, Y, test_size=0.3)
         self.model.fit(X_train, y_train)
         y_pred = self.model.predict(X_test)
         self._X_test = X_test
@@ -232,13 +199,14 @@ class NameMatchingOptimiser:
         self._nm._return_algorithms_score = True
         self._nm.load_and_process_master_data(self._matching_col, self._df_matching_data)
         algorithm_scores, names = self._nm.match_names(self._df_to_be_matched, self._to_be_matched_col)
-        probabilities = self.model.predict_proba(np.stack(algorithm_scores.to_numpy()).reshape(-1, self._nm._num_distance_metrics))[:,1]
+        features = self.scaler.transform(np.stack(algorithm_scores.to_numpy()).reshape(-1, self._nm._num_distance_metrics)) # type: ignore
+        probabilities = self.model.predict_proba(features)[:,1]
         probabilities = probabilities.reshape(-1, self._nm._top_n)
         results = {}
         for idx, name in enumerate(self._df_to_be_matched[self._to_be_matched_col]):
             best_match = np.argmax(probabilities[idx, :])
             if probabilities[idx, best_match] > threshold:
-                results[name] = names[idx, best_match]
+                results[name] = names[idx, best_match] # type: ignore
             else:
                 results[name] = ''
         return results
