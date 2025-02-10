@@ -5,23 +5,32 @@ from sklearn.linear_model import Lasso
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, recall_score, precision_score, precision_recall_curve
 from sklearn.preprocessing import StandardScaler
-from typing import Protocol
+from typing import Optional, Protocol
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 
 
 class sklearnModel(Protocol):
+    """
+    Protocol for a machine learning model with fit and predict methods.
+    """
     def fit(self): ...
     def predict(self): ...
 
 
-class scaler(Protocol):
+class scaler(Protocol):    
+    """
+    Protocol for a scaler with fit and transform methods.
+    """
     def fit(self): ...
     def transform(self): ...
 
 
 class NameMatchingOptimiser:
+    """
+    A class for performing name matching and annotating results based on matching scores.
+    """
 
     def __init__(
         self,
@@ -29,9 +38,27 @@ class NameMatchingOptimiser:
         matching_col:str,
         df_to_be_matched:pd.DataFrame,
         to_be_matched_col:str,
-        annotated_data: dict | None = None,
-        name_matcher: NameMatcher| None = None,
-    ):
+        annotated_data: Optional[dict] = None,
+        name_matcher: Optional[NameMatcher] = None,
+    ) -> None:
+        """
+        Initializes the NameMatchingOptimiser with required data and matching algorithm.
+
+        Parameters
+        ----------
+        df_matching_data : pd.DataFrame
+            DataFrame containing the matching data.
+        matching_col : str
+            Column name in `df_matching_data` to match names.
+        df_to_be_matched : pd.DataFrame
+            DataFrame containing data to be matched.
+        to_be_matched_col : str
+            Column name in `df_to_be_matched` to match names.
+        annotated_data : Optional[dict], default None
+            Dictionary of manually annotated data.
+        name_matcher : Optional[NameMatcher], default None
+            Custom name matching algorithm. If None, a default `NameMatcher` will be used.
+        """
         self._df_matching_data = df_matching_data
         self._matching_col = matching_col
         self._df_to_be_matched = df_to_be_matched
@@ -45,7 +72,25 @@ class NameMatchingOptimiser:
             self._nm = name_matcher
         self._nm._number_of_matches = self._nm._num_distance_metrics
 
-    def _perform_name_matching(self, metrics: list[str]|None) -> pd.Series|pd.DataFrame|tuple[pd.DataFrame,pd.DataFrame]:
+    def _perform_name_matching(self, metrics: Optional[list[str]]) -> pd.Series|pd.DataFrame|tuple[pd.DataFrame,pd.DataFrame]:
+        """
+        Performs name matching based on the provided distance metrics.
+
+        Parameters
+        ----------
+        metrics : Optional[list[str]], default None
+            List of metrics to be used for name matching.
+
+        Returns
+        -------
+        pd.Series | pd.DataFrame | tuple[pd.DataFrame, pd.DataFrame]
+            The result of name matching.
+        
+        Raises
+        ------
+        ValueError
+            If no metrics are provided.
+        """
         if metrics is None:
             raise ValueError('no metrics supplied!')
         self._nm.load_and_process_master_data(self._matching_col, self._df_matching_data)
@@ -53,7 +98,15 @@ class NameMatchingOptimiser:
         matches = self._nm.match_names(self._df_to_be_matched, self._to_be_matched_col)
         return matches
 
-    def _annotate(self, matches):
+    def _annotate(self, matches: pd.DataFrame)-> None:
+        """
+        Annotates the matches with additional information.
+
+        Parameters
+        ----------
+        matches : pd.DataFrame
+            The DataFrame containing the matched results to annotate.
+        """
         if self._annotated_data is None:
             self._annotated_data = {}
         filtered_matches = self._preselect_matches(matches)
@@ -63,6 +116,14 @@ class NameMatchingOptimiser:
 
 
     def _annotate_matches(self, data: pd.DataFrame) -> None:
+        """
+        Annotates matches based on the best matching scores.
+
+        Parameters:
+        ----------
+        data : pd.DataFrame
+            The DataFrame containing matched results.
+        """
         names = data['original_name']
         score_cols = data.columns.str.contains('score')
         max_col = data.loc[:, score_cols].idxmax(axis=1)
@@ -71,28 +132,70 @@ class NameMatchingOptimiser:
         for key, idx, val in zip(names.values, names.index, max_col.values):
             self._annotated_data[key] = data.loc[idx, val] # type: ignore
 
-    def _preselect_matches(self, matches) -> pd.DataFrame:
+    def _preselect_matches(self, matches: pd.DataFrame) -> pd.DataFrame:
+        """
+        Filters matches based on score thresholds.
+
+        Parameters
+        ----------
+        matches : pd.DataFrame
+            The DataFrame containing the matched results.
+
+        Returns
+        -------
+        pd.DataFrame
+            The filtered matches with scores between 70% and 100%.
+        """
 
         matches['max_scr'] = matches[matches.columns[matches.columns.str.contains('score')]].max(axis=1)
 
         # select matches between 70 and 100% for manual inspection
         return matches[(matches['max_scr']>70) & (matches['max_scr']<100)]
 
-    def annotate(self, data_percentage:float=0.2, model_args: dict|None=None):
+    def annotate(self, data_percentage:float=0.2):
+        """
+        Annotates a subset of the data.
+
+        Parameters
+        ----------
+        data_percentage : float, default 0.2
+            The percentage of data to be sampled and annotated.
+        """
         self._nm._return_algorithms_score = False
         self._nm.load_and_process_master_data(self._matching_col, self._df_matching_data)
         reduced_data = self._df_to_be_matched.sample(frac=data_percentage, replace=False)
         annotate_matches = self._nm.match_names(reduced_data, self._to_be_matched_col)
-        self._annotate(annotate_matches)
+        self._annotate(annotate_matches) # type: ignore
 
-    def export_annotation(self, file_name: None|str=None):
+    def export_annotation(self, file_name: Optional[str]=None) -> Optional[pd.DataFrame]:
+        """
+        Exports the annotated data to a CSV or returns it as a DataFrame.
+
+        Parameters
+        ----------
+        file_name : Optional[str], default None
+            The file name to save the annotations as a CSV. If None, the annotations are returned as a DataFrame.
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame containing the annotated results.
+        """
         annotations = pd.DataFrame({'original_name':self._annotated_data.keys(),'match_name':self._annotated_data.values()}) # type: ignore
         if file_name is None:
             return annotations
         else:
             annotations.to_csv(file_name, index=False)
 
-    def import_annotation(self, annotations: pd.DataFrame|str):
+    def import_annotation(self, annotations: pd.DataFrame|str) -> None:
+        """
+        Imports annotations from a CSV file or DataFrame.
+
+        Parameters
+        ----------
+        annotations : pd.DataFrame | str
+            DataFrame or file path containing annotations.
+        """
         if isinstance(annotations, str):
             annotations = pd.read_csv(annotations)
         annotations_dict = annotations.set_index('original_name').to_dict()['match_name']
@@ -101,7 +204,10 @@ class NameMatchingOptimiser:
         else:
             self._annotated_data.update(annotations_dict)
 
-    def plot_curves(self):
+    def plot_curves(self) -> None:
+        """
+        Plots precision-recall curves based on the model's predictions.
+        """
         # Get the predicted probabilities for the positive class
         y_scores = self.model.predict_proba(self._X_test)[:, 1]
 
@@ -141,7 +247,20 @@ class NameMatchingOptimiser:
             dataScaler: scaler = StandardScaler, # type: ignore
             model_args: dict|None=None, 
             print_results: bool=True)-> None:
-        
+        """
+        Fits a model to the name matching data.
+
+        Parameters
+        ----------
+        model : sklearnModel, default GradientBoostingClassifier
+            The model to use for fitting.
+        dataScaler : scaler, default StandardScaler
+            The scaler to use for feature scaling.
+        model_args : Optional[dict], default None
+            Arguments for the model used during fitting.
+        print_results : bool, default True
+            Whether to print evaluation metrics after fitting.
+        """
         self._model = model
         # Generate matches
         self._nm._return_algorithms_score = True
@@ -194,7 +313,20 @@ class NameMatchingOptimiser:
             print(f"precision - {precision_score(y_test, y_pred)}")
 
 
-    def predict(self, threshold:float = 0.5):
+    def predict(self, threshold:float = 0.5) -> dict:
+        """
+        Predicts the best matches for the names to be matched.
+
+        Parameters:
+        ----------
+        threshold : float, default 0.5
+            The threshold for considering a match.
+
+        Returns:
+        -------
+        dict
+            A dictionary mapping original names to predicted match names.
+        """
 
         self._nm._return_algorithms_score = True
         self._nm.load_and_process_master_data(self._matching_col, self._df_matching_data)
