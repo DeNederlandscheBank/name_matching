@@ -192,14 +192,28 @@ class NameMatchingOptimiser:
         Parameters
         ----------
         file_name : Optional[str], default None
-            The file name to save the annotations as a CSV. If None, the annotations are returned as a DataFrame.
+            The file name to save the annotations as a CSV. If None, the annotations are 
+            returned as a DataFrame.
 
         Returns
         -------
         pd.DataFrame
             DataFrame containing the annotated results.
+
+        Raises
+        ------
+        ValueError
+            If no annotated data has yet been made.
         """
-        annotations = pd.DataFrame({"original_name": self._annotated_data.keys(), "match_name": self._annotated_data.values()})  # type: ignore
+        if not isinstance(self._annotated_data, dict):
+            raise ValueError("annotated data has not yet been generated")
+
+        annotations = pd.DataFrame(
+            {
+                "original_name": self._annotated_data.keys(),
+                "match_name": self._annotated_data.values(),
+            }
+        )
         if file_name is None:
             return annotations
         else:
@@ -226,7 +240,8 @@ class NameMatchingOptimiser:
 
     def plot_curves(self) -> None:
         """
-        Plots precision-recall curves based on the model's predictions.
+        Plots precision-recall curve and the true positive, false positive rate curve
+        based on the model's predictions.
         """
         # Get the predicted probabilities for the positive class
         y_scores = self.model.predict_proba(self._X_test)[:, 1]
@@ -310,7 +325,9 @@ class NameMatchingOptimiser:
                                 true_index[idx] = matches[idx][temp_idx][0]  # type: ignore
                                 matches_temp = matches[idx].copy()  # type: ignore
                                 matches_temp[temp_idx] = matches_temp[temp_idx] * 0
-                                false_index[idx] = matches_temp[np.argmax(np.mean(matches_temp, axis=1))]  # type: ignore
+                                false_index[idx] = matches_temp[
+                                    np.argmax(np.mean(matches_temp, axis=1))
+                                ] # type: ignore
                             else:
                                 print(f"{idx} has no match in names")
         else:
@@ -366,7 +383,11 @@ class NameMatchingOptimiser:
         algorithm_scores, names = self._nm.match_names(
             self._df_to_be_matched, self._to_be_matched_col
         )
-        features = self.scaler.transform(np.stack(algorithm_scores.to_numpy()).reshape(-1, self._nm._num_distance_metrics))  # type: ignore
+        features = self.scaler.transform(
+            np.stack(algorithm_scores.to_numpy()).reshape(  # type: ignore
+                -1, self._nm._num_distance_metrics
+            )
+        )
         probabilities = self.model.predict_proba(features)[:, 1]
         probabilities = probabilities.reshape(-1, self._nm._top_n)
         results = {}
