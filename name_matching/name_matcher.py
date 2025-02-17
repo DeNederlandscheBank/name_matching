@@ -235,15 +235,13 @@ class NameMatcher:
         """
         if begin_end:
             for abbreviation, long_name in zip(abbreviations, long_names):
-                if name.startswith(long_name):
-                    return name.replace(long_name, abbreviation, 1)
-                elif name.endswith(long_name):
-                    return name[::-1].replace(long_name[::-1], abbreviation[::-1], 1)[
-                        ::-1
-                    ]
+                if name.startswith(long_name) | name.endswith(long_name):
+                    name = re.sub(rf"\b{long_name}$", abbreviation, name)
+                    name = re.sub(rf"^{long_name}\b", abbreviation, name)                    
         else:
             for abbreviation, long_name in zip(abbreviations, long_names):
-                name = re.sub(rf"\b{long_name}\b", abbreviation, name)
+                if long_name in name:
+                    name = re.sub(rf"\b{long_name}\b", abbreviation, name)
 
         return name
 
@@ -599,21 +597,21 @@ class NameMatcher:
             tqdm.write("possible matches found   \n fuzzy matching...\n")
             data_matches = to_be_matched.progress_apply(
                 lambda x: self.fuzzy_matches(
-                    self._possible_matches[to_be_matched.index.get_loc(x.name), :], x
+                    self._possible_matches[to_be_matched.index.get_loc(x.name), :], x # type: ignore
                 ),
                 axis=1,
-            )
+            ) # type: ignore
         else:
             data_matches = to_be_matched.apply(
                 lambda x: self.fuzzy_matches(
-                    self._possible_matches[to_be_matched.index.get_loc(x.name), :], x
+                    self._possible_matches[to_be_matched.index.get_loc(x.name), :], x # type: ignore
                 ),
                 axis=1,
             )
         if self._return_algorithms_score:
             return data_matches, self._df_matching_data.iloc[
                 self._possible_matches.flatten(), :
-            ][self._column].values.reshape((-1, self._top_n))
+            ][self._column].values.reshape((-1, self._top_n)) # type: ignore
 
         if self._number_of_matches == 1:
             data_matches = data_matches.rename(
@@ -627,9 +625,9 @@ class NameMatcher:
             for col in data_matches.columns[
                 data_matches.columns.str.contains("match_index")
             ]:
-                data_matches[col] = self._original_index[
+                data_matches[col] = self._original_index[ # type: ignore
                     data_matches[col].astype(int).fillna(0)
-                ]
+                ] # type: ignore
 
         if self._verbose:
             tqdm.write("done")
@@ -965,6 +963,10 @@ class NameMatcher:
         if self._preprocess_abbreviations:
             df = self._replace_legal_pre_suffixes_with_abbreviations(df, column_name)
             df = self._replace_common_strings(df, column_name)
+        if self._preprocess_non_word_characters:
+            df.loc[:, column_name] = df[column_name].str.replace(
+                r"[^\w\-\&\#]", " ", regex=True
+            )
 
         return df
 
