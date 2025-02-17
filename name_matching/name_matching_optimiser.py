@@ -109,7 +109,7 @@ class NameMatchingOptimiser:
         matches = self._nm.match_names(self._df_to_be_matched, self._to_be_matched_col)
         return matches
 
-    def _annotate(self, matches: pd.DataFrame) -> None:
+    def _annotate(self, matches: pd.DataFrame, lower_bound: float) -> None:
         """
         Annotates the matches with additional information.
 
@@ -117,10 +117,12 @@ class NameMatchingOptimiser:
         ----------
         matches : pd.DataFrame
             The DataFrame containing the matched results to annotate.
+        lower_bound : float
+            The lower bound for the matches to be served for annotation
         """
         if self._annotated_data is None:
             self._annotated_data = {}
-        filtered_matches = self._preselect_matches(matches)
+        filtered_matches = self._preselect_matches(matches, lower_bound)
         rc = ResultsChecker(filtered_matches, annotated_results=self._annotated_data)
         rc.start()
         self._annotated_data.update(rc.annotated_results)
@@ -142,7 +144,9 @@ class NameMatchingOptimiser:
         for key, idx, val in zip(names.values, names.index, max_col.values):
             self._annotated_data[key] = data.loc[idx, val]  # type: ignore
 
-    def _preselect_matches(self, matches: pd.DataFrame) -> pd.DataFrame:
+    def _preselect_matches(
+        self, matches: pd.DataFrame, lower_bound: float
+    ) -> pd.DataFrame:
         """
         Filters matches based on score thresholds.
 
@@ -150,21 +154,23 @@ class NameMatchingOptimiser:
         ----------
         matches : pd.DataFrame
             The DataFrame containing the matched results.
+        lower_bound : float
+            The lower bound for the matches to be served for annotation
 
         Returns
         -------
         pd.DataFrame
-            The filtered matches with scores between 70% and 100%.
+            The filtered matches with scores between lower_bound and 100%.
         """
 
         matches["max_scr"] = matches[
             matches.columns[matches.columns.str.contains("score")]
         ].max(axis=1)
 
-        # select matches between 70 and 100% for manual inspection
-        return matches[(matches["max_scr"] > 70) & (matches["max_scr"] < 100)]
+        # select matches between lower_bound and 100% for manual inspection
+        return matches[(matches["max_scr"] > lower_bound) & (matches["max_scr"] < 100)]
 
-    def annotate(self, data_percentage: float = 0.2):
+    def annotate(self, lower_bound: float = 70.0, data_percentage: float = 0.2, max_matches: int = 10):
         """
         Annotates a subset of the data.
 
@@ -172,8 +178,14 @@ class NameMatchingOptimiser:
         ----------
         data_percentage : float, default 0.2
             The percentage of data to be sampled and annotated.
+        lower_bound : float
+            The lower bound for the matches to be served for annotation
+            default = 70.0
         """
         self._nm._return_algorithms_score = False
+        if max_matches > self._nm._top_n:
+            max_matches = self._nm._top_n
+        self._nm._number_of_matches = max_matches
         self._nm.load_and_process_master_data(
             self._matching_col, self._df_matching_data
         )
@@ -181,7 +193,7 @@ class NameMatchingOptimiser:
             frac=data_percentage, replace=False
         )
         annotate_matches = self._nm.match_names(reduced_data, self._to_be_matched_col)
-        self._annotate(annotate_matches)  # type: ignore
+        self._annotate(annotate_matches, lower_bound)  # type: ignore
 
     def export_annotation(
         self, file_name: Optional[str] = None
@@ -192,7 +204,7 @@ class NameMatchingOptimiser:
         Parameters
         ----------
         file_name : Optional[str], default None
-            The file name to save the annotations as a CSV. If None, the annotations are 
+            The file name to save the annotations as a CSV. If None, the annotations are
             returned as a DataFrame.
 
         Returns
@@ -238,7 +250,7 @@ class NameMatchingOptimiser:
         else:
             self._annotated_data.update(annotations_dict)
 
-    def plot_curves(self) -> None:
+    def plot_curves(self, absolute: bool = True) -> None:
         """
         Plots precision-recall curve and the true positive, false positive rate curve
         based on the model's predictions.
@@ -258,26 +270,33 @@ class NameMatchingOptimiser:
         plt.legend()
         plt.show()
 
-        x = np.linspace(0, 1, 100, True)
+        x = np.linspace(0, 1, 1000, True)
         y_true_positives = []
         y_false_positives = []
         for i in x:
             positives = y_scores > i
             y_true_positives.append(
                 np.sum(np.bitwise_and(positives, self._y_test == 1))
-                / np.sum(self._y_test)
             )
             y_false_positives.append(
                 np.sum(np.bitwise_and(positives, self._y_test == 0))
-                / (len(self._y_test) - np.sum(self._y_test))
             )
+            if not absolute:
+                y_true_positives[-1] = y_true_positives[-1] / np.sum(self._y_test)
+                y_false_positives[-1] = y_false_positives[-1] / (
+                    len(self._y_test) - np.sum(self._y_test)
+                )
 
         # Plot the Precision-Recall curve
         plt.figure(figsize=(8, 6))
         plt.plot(x, y_true_positives, color="b", label="True positives")
         plt.plot(x, y_false_positives, color="r", label="False positives")
         plt.xlabel("Threshold")
-        plt.ylabel("Percentage")
+        if absolute:
+            plt.ylabel("Number")
+        else:
+            plt.ylabel("Percentage")
+        plt.ylim((0, np.sum(self._y_test) + 1))
         plt.legend()
         plt.show()
 
@@ -311,36 +330,66 @@ class NameMatchingOptimiser:
         matches, possible_names = self._nm.match_names(
             self._df_to_be_matched, self._to_be_matched_col
         )
+        all_matches = matches[0]  # type: ignore
+        for temp_matches in matches[1:]:  # type: ignore
+            k = np.vstack((all_matches, temp_matches))  # type: ignore
+        self.scaler = dataScaler().fit(all_matches)  # type: ignore
 
+        # TODO fix -1 indexes
         # Select matches for model training and fitting
         true_index = {}
         false_index = {}
+        all_false = {}
         if isinstance(self._annotated_data, dict):
             for idx, name in enumerate(self._df_to_be_matched[self._to_be_matched_col]):
-                if isinstance(self._annotated_data, dict):
-                    if name in self._annotated_data.keys():
-                        if name != self._annotated_data[name]:
-                            temp_idx = possible_names[idx] == self._annotated_data[name]  # type: ignore
-                            if np.sum(temp_idx) > 0:
-                                true_index[idx] = matches[idx][temp_idx][0]  # type: ignore
-                                matches_temp = matches[idx].copy()  # type: ignore
-                                matches_temp[temp_idx] = matches_temp[temp_idx] * 0
-                                false_index[idx] = matches_temp[
-                                    np.argmax(np.mean(matches_temp, axis=1))
-                                ] # type: ignore
-                            else:
-                                print(f"{idx} has no match in names")
+                if name in self._annotated_data.keys():
+                    if name != self._annotated_data[name]:
+                        temp_idx = possible_names[idx] == self._annotated_data[name]  # type: ignore
+                        if np.sum(temp_idx) > 0:
+                            true_index[idx] = matches[idx][temp_idx][0]  # type: ignore
+                            all_false[idx] = np.delete(matches[idx].copy(), temp_idx, 0)  # type: ignore
+                            false_index[idx] = all_false[idx][
+                                np.argmax(np.mean(all_false[idx], axis=1))
+                            ]  # type: ignore
+                        else:
+                            print(f"{idx} has no match in names")
         else:
             raise ValueError(
                 "Please first annotate some data or provide ",
                 "annotated data so the model can be fitted",
             )
-        a = np.array(list(true_index.values()))
-        b = np.array(list(false_index.values()))
-        X = np.vstack((a, b))
-        Y = np.hstack([np.ones(len(true_index)), np.zeros(len(false_index))])
-        self.scaler = dataScaler().fit(X)  # type: ignore
-        features = self.scaler.transform(X)
+
+        train_idx = np.random.choice(
+            list(true_index.keys()), int(0.3 * len(true_index))
+        )
+        test_idx = list(set(true_index.keys()) - set(train_idx))
+
+        self._X_train = np.array(true_index[train_idx[0]])
+        self._X_train = np.vstack([self._X_train, np.array(false_index[train_idx[0]])])
+        self._y_train = np.ones(1)
+        self._y_train = np.vstack([self._y_train, np.zeros(1)])
+        for idx in train_idx[1:]:
+            self._X_train = np.vstack([self._X_train, np.array(true_index[idx])])
+            self._X_train = np.vstack([self._X_train, np.array(false_index[idx])])
+            self._y_train = np.vstack([self._y_train, np.ones(1)])
+            self._y_train = np.vstack([self._y_train, np.zeros(1)])
+
+        self._X_test = np.array(true_index[test_idx[0]])
+        self._y_test = np.ones(1)
+        self._X_test = np.vstack([self._X_test, all_false[test_idx[0]]])
+        self._y_test = np.vstack(
+            [self._y_test, np.zeros([len(all_false[test_idx[0]]), 1])]
+        )
+        for idx in test_idx[1:]:
+            self._X_test = np.vstack([self._X_test, np.array(true_index[idx])])
+            self._y_test = np.vstack([self._y_test, np.ones(1)])
+            self._X_test = np.vstack([self._X_test, all_false[idx]])
+            self._y_test = np.vstack([self._y_test, np.zeros([len(all_false[idx]), 1])])
+
+        self._X_train = self.scaler.transform(self._X_train)
+        self._X_test = self.scaler.transform(self._X_test)
+        self._y_train = self._y_train.reshape(-1)
+        self._y_test = self._y_test.reshape(-1)
 
         if model_args is None:
             self._model_args = {}
@@ -348,18 +397,13 @@ class NameMatchingOptimiser:
             self._model_args = model_args
 
         self.model = self._model(**self._model_args)  # type: ignore
-        X_train, X_test, y_train, y_test = train_test_split(features, Y, test_size=0.3)
-        self.model.fit(X_train, y_train)
-        y_pred = self.model.predict(X_test)
-        self._X_test = X_test
-        self._y_test = y_test
-        self._X_train = X_train
-        self._y_train = y_train
+        self.model.fit(self._X_train, self._y_train)
+        y_pred = self.model.predict(self._X_test)
 
         if print_results:
-            print(f"accuracy - {accuracy_score(y_test, y_pred)}")
-            print(f"recall - {recall_score(y_test, y_pred)}")
-            print(f"precision - {precision_score(y_test, y_pred)}")
+            print(f"accuracy - {accuracy_score(self._y_test, y_pred)}")
+            print(f"recall - {recall_score(self._y_test, y_pred)}")
+            print(f"precision - {precision_score(self._y_test, y_pred)}")
 
     def predict(self, threshold: float = 0.5) -> dict:
         """

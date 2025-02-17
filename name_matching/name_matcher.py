@@ -67,7 +67,7 @@ class NameMatcher:
         converted to lowercase, to generate case insensitive matching
         default=True
     non_word_characters : bool
-        A boolean indicating whether during the preprocessing all non_word_characters 
+        A boolean indicating whether during the preprocessing all non_word_characters
         should be ignored, excluding & # -
         default=True
     remove_ascii : bool
@@ -116,6 +116,7 @@ class NameMatcher:
         common_words: Union[bool, list] = False,
         cut_off_no_scoring_words: float = 0.01,
         preprocess_split: bool = False,
+        begin_end_legal_pre_suffix: bool = True,
         verbose: bool = True,
         distance_metrics: Union[list, tuple] = [
             "overlap",
@@ -168,6 +169,7 @@ class NameMatcher:
 
         self._original_indexes = not row_numbers
         self._original_index = None
+        self._begin_end_legal_pre_suffix = begin_end_legal_pre_suffix
 
         self.set_distance_metrics(distance_metrics)
 
@@ -237,7 +239,7 @@ class NameMatcher:
             for abbreviation, long_name in zip(abbreviations, long_names):
                 if name.startswith(long_name) | name.endswith(long_name):
                     name = re.sub(rf"\b{long_name}$", abbreviation, name)
-                    name = re.sub(rf"^{long_name}\b", abbreviation, name)                    
+                    name = re.sub(rf"^{long_name}\b", abbreviation, name)
         else:
             for abbreviation, long_name in zip(abbreviations, long_names):
                 if long_name in name:
@@ -329,7 +331,10 @@ class NameMatcher:
 
         data[column_name] = data.apply(
             lambda x: self._replace_substring(
-                x[column_name], abbreviations, possible_names, begin_end=True
+                x[column_name],
+                abbreviations,
+                possible_names,
+                begin_end=self._begin_end_legal_pre_suffix,
             ),
             axis=1,
         )
@@ -597,21 +602,23 @@ class NameMatcher:
             tqdm.write("possible matches found   \n fuzzy matching...\n")
             data_matches = to_be_matched.progress_apply(
                 lambda x: self.fuzzy_matches(
-                    self._possible_matches[to_be_matched.index.get_loc(x.name), :], x # type: ignore
+                    self._possible_matches[to_be_matched.index.get_loc(x.name), :], x  # type: ignore
                 ),
                 axis=1,
-            ) # type: ignore
+            )  # type: ignore
         else:
             data_matches = to_be_matched.apply(
                 lambda x: self.fuzzy_matches(
-                    self._possible_matches[to_be_matched.index.get_loc(x.name), :], x # type: ignore
+                    self._possible_matches[to_be_matched.index.get_loc(x.name), :], x  # type: ignore
                 ),
                 axis=1,
             )
         if self._return_algorithms_score:
             return data_matches, self._df_matching_data.iloc[
                 self._possible_matches.flatten(), :
-            ][self._column].values.reshape((-1, self._top_n)) # type: ignore
+            ][self._column].values.reshape(
+                (-1, self._top_n)
+            )  # type: ignore
 
         if self._number_of_matches == 1:
             data_matches = data_matches.rename(
@@ -625,9 +632,9 @@ class NameMatcher:
             for col in data_matches.columns[
                 data_matches.columns.str.contains("match_index")
             ]:
-                data_matches[col] = self._original_index[ # type: ignore
+                data_matches[col] = self._original_index[  # type: ignore
                     data_matches[col].astype(int).fillna(0)
-                ] # type: ignore
+                ]  # type: ignore
 
         if self._verbose:
             tqdm.write("done")
