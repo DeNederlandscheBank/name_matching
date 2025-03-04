@@ -1,14 +1,13 @@
 from name_matching.check_results import ResultsChecker
 from name_matching.name_matcher import NameMatcher
 from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.linear_model import Lasso
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import (
     accuracy_score,
     recall_score,
     precision_score,
     precision_recall_curve,
 )
+from sklearn.model_selection import cross_validate
 from sklearn.preprocessing import StandardScaler
 from typing import Optional, Protocol
 import matplotlib.pyplot as plt
@@ -144,6 +143,42 @@ class NameMatchingOptimiser:
         for key, idx, val in zip(names.values, names.index, max_col.values):
             self._annotated_data[key] = data.loc[idx, val]  # type: ignore
 
+    def cross_validate_model(self, model_name: Optional[str] = None) -> pd.DataFrame:
+
+        results = cross_validate(
+            self.model, # type: ignore
+            np.vstack([self._X_train, self._X_test]),
+            np.hstack([self._y_train, self._y_test]),
+            scoring=["accuracy", "precision", "recall", "f1"],
+        )
+
+        if model_name is None:
+            model_name = str(self.model).split('(')[0]
+        ind = pd.MultiIndex.from_tuples(
+            [
+                ("Accuracy", "\mu"),
+                ("Accuracy", "$\sigma$"),
+                ("F1", "\mu"),
+                ("F1", "$\sigma$"),
+                ("Precision", "\mu"),
+                ("Precision", "$\sigma$"),
+                ("Recall", "\mu"),
+                ("Recall", "$\sigma$"),
+            ]
+        )
+        df = pd.DataFrame(index=ind, columns=[model_name])
+
+        df.loc[("Accuracy", "\mu"), model_name] = results["test_accuracy"].mean()
+        df.loc[("Accuracy", "$\sigma$"), model_name] = results["test_accuracy"].std()
+        df.loc[("F1", "\mu"), model_name] = results["test_f1"].mean()
+        df.loc[("F1", "$\sigma$"), model_name] = results["test_f1"].std()
+        df.loc[("Precision", "\mu"), model_name] = results["test_precision"].mean()
+        df.loc[("Precision", "$\sigma$"), model_name] = results["test_precision"].std()
+        df.loc[("Recall", "\mu"), model_name] = results["test_recall"].mean()
+        df.loc[("Recall", "$\sigma$"), model_name] = results["test_recall"].std()
+
+        return df
+
     def _preselect_matches(
         self, matches: pd.DataFrame, lower_bound: float
     ) -> pd.DataFrame:
@@ -170,7 +205,12 @@ class NameMatchingOptimiser:
         # select matches between lower_bound and 100% for manual inspection
         return matches[(matches["max_scr"] > lower_bound) & (matches["max_scr"] < 100)]
 
-    def annotate(self, lower_bound: float = 70.0, data_percentage: float = 0.2, max_matches: int = 10):
+    def annotate(
+        self,
+        lower_bound: float = 70.0,
+        data_percentage: float = 0.2,
+        max_matches: int = 10,
+    ):
         """
         Annotates a subset of the data.
 
