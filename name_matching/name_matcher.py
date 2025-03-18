@@ -1,3 +1,5 @@
+import os
+import pickle
 import re
 import numpy as np
 import pandas as pd
@@ -83,6 +85,9 @@ class NameMatcher:
         matching process. The removing of the common words is only done for the n-grams
         cosine matching part.
         default=False
+    begin_end_legal_pre_suffix: bool
+        asd
+        default=True
     verbose : bool
         A boolean indicating whether progress printing should be done
         default=True
@@ -127,6 +132,8 @@ class NameMatcher:
         ],
         row_numbers: bool = False,
         return_algorithms_score: bool = False,
+        save_intermediate_results: bool = False,
+        load_intermediate_results: bool = False,
     ):
 
         self._possible_matches = None
@@ -135,6 +142,8 @@ class NameMatcher:
 
         self._number_of_rows = number_of_rows
         self._low_memory = low_memory
+        self._save = save_intermediate_results
+        self._load = load_intermediate_results
 
         self._column = ""
         self._column_matching = ""
@@ -171,7 +180,7 @@ class NameMatcher:
         self._original_index = None
         self._begin_end_legal_pre_suffix = begin_end_legal_pre_suffix
 
-        self.set_distance_metrics(distance_metrics)
+        self.set_distance_metrics(distance_metrics)  # type: ignore
 
         self._vec = TfidfVectorizer(
             lowercase=False, analyzer="char", ngram_range=(ngrams)
@@ -528,13 +537,33 @@ class NameMatcher:
             vectoriser is initialised
             default: True
         """
-        self._df_matching_data = self.preprocess(self._df_matching_data, self._column)
+        if self._load and os.path.exists("df_matching_data.pkl"):
+            with open("df_matching_data.pkl", "rb") as file:
+                self._n_grams_matching = pickle.load(file)
+        else:
+            self._df_matching_data = self.preprocess(
+                self._df_matching_data, self._column
+            )
+
+        if self._save:
+            with open("df_matching_data.pkl", "wb") as file:
+                pickle.dump(self._df_matching_data, file)
+
         if self._postprocess_common_words:
             self._word_set = self._make_no_scoring_words(
                 "common", self._word_set, self._cut_off
             )
-        self._vectorise_data(transform)
-        self._preprocessed = True
+
+        if self._load and os.path.exists("n_grams_matching.pkl"):
+            with open("n_grams_matching.pkl", "rb") as file:
+                self._n_grams_matching = pickle.load(file)
+        else:
+            self._vectorise_data(transform)
+            self._preprocessed = True
+
+        if self._save:
+            with open("n_grams_matching.pkl", "wb") as file:
+                pickle.dump(self._n_grams_matching, file)
 
     def match_names(
         self, to_be_matched: Union[pd.Series, pd.DataFrame], column_matching: str
@@ -581,18 +610,35 @@ class NameMatcher:
             )
         if not self._preprocessed:
             self._process_matching_data()
-        to_be_matched = self.preprocess(to_be_matched, self._column_matching)
+
+        if self._load and os.path.exists("to_be_matched.pkl"):
+            with open("to_be_matched.pkl", "rb") as file:
+                to_be_matched = pickle.load(file)
+        else:
+            to_be_matched = self.preprocess(to_be_matched, self._column_matching)
+
+        if self._save:
+            with open("to_be_matched.pkl", "wb") as file:
+                pickle.dump(to_be_matched, file)
 
         if self._verbose:
             tqdm.write("preprocessing complete \n searching for matches...\n")
 
-        self._possible_matches = self._search_for_possible_matches(to_be_matched)
+        if self._load and os.path.exists("possible_matches.pkl"):
+            with open("possible_matches.pkl", "rb") as file:
+                self._possible_matches = pickle.load(file)
+        else:
+            self._possible_matches = self._search_for_possible_matches(to_be_matched)  # type: ignore
+
+        if self._save:
+            with open("possible_matches.pkl", "wb") as file:
+                pickle.dump(self._possible_matches, file)
 
         if self._preprocess_split:
             self._possible_matches = np.hstack(
                 (
                     self._search_for_possible_matches(
-                        self._preprocess_reduce(to_be_matched)
+                        self._preprocess_reduce(to_be_matched)  # type: ignore
                     ),
                     self._possible_matches,
                 )
@@ -616,9 +662,11 @@ class NameMatcher:
         if self._return_algorithms_score:
             return data_matches, self._df_matching_data.iloc[
                 self._possible_matches.flatten(), :
-            ][self._column].values.reshape(
+            ][
+                self._column
+            ].values.reshape(  # type: ignore
                 (-1, self._top_n)
-            )  # type: ignore
+            )
 
         if self._number_of_matches == 1:
             data_matches = data_matches.rename(
@@ -642,7 +690,7 @@ class NameMatcher:
         return data_matches
 
     def fuzzy_matches(
-        self, possible_matches: np.array, to_be_matched: pd.Series
+        self, possible_matches: np.array, to_be_matched: pd.Series  # type: ignore
     ) -> pd.Series:
         """A method which performs the fuzzy matching between the data in the
         to_be_matched series as well as the indicated indexes of the matching_data points
@@ -698,7 +746,7 @@ class NameMatcher:
 
     def _score_matches(
         self, to_be_matched_instance: str, possible_matches: List
-    ) -> np.array:
+    ) -> np.array:  # type: ignore
         """A method to score a name to_be_matched_instance to a list of possible matches.
         The scoring is done based on all the metrics which are enabled.
 
@@ -726,7 +774,7 @@ class NameMatcher:
 
         return match_score
 
-    def _rate_matches(self, match_score: np.array) -> np.array:
+    def _rate_matches(self, match_score: np.array) -> np.array:  # type: ignore
         """Converts the match scores from the score_matches method to a list of indexes of
         the best scoring matches limited to the _number_of_matches.
 
@@ -808,7 +856,7 @@ class NameMatcher:
 
         return org_name, alt_names
 
-    def _adjust_scores(self, match_score: np.array, match: pd.Series) -> pd.Series:
+    def _adjust_scores(self, match_score: np.array, match: pd.Series) -> pd.Series:  # type: ignore
         """Adjust the scores to be between 0 and 100
 
         Parameters
@@ -868,7 +916,7 @@ class NameMatcher:
             vectoriser is initialised
             default: True
         """
-        self._vec.fit(self._df_matching_data[self._column].values.flatten())
+        self._vec.fit(self._df_matching_data[self._column].values.flatten())  # type: ignore
         if transform:
             self.transform_data()
 
@@ -885,7 +933,7 @@ class NameMatcher:
         if self._low_memory:
             self._n_grams_matching = self._n_grams_matching.tocoo()
 
-    def _search_for_possible_matches(self, to_be_matched: pd.DataFrame) -> np.array:
+    def _search_for_possible_matches(self, to_be_matched: pd.DataFrame) -> np.array:  # type: ignore
         """Generates ngrams from the data which should be matched, calculate the cosine
         simularity between these data and the matching data. Hereafter a top n of the
         matches is selected and returned.
