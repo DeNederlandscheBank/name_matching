@@ -539,7 +539,7 @@ class NameMatcher:
         """
         if self._load and os.path.exists("df_matching_data.pkl"):
             with open("df_matching_data.pkl", "rb") as file:
-                self._n_grams_matching = pickle.load(file)
+                self._n_grams_matching = pickle.load(file).fillna('na')
         else:
             self._df_matching_data = self.preprocess(
                 self._df_matching_data, self._column
@@ -554,16 +554,9 @@ class NameMatcher:
                 "common", self._word_set, self._cut_off
             )
 
-        if self._load and os.path.exists("n_grams_matching.pkl"):
-            with open("n_grams_matching.pkl", "rb") as file:
-                self._n_grams_matching = pickle.load(file)
         else:
             self._vectorise_data(transform)
             self._preprocessed = True
-
-        if self._save:
-            with open("n_grams_matching.pkl", "wb") as file:
-                pickle.dump(self._n_grams_matching, file)
 
     def match_names(
         self, to_be_matched: Union[pd.Series, pd.DataFrame], column_matching: str
@@ -613,7 +606,7 @@ class NameMatcher:
 
         if self._load and os.path.exists("to_be_matched.pkl"):
             with open("to_be_matched.pkl", "rb") as file:
-                to_be_matched = pickle.load(file)
+                to_be_matched = pickle.load(file).fillna('na')
         else:
             to_be_matched = self.preprocess(to_be_matched, self._column_matching)
 
@@ -768,7 +761,7 @@ class NameMatcher:
         for method_list in self._distance_metrics.values():
             for method in method_list:
                 match_score[:, idx] = np.array(
-                    [method.sim(to_be_matched_instance, s) for s in possible_matches]
+                    [method.sim(str(to_be_matched_instance), str(s)) for s in possible_matches]
                 )
                 idx = idx + 1
 
@@ -916,7 +909,7 @@ class NameMatcher:
             vectoriser is initialised
             default: True
         """
-        self._vec.fit(self._df_matching_data[self._column].values.flatten())  # type: ignore
+        self._vec.fit(self._df_matching_data[self._column].values.flatten().astype(str))  # type: ignore
         if transform:
             self.transform_data()
 
@@ -960,7 +953,7 @@ class NameMatcher:
             results = np.zeros((len(to_be_matched), self._top_n))
             input_data = to_be_matched[self._column_matching]
             for idx, row_name in enumerate(tqdm(input_data, disable=not self._verbose)):
-                match_ngrams = self._vec.transform([row_name])
+                match_ngrams = self._vec.transform([str(row_name)])
                 results[idx, :] = sparse_cosine_top_n(
                     matrix_a=self._n_grams_matching,
                     matrix_b=match_ngrams,
@@ -971,7 +964,7 @@ class NameMatcher:
                 )
         else:
             match_ngrams = self._vec.transform(
-                to_be_matched[self._column_matching].tolist()
+                to_be_matched[self._column_matching].astype(str).tolist()
             ).tocsc()
             results = sparse_cosine_top_n(
                 matrix_a=self._n_grams_matching,

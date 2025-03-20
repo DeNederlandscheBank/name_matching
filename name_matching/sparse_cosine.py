@@ -85,7 +85,8 @@ def _sparse_cosine_top_n_standard(
         The indexes for the n best sparse cosine matches between matrix a and b
 
     """
-
+    matrix_a = matrix_a.astype(np.float32)
+    matrix_b = matrix_b.astype(np.float32)
     results_arg = np.zeros((matrix_b.shape[0], top_n), dtype=np.float32)
 
     # Split up the matrice in a certain number of rows
