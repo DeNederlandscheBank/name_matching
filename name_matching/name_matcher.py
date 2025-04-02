@@ -601,8 +601,6 @@ class NameMatcher:
             to_be_matched = pd.DataFrame(
                 [to_be_matched.values], columns=to_be_matched.index.to_list()
             )
-        if not self._preprocessed:
-            self._process_matching_data()
 
         if self._load and os.path.exists("to_be_matched.pkl"):
             with open("to_be_matched.pkl", "rb") as file:
@@ -614,13 +612,20 @@ class NameMatcher:
             with open("to_be_matched.pkl", "wb") as file:
                 pickle.dump(to_be_matched, file)
 
-        if self._verbose:
-            tqdm.write("preprocessing complete \n searching for matches...\n")
-
         if self._load and os.path.exists("possible_matches.pkl"):
             with open("possible_matches.pkl", "rb") as file:
                 self._possible_matches = pickle.load(file)
+
+            if not self._preprocessed:
+                self._process_matching_data(False)
+            
         else:
+            if not self._preprocessed:
+                self._process_matching_data()
+
+            to_be_matched = self.preprocess(to_be_matched, self._column_matching)
+            if self._verbose:
+                tqdm.write("preprocessing complete \n searching for matches...\n")
             self._possible_matches = self._search_for_possible_matches(to_be_matched)  # type: ignore
 
         if self._save:

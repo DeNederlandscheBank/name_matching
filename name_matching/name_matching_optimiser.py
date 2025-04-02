@@ -102,7 +102,7 @@ class NameMatchingOptimiser:
         if metrics is None:
             raise ValueError("no metrics supplied!")
         self._nm.load_and_process_master_data(
-            self._matching_col, self._df_matching_data
+            self._matching_col, self._df_matching_data, False
         )
         self._nm.set_distance_metrics(metrics)
         matches = self._nm.match_names(self._df_to_be_matched, self._to_be_matched_col)
@@ -227,7 +227,7 @@ class NameMatchingOptimiser:
             max_matches = self._nm._top_n
         self._nm._number_of_matches = max_matches
         self._nm.load_and_process_master_data(
-            self._matching_col, self._df_matching_data
+            self._matching_col, self._df_matching_data, False
         )
         reduced_data = self._df_to_be_matched.sample(
             frac=data_percentage, replace=False
@@ -365,7 +365,7 @@ class NameMatchingOptimiser:
         # Generate matches
         self._nm._return_algorithms_score = True
         self._nm.load_and_process_master_data(
-            self._matching_col, self._df_matching_data
+            self._matching_col, self._df_matching_data, False
         )
         matches, possible_names = self._nm.match_names(
             self._df_to_be_matched, self._to_be_matched_col
@@ -462,7 +462,7 @@ class NameMatchingOptimiser:
 
         self._nm._return_algorithms_score = True
         self._nm.load_and_process_master_data(
-            self._matching_col, self._df_matching_data
+            self._matching_col, self._df_matching_data, False
         )
         algorithm_scores, names = self._nm.match_names(
             self._df_to_be_matched, self._to_be_matched_col
