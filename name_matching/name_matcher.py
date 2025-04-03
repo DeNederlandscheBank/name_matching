@@ -53,6 +53,8 @@ class NameMatcher:
         when calculating the final score. The terms are still included in determining the
         best match.
         default=False
+    delete_legal: bool
+        default = False
     common_words : bool or list
         Boolean indicating whether the most common words from the matching data should be
         excluded when calculating the final score. The terms are still included in
@@ -104,6 +106,12 @@ class NameMatcher:
         Bool indicating whether the scores of all the algorithms should be returned instead
         of a combined score
         default=False
+    save_intermediate_results: bool 
+        default= False,        
+    load_intermediate_results: bool 
+        default= False,
+    intermediate_results_name: str 
+        default= "",
     """
 
     def __init__(
@@ -117,6 +125,7 @@ class NameMatcher:
         non_word_characters: bool = True,
         remove_ascii: bool = True,
         legal_suffixes: bool = False,
+        delete_legal: bool = False,
         make_abbreviations: bool = True,
         common_words: Union[bool, list] = False,
         cut_off_no_scoring_words: float = 0.01,
@@ -132,8 +141,9 @@ class NameMatcher:
         ],
         row_numbers: bool = False,
         return_algorithms_score: bool = False,
-        save_intermediate_results: bool = False,
+        save_intermediate_results: bool = False,        
         load_intermediate_results: bool = False,
+        intermediate_results_name: str = "",
     ):
 
         self._possible_matches = None
@@ -144,6 +154,7 @@ class NameMatcher:
         self._low_memory = low_memory
         self._save = save_intermediate_results
         self._load = load_intermediate_results
+        self._intermediate_results_name = intermediate_results_name
 
         self._column = ""
         self._column_matching = ""
@@ -158,6 +169,7 @@ class NameMatcher:
         self._preprocess_ascii = remove_ascii
         self._preprocess_abbreviations = make_abbreviations
         self._postprocess_company_legal_id = legal_suffixes
+        self._delete_legal = delete_legal
 
         if isinstance(common_words, bool):
             self._postprocess_common_words = common_words
@@ -224,6 +236,7 @@ class NameMatcher:
         abbreviations: List[str],
         long_names: List[str],
         begin_end: bool = True,
+        delete_names: bool = False,
     ) -> str:
         """
         Replace substrings in a given name with their corresponding abbreviations based on specified conditions.
@@ -238,6 +251,8 @@ class NameMatcher:
             List of long names corresponding to the abbreviations.
         begin_end : bool, optional
             If True, replace only if the substring is at the beginning or end of the name.
+        delete_names : bool, optional
+            Bool indicating whether the strings should be deleted
 
         Returns
         -------
@@ -247,12 +262,19 @@ class NameMatcher:
         if begin_end:
             for abbreviation, long_name in zip(abbreviations, long_names):
                 if name.startswith(long_name) | name.endswith(long_name):
-                    name = re.sub(rf"\b{long_name}$", abbreviation, name)
-                    name = re.sub(rf"^{long_name}\b", abbreviation, name)
+                    if delete_names:
+                        name = re.sub(rf"\b{long_name}$", "", name)
+                        name = re.sub(rf"^{long_name}\b", "", name)
+                    else:
+                        name = re.sub(rf"\b{long_name}$", abbreviation, name)
+                        name = re.sub(rf"^{long_name}\b", abbreviation, name)
         else:
             for abbreviation, long_name in zip(abbreviations, long_names):
                 if long_name in name:
-                    name = re.sub(rf"\b{long_name}\b", abbreviation, name)
+                    if delete_names:
+                        name = re.sub(rf"\b{long_name}\b", "", name)
+                    else:
+                        name = re.sub(rf"\b{long_name}\b", abbreviation, name)
 
         return name
 
@@ -344,6 +366,7 @@ class NameMatcher:
                 abbreviations,
                 possible_names,
                 begin_end=self._begin_end_legal_pre_suffix,
+                delete_names=self._delete_legal
             ),
             axis=1,
         )
@@ -537,8 +560,8 @@ class NameMatcher:
             vectoriser is initialised
             default: True
         """
-        if self._load and os.path.exists("df_matching_data.pkl"):
-            with open("df_matching_data.pkl", "rb") as file:
+        if self._load and os.path.exists(f"df_matching_data{self._intermediate_results_name}.pkl"):
+            with open(f"df_matching_data{self._intermediate_results_name}.pkl", "rb") as file:
                 self._n_grams_matching = pickle.load(file).fillna('na')
         else:
             self._df_matching_data = self.preprocess(
@@ -546,7 +569,7 @@ class NameMatcher:
             )
 
         if self._save:
-            with open("df_matching_data.pkl", "wb") as file:
+            with open(f"df_matching_data{self._intermediate_results_name}.pkl", "wb") as file:
                 pickle.dump(self._df_matching_data, file)
 
         if self._postprocess_common_words:
@@ -602,18 +625,18 @@ class NameMatcher:
                 [to_be_matched.values], columns=to_be_matched.index.to_list()
             )
 
-        if self._load and os.path.exists("to_be_matched.pkl"):
-            with open("to_be_matched.pkl", "rb") as file:
+        if self._load and os.path.exists(f"to_be_matched{self._intermediate_results_name}.pkl"):
+            with open(f"to_be_matched{self._intermediate_results_name}.pkl", "rb") as file:
                 to_be_matched = pickle.load(file).fillna('na')
         else:
             to_be_matched = self.preprocess(to_be_matched, self._column_matching)
 
         if self._save:
-            with open("to_be_matched.pkl", "wb") as file:
+            with open(f"to_be_matched{self._intermediate_results_name}.pkl", "wb") as file:
                 pickle.dump(to_be_matched, file)
 
-        if self._load and os.path.exists("possible_matches.pkl"):
-            with open("possible_matches.pkl", "rb") as file:
+        if self._load and os.path.exists(f"possible_matches{self._intermediate_results_name}.pkl"):
+            with open(f"possible_matches{self._intermediate_results_name}.pkl", "rb") as file:
                 self._possible_matches = pickle.load(file)
 
             if not self._preprocessed:
@@ -629,7 +652,7 @@ class NameMatcher:
             self._possible_matches = self._search_for_possible_matches(to_be_matched)  # type: ignore
 
         if self._save:
-            with open("possible_matches.pkl", "wb") as file:
+            with open(f"possible_matches{self._intermediate_results_name}.pkl", "wb") as file:
                 pickle.dump(self._possible_matches, file)
 
         if self._preprocess_split:
