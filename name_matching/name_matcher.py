@@ -107,11 +107,16 @@ class NameMatcher:
         of a combined score
         default=False
     save_intermediate_results: bool 
-        default= False,        
+        default= False        
     load_intermediate_results: bool 
-        default= False,
-    intermediate_results_name: str 
-        default= "",
+        default= False
+    intermediate_results_name: dict[str, str]
+        dict containing the names of the different intermediate files. The values are the names
+        and the keys indicate which name should be given to a certain file. The following keys are 
+        used to name the files: df_matching_data, to_be_matched, possible_matches
+        default= {"matching_data":"matching_data_name",
+                  "to_be_matched":"to_be_matched_name",
+                  "possible_matches":"possible_matches_name",}
     """
 
     def __init__(
@@ -143,7 +148,9 @@ class NameMatcher:
         return_algorithms_score: bool = False,
         save_intermediate_results: bool = False,        
         load_intermediate_results: bool = False,
-        intermediate_results_name: str = "",
+        intermediate_results_name: dict[str, str] = {"matching_data":"df_matching_data_name",
+                                                     "to_be_matched":"to_be_matched_name",
+                                                     "possible_matches":"possible_matches_name",},
     ):
 
         self._possible_matches = None
@@ -560,8 +567,8 @@ class NameMatcher:
             vectoriser is initialised
             default: True
         """
-        if self._load and os.path.exists(f"df_matching_data{self._intermediate_results_name}.pkl"):
-            with open(f"df_matching_data{self._intermediate_results_name}.pkl", "rb") as file:
+        if self._load and os.path.exists(f"df_matching_data{self._intermediate_results_name['matching_data']}.pkl"):
+            with open(f"df_matching_data{self._intermediate_results_name['matching_data']}.pkl", "rb") as file:
                 self._n_grams_matching = pickle.load(file).fillna('na')
         else:
             self._df_matching_data = self.preprocess(
@@ -569,7 +576,7 @@ class NameMatcher:
             )
 
         if self._save:
-            with open(f"df_matching_data{self._intermediate_results_name}.pkl", "wb") as file:
+            with open(f"df_matching_data{self._intermediate_results_name['matching_data']}.pkl", "wb") as file:
                 pickle.dump(self._df_matching_data, file)
 
         if self._postprocess_common_words:
@@ -625,18 +632,18 @@ class NameMatcher:
                 [to_be_matched.values], columns=to_be_matched.index.to_list()
             )
 
-        if self._load and os.path.exists(f"to_be_matched{self._intermediate_results_name}.pkl"):
-            with open(f"to_be_matched{self._intermediate_results_name}.pkl", "rb") as file:
+        if self._load and os.path.exists(f"to_be_matched{self._intermediate_results_name['to_be_matched']}.pkl"):
+            with open(f"to_be_matched{self._intermediate_results_name['to_be_matched']}.pkl", "rb") as file:
                 to_be_matched = pickle.load(file).fillna('na')
         else:
             to_be_matched = self.preprocess(to_be_matched, self._column_matching)
 
         if self._save:
-            with open(f"to_be_matched{self._intermediate_results_name}.pkl", "wb") as file:
+            with open(f"to_be_matched{self._intermediate_results_name['to_be_matched']}.pkl", "wb") as file:
                 pickle.dump(to_be_matched, file)
 
-        if self._load and os.path.exists(f"possible_matches{self._intermediate_results_name}.pkl"):
-            with open(f"possible_matches{self._intermediate_results_name}.pkl", "rb") as file:
+        if self._load and os.path.exists(f"possible_matches{self._intermediate_results_name['possible_matches']}.pkl"):
+            with open(f"possible_matches{self._intermediate_results_name['possible_matches']}.pkl", "rb") as file:
                 self._possible_matches = pickle.load(file)
 
             if not self._preprocessed:
@@ -652,7 +659,7 @@ class NameMatcher:
             self._possible_matches = self._search_for_possible_matches(to_be_matched)  # type: ignore
 
         if self._save:
-            with open(f"possible_matches{self._intermediate_results_name}.pkl", "wb") as file:
+            with open(f"possible_matches{self._intermediate_results_name['possible_matches']}.pkl", "wb") as file:
                 pickle.dump(self._possible_matches, file)
 
         if self._preprocess_split:
