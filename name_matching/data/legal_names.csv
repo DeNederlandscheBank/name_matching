@@ -19,23 +19,45 @@ a.g.,Aktiengesellschaft
 ag,Aktiengesellschaft
 og,Offene Gesellschaft 
 kg,Kommanditgesellschaft
+co.kg,Kommanditgesellschaft mit haftungsbeschränktem Komplementär
+KÜ,Korteriuhistu
 aat,Aktsyyanernaye atkrytae tavarystva
 3at,Zakrytae aktsyyanernae tavarystva
 esv,Economische Samenwerkingsverband 
 vzw,Vereniging zonder winstoogmerk 
+asbl,association sans but lucratif
 vof,Vennootschap onder firma
 snc,Société en nom collectif
 comm.v,Commanditaire vennootschap
+S.comm,Société en commandite
+Komm.G.,Kommanditgesellschaft
 scs,Société en commandite simple 
 bvba,Besloten vennootschap met beperkte aansprakelijkheid 
 sprl,Société privée à responsabilité limitée 
 cvba,Coöperatieve vennootschap met beperkte aansprakelijkheid 
 cvoa,Coöperatieve vennootschap zonder beperkte aansprakelijkheid 
+sc SPRL,Societe Civile sous forme de Societe Privee a ponsabilite Limitee
+SPFPL SARL,Société de Participations Financières de Profession Libérale Société à responsabilité limitée
+SPFPL SAS,Société de Participations Financières de Profession Libérale Société par actions simplifiée
+SIVU,Syndicat intercommunal à vocation unique 
 sca,Société en commandite par actions 
 sep,Société européenne privée 
 gie,Groepering van economisch belang
 d.d.,drushtvo s ogranichenom odgovornoshtyu
 a.d.,aktsionerno drushtvo
+SpR,Stiftung des privaten Rechts
+SAU,Sociedad Anónima Unipersonal
+II,Individuali įmonė
+BeG,Betriebe der Gebietskörperschaften
+ZEM,Zemnieku saimniecība 
+CLG,Company Limited by Guarantee
+UC,Unlimited company
+AIE,Agrupación de Interés económico
+SASPJ.,Société ou Association Sans Personnalité Juridique
+ApS,Anpartselskab
+osk,Osuuskunta
+AoR,Anstalt des öffentlichen Rechts
+DAC,Designated Activity Company
 d.n.o.,drushtvo s neogranichenom odgovornoshtyu
 d.o.o.,drushtvo s ogranichenom odgovornoshtyu
 k.v.,komanditno drushtvo
@@ -71,6 +93,7 @@ S.A.,Sociedad Anónima
 SGR,Sociedad de Garantía Recíproca 
 S.G.R.,Sociedad de Garantía Recíproca 
 LTDA,Sociedad de Responsabilidad Limitada 
+SLU,Sociedad de responsabilidad limitada unipersonal
 S.P.A.,Sociedad por Acciones 
 SA,Sociedad Anónima 
 S. en C.,Sociedad en Comandita 
@@ -138,6 +161,8 @@ EURL,Entreprise Unipersonnelle à Responsabilité Limitée
 SASU,Société par Actions Simplifiée Unipersonnelle 
 FCP,Fonds Commun de Placement 
 GIE,Groupement d'Intérêt Économique 
+GAEC,Groupement agricole d'exploitation en commun
+CUMA,Coopérative d'utilisation de matériel agricole en commun
 SEP,Société en Participation
 SNC,Société en Nom Collectif 
 SCS,Société en Commandite Simple
@@ -155,11 +180,13 @@ KGaA,Kommanditgesellschaft auf Aktien
 GmbH,Gesellschaft mit beschränkter Haftung
 G.m.b.H.,Gesellschaft mit beschränkter Haftung
 AG,Aktiengesellschaft 
+UG,Unternehmergesellschaft
 mbH & Co. KG,mit beschränkter Haftung & Compagnie Kommanditgesellschaft 
 a.e.,Anonymos Etairia
 ae,Anonymos Etairia
 e.e.,Eteria Eterochronon 
 ee,Eteria Eterochronon 
+i.k.e.,Idiotiki kefaleouhiki Eteria
 epe,Etaireia Periorismenis Efthinis 
 e.p.e.,Etaireia Periorismenis Efthinis 
 mepe,Monoprosopi Etaireia Periorismenis Efthinis 
@@ -351,6 +378,8 @@ AB,Aktiengesellschaft
 SA,Société Anonyme 
 GmbH,Gesellschaft mit beschränkter Haftung 
 G.M.B.H.,Gesellschaft mit beschränkter Haftung 
+KoR,Korperschaft des offentlichen Rechts
+G,Gebietskorperschaft
 SARL,Société à responsabilité limitée 
 SAGL,Società a garanzia limitata
 koop.,Kooperatif
@@ -413,6 +442,7 @@ qk,Qo'shma Korxona
 d.o.o,drustvo so ogranicena odgovornost
 d.o.o.e.l.,drustvo so ogranicena odgovornost osnovano od edno lice
 j.t.d.,javno trgovsko drustvo
+j.d.o.o.,Jednostavno drustvo s ogranicenom odgovornoscu
 a.d.,akcionersko drustvo
 k.d.a.,komanditno drustvo so akcii
 k.d.,komanditno drustvo
