@@ -6,8 +6,9 @@ import pandas as pd
 from tqdm import tqdm
 from operator import iconcat
 from functools import reduce
-from unicodedata import normalize
-from re import escape, sub, split as rsplit
+from unicodedata import category, normalize
+from re import escape, sub
+from name_matching.data.transliterations import TRANSLITERATION_MAP
 from typing import List, Optional, Union, Tuple
 from itertools import compress
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -52,6 +53,10 @@ class NameMatcher:
         Boolean indicating whether the most common company legal terms should be excluded
         when calculating the final score. The terms are still included in determining the
         best match.
+        default=False
+    preprocess_legal : bool
+        Boolean indicating whether the common company legal terms should be excluded
+        from the whole matching process.
         default=False
     delete_legal: bool
         default = False
@@ -106,13 +111,13 @@ class NameMatcher:
         Bool indicating whether the scores of all the algorithms should be returned instead
         of a combined score
         default=False
-    save_intermediate_results: bool 
-        default= False        
-    load_intermediate_results: bool 
+    save_intermediate_results: bool
+        default= False
+    load_intermediate_results: bool
         default= False
     intermediate_results_name: dict[str, str]
         dict containing the names of the different intermediate files. The values are the names
-        and the keys indicate which name should be given to a certain file. The following keys are 
+        and the keys indicate which name should be given to a certain file. The following keys are
         used to name the files: df_matching_data, to_be_matched, possible_matches
         default= {"matching_data":"matching_data_name",
                   "to_be_matched":"to_be_matched_name",
@@ -130,6 +135,7 @@ class NameMatcher:
         non_word_characters: bool = True,
         remove_ascii: bool = True,
         legal_suffixes: bool = False,
+        preprocess_legal: bool = False,
         delete_legal: bool = False,
         make_abbreviations: bool = True,
         common_words: Union[bool, list] = False,
@@ -146,11 +152,13 @@ class NameMatcher:
         ],
         row_numbers: bool = False,
         return_algorithms_score: bool = False,
-        save_intermediate_results: bool = False,        
+        save_intermediate_results: bool = False,
         load_intermediate_results: bool = False,
-        intermediate_results_name: dict[str, str] = {"matching_data":"df_matching_data_name",
-                                                     "to_be_matched":"to_be_matched_name",
-                                                     "possible_matches":"possible_matches_name",},
+        intermediate_results_name: dict[str, str] = {
+            "matching_data": "df_matching_data_name",
+            "to_be_matched": "to_be_matched_name",
+            "possible_matches": "possible_matches_name",
+        },
     ):
 
         self._possible_matches = None
@@ -175,6 +183,7 @@ class NameMatcher:
         self._preprocess_non_word_characters = non_word_characters
         self._preprocess_ascii = remove_ascii
         self._preprocess_abbreviations = make_abbreviations
+        self._preprocess_legal_suffixes = preprocess_legal
         self._postprocess_company_legal_id = legal_suffixes
         self._delete_legal = delete_legal
 
@@ -342,7 +351,7 @@ class NameMatcher:
             legal_words = pd.read_csv(path)
 
         for _, legal_word in legal_words.iterrows():
-            abbr = re.split(r"[. ]", legal_word["abbreviation"].strip().lower())
+            abbr = re.split(r"[. /]", legal_word["abbreviation"].strip().lower())
             abbr = list(filter(None, abbr))
             lgl = legal_word["full_name"].lower().strip().split(" ")
 
@@ -359,6 +368,8 @@ class NameMatcher:
             else:
                 self._temp = [legal_word["full_name"]]
 
+            self._temp.append("".join(abbr))
+
             for option in self._temp:
                 abbreviations.append(legal_word["abbreviation"].lower())
                 possible_names.append(
@@ -367,13 +378,16 @@ class NameMatcher:
                     else " ".join(option).strip()
                 )
 
+        if self._delete_legal:
+            possible_names.sort(key=len, reverse=True)
+
         data[column_name] = data.apply(
             lambda x: self._replace_substring(
                 x[column_name],
                 abbreviations,
                 possible_names,
                 begin_end=self._begin_end_legal_pre_suffix,
-                delete_names=self._delete_legal
+                delete_names=self._delete_legal,
             ),
             axis=1,
         )
@@ -567,16 +581,22 @@ class NameMatcher:
             vectoriser is initialised
             default: True
         """
-        if self._load and os.path.exists(f"{self._intermediate_results_name['matching_data']}.pkl"):
-            with open(f"{self._intermediate_results_name['matching_data']}.pkl", "rb") as file:
-                self._n_grams_matching = pickle.load(file).fillna('na')
+        if self._load and os.path.exists(
+            f"{self._intermediate_results_name['matching_data']}.pkl"
+        ):
+            with open(
+                f"{self._intermediate_results_name['matching_data']}.pkl", "rb"
+            ) as file:
+                self._n_grams_matching = pickle.load(file).fillna("na")
         else:
             self._df_matching_data = self.preprocess(
                 self._df_matching_data, self._column
             )
 
         if self._save:
-            with open(f"{self._intermediate_results_name['matching_data']}.pkl", "wb") as file:
+            with open(
+                f"{self._intermediate_results_name['matching_data']}.pkl", "wb"
+            ) as file:
                 pickle.dump(self._df_matching_data, file)
 
         if self._postprocess_common_words:
@@ -632,23 +652,33 @@ class NameMatcher:
                 [to_be_matched.values], columns=to_be_matched.index.to_list()
             )
 
-        if self._load and os.path.exists(f"{self._intermediate_results_name['to_be_matched']}.pkl"):
-            with open(f"{self._intermediate_results_name['to_be_matched']}.pkl", "rb") as file:
-                to_be_matched = pickle.load(file).fillna('na')
+        if self._load and os.path.exists(
+            f"{self._intermediate_results_name['to_be_matched']}.pkl"
+        ):
+            with open(
+                f"{self._intermediate_results_name['to_be_matched']}.pkl", "rb"
+            ) as file:
+                to_be_matched = pickle.load(file).fillna("na")
         else:
             to_be_matched = self.preprocess(to_be_matched, self._column_matching)
 
         if self._save:
-            with open(f"{self._intermediate_results_name['to_be_matched']}.pkl", "wb") as file:
+            with open(
+                f"{self._intermediate_results_name['to_be_matched']}.pkl", "wb"
+            ) as file:
                 pickle.dump(to_be_matched, file)
 
-        if self._load and os.path.exists(f"{self._intermediate_results_name['possible_matches']}.pkl"):
-            with open(f"{self._intermediate_results_name['possible_matches']}.pkl", "rb") as file:
+        if self._load and os.path.exists(
+            f"{self._intermediate_results_name['possible_matches']}.pkl"
+        ):
+            with open(
+                f"{self._intermediate_results_name['possible_matches']}.pkl", "rb"
+            ) as file:
                 self._possible_matches = pickle.load(file)
 
             if not self._preprocessed:
                 self._process_matching_data(False)
-            
+
         else:
             if not self._preprocessed:
                 self._process_matching_data()
@@ -659,7 +689,9 @@ class NameMatcher:
             self._possible_matches = self._search_for_possible_matches(to_be_matched)  # type: ignore
 
         if self._save:
-            with open(f"{self._intermediate_results_name['possible_matches']}.pkl", "wb") as file:
+            with open(
+                f"{self._intermediate_results_name['possible_matches']}.pkl", "wb"
+            ) as file:
                 pickle.dump(self._possible_matches, file)
 
         if self._preprocess_split:
@@ -796,7 +828,10 @@ class NameMatcher:
         for method_list in self._distance_metrics.values():
             for method in method_list:
                 match_score[:, idx] = np.array(
-                    [method.sim(str(to_be_matched_instance), str(s)) for s in possible_matches]
+                    [
+                        method.sim(str(to_be_matched_instance), str(s))
+                        for s in possible_matches
+                    ]
                 )
                 idx = idx + 1
 
@@ -1012,6 +1047,36 @@ class NameMatcher:
 
         return results
 
+    def unicode_to_ascii(self, text: str) -> str:
+        """Converts a string to ascii characters trhough transliteration. The
+        transliteration map is stored in the transliterations.py file in the
+        data folder.
+
+        Parameters
+        ----------
+        test : str
+            The text to be transliterated to ascii characters
+
+        Returns
+        -------
+        str
+            The process text without any non-ascii characters
+        """
+
+        normalized_text = normalize("NFD", text)
+
+        return (
+            "".join(
+                [
+                    TRANSLITERATION_MAP.get(char, char)
+                    for char in normalized_text
+                    if category(char) != "Mn"
+                ]
+            )
+            .encode("ASCII", "ignore")
+            .decode()
+        )
+
     def preprocess(self, df: pd.DataFrame, column_name: str) -> pd.DataFrame:
         """Preprocess a dataframe before applying a name matching algorithm. The
         preprocessing consists of removing special characters, spaces, converting all
@@ -1039,12 +1104,11 @@ class NameMatcher:
             df.loc[:, column_name] = df[column_name].str.replace("  ", " ").str.strip()
         if self._preprocess_ascii:
             df.loc[:, column_name] = df[column_name].apply(
-                lambda string: normalize("NFKD", str(string))
-                .encode("ASCII", "ignore")
-                .decode()
+                lambda string: self.unicode_to_ascii(str(string))
             )
-        if self._preprocess_abbreviations:
+        if self._preprocess_legal_suffixes:
             df = self._replace_legal_pre_suffixes_with_abbreviations(df, column_name)
+        if self._preprocess_abbreviations:
             df = self._replace_common_strings(df, column_name)
         if self._preprocess_non_word_characters:
             df.loc[:, column_name] = df[column_name].str.replace(
