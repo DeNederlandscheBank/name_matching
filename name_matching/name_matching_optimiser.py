@@ -146,14 +146,14 @@ class NameMatchingOptimiser:
     def cross_validate_model(self, model_name: Optional[str] = None) -> pd.DataFrame:
 
         results = cross_validate(
-            self.model, # type: ignore
+            self.model,  # type: ignore
             np.vstack([self._X_train, self._X_test]),
             np.hstack([self._y_train, self._y_test]),
             scoring=["accuracy", "precision", "recall", "f1"],
         )
 
         if model_name is None:
-            model_name = str(self.model).split('(')[0]
+            model_name = str(self.model).split("(")[0]
         ind = pd.MultiIndex.from_tuples(
             [
                 ("Accuracy", "\mu"),
@@ -370,10 +370,8 @@ class NameMatchingOptimiser:
         matches, possible_names = self._nm.match_names(
             self._df_to_be_matched, self._to_be_matched_col
         )
-        all_matches = matches[0]  # type: ignore
-        for temp_matches in matches[1:]:  # type: ignore
-            k = np.vstack((all_matches, temp_matches))  # type: ignore
-        self.scaler = dataScaler().fit(all_matches)  # type: ignore
+        matches = matches.reset_index(drop=True)
+        self.scaler = dataScaler().fit(matches[0])  # type: ignore
 
         # TODO fix -1 indexes
         # Select matches for model training and fitting

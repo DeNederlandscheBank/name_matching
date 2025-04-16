@@ -556,7 +556,8 @@ class NameMatcher:
             The dataframe which is used to match the data to.
         start_processing : bool
             A boolean indicating whether to start the preprocessing step after
-            loading the matching data
+            loading the matching data. If transform is True the data will still be
+            transformed and the preprocessing will be marked as completed.
             default: True
         transform : bool
             A boolean indicating whether or not the data should be transformed after
@@ -568,6 +569,9 @@ class NameMatcher:
         self._original_index = df_matching_data.index
         if start_processing:
             self._process_matching_data(transform)
+        elif transform:
+            self._vectorise_data(transform)
+            self._preprocessed = True
 
     def _process_matching_data(self, transform: bool = True) -> None:
         """Function to process the matching data. First the matching data is preprocessed
@@ -1077,7 +1081,9 @@ class NameMatcher:
             .decode()
         )
 
-    def preprocess(self, df: pd.DataFrame, column_name: str) -> pd.DataFrame:
+    def preprocess(
+        self, df: pd.DataFrame, column_name: str, original_name: bool = False
+    ) -> pd.DataFrame:
         """Preprocess a dataframe before applying a name matching algorithm. The
         preprocessing consists of removing special characters, spaces, converting all
         characters to lower case and removing the words given in the word lists
@@ -1088,12 +1094,18 @@ class NameMatcher:
             The dataframe or series on which the preprocessing needs to be performed
         column_name : str
             The name of the column that is used for the preprocessing
+        original_name : bool
+            If True, returns an additional column 'original_name' in the dataframe
+            this column holds the original, non-processed name.
+            default=False
 
         Returns
         -------
         pd.DataFrame
             The preprocessed dataframe or series depending on the input
         """
+        if original_name:
+            df["original_name"] = df[column_name]
         df.loc[:, column_name] = df[column_name].astype(str)
         if self._preprocess_lowercase:
             df.loc[:, column_name] = df[column_name].str.lower()
