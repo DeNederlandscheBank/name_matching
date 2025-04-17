@@ -1113,7 +1113,6 @@ class NameMatcher:
             df.loc[:, column_name] = df[column_name].str.replace(
                 r"[^\w\-\&\#]", " ", regex=True
             )
-            df.loc[:, column_name] = df[column_name].str.replace("  ", " ").str.strip()
         if self._preprocess_ascii:
             df.loc[:, column_name] = df[column_name].apply(
                 lambda string: self.unicode_to_ascii(str(string))
@@ -1126,6 +1125,13 @@ class NameMatcher:
             df.loc[:, column_name] = df[column_name].str.replace(
                 r"[^\w\-\&\#]", " ", regex=True
             )
+        # postprocess to remove possible double spaces
+        if (
+            self._preprocess_non_word_characters
+            | self._preprocess_non_word_characters
+            | self._preprocess_legal_suffixes
+        ):
+            df.loc[:, column_name] = df[column_name].str.replace("  ", " ").str.strip()
 
         return df
 
