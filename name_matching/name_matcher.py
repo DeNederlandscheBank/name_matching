@@ -363,6 +363,8 @@ class NameMatcher:
                 if len(new_lgl) == len(abbr):
                     self._temp = []
                     self._generate_combinations(abbr, new_lgl)
+                    # if not self._preprocess_non_word_characters:
+                    #     self._generate_combinations([s + "." for s in abbr], new_lgl)
                 else:
                     self._temp = [legal_word["full_name"]]
             else:
@@ -372,12 +374,22 @@ class NameMatcher:
 
             for option in self._temp:
                 abbreviations.append(legal_word["abbreviation"].lower())
-                possible_names.append(
-                    option.strip()
-                    if isinstance(option, str)
-                    else " ".join(option).strip()
-                )
-
+                if self._preprocess_non_word_characters:
+                    possible_names.append(
+                        option.strip()
+                        if isinstance(option, str)
+                        else " ".join(option).strip()
+                    )
+                else:
+                    if isinstance(option, str):
+                        possible_names.append(option.strip())
+                    else: 
+                        possible_names.append(" ".join(option).strip())
+                        #TODO find a better solution for cases in which a dot should be added 
+                        possible_names.append(".".join(option).strip() + '.')
+                        abbreviations.append(legal_word["abbreviation"].lower())
+                    
+        print(possible_names)
         if self._delete_legal:
             possible_names.sort(key=len, reverse=True)
 
@@ -687,7 +699,7 @@ class NameMatcher:
             if not self._preprocessed:
                 self._process_matching_data()
 
-            to_be_matched = self.preprocess(to_be_matched, self._column_matching)
+            to_be_matched = self.preprocess(to_be_matched, self._column_matching)  # type: ignore
             if self._verbose:
                 tqdm.write("preprocessing complete \n searching for matches...\n")
             self._possible_matches = self._search_for_possible_matches(to_be_matched)  # type: ignore
@@ -1105,18 +1117,18 @@ class NameMatcher:
             The preprocessed dataframe or series depending on the input
         """
         if original_name:
-            df["original_name"] = df[column_name]
+            df["original_name"] = df[column_name].copy(deep=True)
         df.loc[:, column_name] = df[column_name].astype(str)
-        if self._preprocess_lowercase:
-            df.loc[:, column_name] = df[column_name].str.lower()
         if self._preprocess_non_word_characters:
-            df.loc[:, column_name] = df[column_name].str.replace(
-                r"[^\w\-\&\#]", " ", regex=True
+            df.loc[:, column_name] = (
+                df[column_name].str.replace(r"[^\w\-\&\#]", " ", regex=True).str.strip()
             )
         if self._preprocess_ascii:
             df.loc[:, column_name] = df[column_name].apply(
                 lambda string: self.unicode_to_ascii(str(string))
             )
+        if self._preprocess_lowercase:
+            df.loc[:, column_name] = df[column_name].str.lower()
         if self._preprocess_legal_suffixes:
             df = self._replace_legal_pre_suffixes_with_abbreviations(df, column_name)
         if self._preprocess_abbreviations:
