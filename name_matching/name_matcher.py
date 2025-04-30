@@ -383,12 +383,12 @@ class NameMatcher:
                 else:
                     if isinstance(option, str):
                         possible_names.append(option.strip())
-                    else: 
+                    else:
                         possible_names.append(" ".join(option).strip())
-                        #TODO find a better solution for cases in which a dot should be added 
-                        possible_names.append(".".join(option).strip() + '.')
+                        # TODO find a better solution for cases in which a dot should be added
+                        possible_names.append(".".join(option).strip() + ".")
                         abbreviations.append(legal_word["abbreviation"].lower())
-                    
+
         print(possible_names)
         if self._delete_legal:
             possible_names.sort(key=len, reverse=True)
@@ -1120,8 +1120,11 @@ class NameMatcher:
             df["original_name"] = df[column_name].copy(deep=True)
         df.loc[:, column_name] = df[column_name].astype(str)
         if self._preprocess_non_word_characters:
+            df.loc[:, column_name] = df[column_name].str.replace(
+                r"[^\w\-\&\#]", " ", regex=True
+            )
             df.loc[:, column_name] = (
-                df[column_name].str.replace(r"[^\w\-\&\#]", " ", regex=True).str.strip()
+                df[column_name].str.replace(r"\s+", " ", regex=True).str.strip()
             )
         if self._preprocess_ascii:
             df.loc[:, column_name] = df[column_name].apply(
@@ -1137,13 +1140,9 @@ class NameMatcher:
             df.loc[:, column_name] = df[column_name].str.replace(
                 r"[^\w\-\&\#]", " ", regex=True
             )
-        # postprocess to remove possible double spaces
-        if (
-            self._preprocess_non_word_characters
-            | self._preprocess_non_word_characters
-            | self._preprocess_legal_suffixes
-        ):
-            df.loc[:, column_name] = df[column_name].str.replace("  ", " ").str.strip()
+            df.loc[:, column_name] = (
+                df[column_name].str.replace(r"\s+", " ", regex=True).str.strip()
+            )
 
         return df
 
