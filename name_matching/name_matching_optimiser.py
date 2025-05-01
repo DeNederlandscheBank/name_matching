@@ -5,11 +5,12 @@ from sklearn.metrics import (
     accuracy_score,
     recall_score,
     precision_score,
+    f1_score,
     precision_recall_curve,
 )
-from sklearn.model_selection import cross_validate
+from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import StandardScaler
-from typing import Optional, Protocol
+from typing import Any, Optional, Protocol
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -143,14 +144,23 @@ class NameMatchingOptimiser:
         for key, idx, val in zip(names.values, names.index, max_col.values):
             self._annotated_data[key] = data.loc[idx, val]  # type: ignore
 
-    def cross_validate_model(self, model_name: Optional[str] = None) -> pd.DataFrame:
+    def cross_validate_model(self, model_name: Optional[str] = None, threshold:float=0.5) -> pd.DataFrame:
+        k_fold = StratifiedKFold(shuffle=True)
+        accuracy = []
+        recall = []
+        precision = []
+        f1 = []
 
-        results = cross_validate(
-            self.model,  # type: ignore
-            np.vstack([self._X_train, self._X_test]),
-            np.hstack([self._y_train, self._y_test]),
-            scoring=["accuracy", "precision", "recall", "f1"],
-        )
+        x = np.vstack([self._X_train, self._X_test])
+        y = np.hstack([self._y_train, self._y_test])
+        for train_ind, test_ind in k_fold.split(x, y):    
+            y_pred = self.model.predict_proba(x[train_ind,:])[:, 1]
+            y_pred[y_pred >= threshold] = 1
+            y_pred[y_pred < threshold] = 0
+            accuracy.append(accuracy_score(y[train_ind].reshape(-1), y_pred))
+            recall.append(recall_score(y[train_ind].reshape(-1), y_pred))
+            precision.append(precision_score(y[train_ind].reshape(-1), y_pred))
+            f1.append(f1_score(y[train_ind].reshape(-1), y_pred))            
 
         if model_name is None:
             model_name = str(self.model).split("(")[0]
@@ -168,14 +178,14 @@ class NameMatchingOptimiser:
         )
         df = pd.DataFrame(index=ind, columns=[model_name])
 
-        df.loc[("Accuracy", "\mu"), model_name] = results["test_accuracy"].mean()
-        df.loc[("Accuracy", "$\sigma$"), model_name] = results["test_accuracy"].std()
-        df.loc[("F1", "\mu"), model_name] = results["test_f1"].mean()
-        df.loc[("F1", "$\sigma$"), model_name] = results["test_f1"].std()
-        df.loc[("Precision", "\mu"), model_name] = results["test_precision"].mean()
-        df.loc[("Precision", "$\sigma$"), model_name] = results["test_precision"].std()
-        df.loc[("Recall", "\mu"), model_name] = results["test_recall"].mean()
-        df.loc[("Recall", "$\sigma$"), model_name] = results["test_recall"].std()
+        df.loc[("Accuracy", "\mu"), model_name] = np.mean(accuracy) # type: ignore
+        df.loc[("Accuracy", "$\sigma$"), model_name] = np.std(accuracy) # type: ignore
+        df.loc[("F1", "\mu"), model_name] = np.mean(f1) # type: ignore
+        df.loc[("F1", "$\sigma$"), model_name] = np.std(f1) # type: ignore
+        df.loc[("Precision", "\mu"), model_name] = np.mean(precision) # type: ignore
+        df.loc[("Precision", "$\sigma$"), model_name] = np.std(precision) # type: ignore
+        df.loc[("Recall", "\mu"), model_name] = np.mean(recall) # type: ignore
+        df.loc[("Recall", "$\sigma$"), model_name] = np.std(recall) # type: ignore
 
         return df
 
@@ -290,7 +300,7 @@ class NameMatchingOptimiser:
         else:
             self._annotated_data.update(annotations_dict)
 
-    def plot_curves(self, absolute: bool = True) -> None:
+    def plot_curves(self, absolute: bool = True, return_data: bool = False) -> None|dict[str, Any]:
         """
         Plots precision-recall curve and the true positive, false positive rate curve
         based on the model's predictions.
@@ -327,7 +337,7 @@ class NameMatchingOptimiser:
                     len(self._y_test) - np.sum(self._y_test)
                 )
 
-        # Plot the Precision-Recall curve
+        # Plot the true-false positives curve
         plt.figure(figsize=(8, 6))
         plt.plot(x, y_true_positives, color="b", label="True positives")
         plt.plot(x, y_false_positives, color="r", label="False positives")
@@ -339,6 +349,14 @@ class NameMatchingOptimiser:
         plt.ylim((0, np.sum(self._y_test) + 1))
         plt.legend()
         plt.show()
+
+        if return_data:
+            return {"true_positives": y_true_positives,
+                    "false_positives": y_false_positives,
+                    "threshold": x,
+                    "Precision": precision,
+                    "Recall": recall,
+                    }
 
     def fit(
         self,
@@ -361,6 +379,7 @@ class NameMatchingOptimiser:
         print_results : bool, default True
             Whether to print evaluation metrics after fitting.
         """
+
         self._model = model
         # Generate matches
         self._nm._return_algorithms_score = True
@@ -370,7 +389,7 @@ class NameMatchingOptimiser:
         matches, possible_names = self._nm.match_names(
             self._df_to_be_matched, self._to_be_matched_col
         )
-        matches = matches.reset_index(drop=True)
+        matches = matches.reset_index(drop=True) # type: ignore
         self.scaler = dataScaler().fit(matches[0])  # type: ignore
 
         # TODO fix -1 indexes
@@ -386,10 +405,14 @@ class NameMatchingOptimiser:
                         if np.sum(temp_idx) > 0:
                             true_index[idx] = matches[idx][temp_idx][0]  # type: ignore
                             all_false[idx] = np.delete(matches[idx].copy(), temp_idx, 0)  # type: ignore
+                            # false_index[idx] = all_false[idx][
+                            #     np.argmax(np.mean(all_false[idx], axis=1))
+                            # ]  # type: ignore
+                        else:
+                            all_false[idx] = np.delete(matches[idx].copy(), temp_idx, 0)
                             false_index[idx] = all_false[idx][
                                 np.argmax(np.mean(all_false[idx], axis=1))
                             ]  # type: ignore
-                        else:
                             print(f"{idx} has no match in names")
         else:
             raise ValueError(
