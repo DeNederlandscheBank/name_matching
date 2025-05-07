@@ -364,6 +364,7 @@ class NameMatchingOptimiser:
         dataScaler: scaler = StandardScaler,  # type: ignore
         model_args: dict | None = None,
         print_results: bool = True,
+        train_split: float = 0.7,
     ) -> None:
         """
         Fits a model to the name matching data.
@@ -378,6 +379,8 @@ class NameMatchingOptimiser:
             Arguments for the model used during fitting.
         print_results : bool, default True
             Whether to print evaluation metrics after fitting.
+        train_split : float, default 0.7
+            The percentage of the data to be used for training
         """
 
         self._model = model
@@ -421,7 +424,7 @@ class NameMatchingOptimiser:
             )
 
         train_idx = np.random.choice(
-            list(true_index.keys()), int(0.3 * len(true_index))
+            list(true_index.keys()), int(train_split * len(true_index))
         )
         test_idx = list(set(true_index.keys()) - set(train_idx))
 
