@@ -1,3 +1,5 @@
+import copy
+import random
 from name_matching.check_results import ResultsChecker
 from name_matching.name_matcher import NameMatcher
 from sklearn.ensemble import GradientBoostingClassifier
@@ -78,6 +80,9 @@ class NameMatchingOptimiser:
         else:
             self._nm = name_matcher
         self._nm._number_of_matches = self._nm._num_distance_metrics
+        self._true_index = None
+        self._false_index = None
+        self._all_false = None
 
     def _perform_name_matching(
         self, metrics: Optional[list[str]]
@@ -144,23 +149,55 @@ class NameMatchingOptimiser:
         for key, idx, val in zip(names.values, names.index, max_col.values):
             self._annotated_data[key] = data.loc[idx, val]  # type: ignore
 
-    def cross_validate_model(self, model_name: Optional[str] = None, threshold:float=0.5) -> pd.DataFrame:
-        k_fold = StratifiedKFold(shuffle=True)
+    @staticmethod
+    def split_list_random_uneven(lst, x):
+        """
+        Split a list into `x` randomly shuffled, nearly equal-length sublists.
+
+        This function shuffles the input list randomly and then divides it into
+        `x` sublists, where the sublists are as evenly sized as possible. 
+        The remainder (if any) is distributed such that the first `m` sublists
+        get one extra element.
+
+        Parameters
+        ----------
+        lst : list
+            The list to be split into sublists.
+        x : int
+            The number of sublists to create.
+
+        Returns
+        -------
+        list of lists
+            A list containing `x` sublists with elements randomly selected 
+            from the original list.
+        """
+        lst = copy.deepcopy(lst)
+        random.shuffle(lst)
+        k, m = divmod(len(lst), x)
+        return [lst[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(x)]
+
+    def cross_validate_model(self, model_name: Optional[str] = None, threshold:float=0.5, n_folds=5) -> pd.DataFrame:
         accuracy = []
         recall = []
         precision = []
         f1 = []
 
-        x = np.vstack([self._X_train, self._X_test])
-        y = np.hstack([self._y_train, self._y_test])
-        for train_ind, test_ind in k_fold.split(x, y):    
-            y_pred = self.model.predict_proba(x[train_ind,:])[:, 1]
+        if self._true_index is None:
+            raise ValueError("Please fit the model first before running the cross validation")
+        lists = self.split_list_random_uneven(list(self._true_index.keys()), n_folds)
+
+        for train_idx in lists:                
+            X_train, y_train, X_test, y_test = self._generate_balanced_split(0.8, train_idx)
+            self.model.fit(X_train, y_train)
+
+            y_pred = self.model.predict_proba(X_test)[:, 1]
             y_pred[y_pred >= threshold] = 1
             y_pred[y_pred < threshold] = 0
-            accuracy.append(accuracy_score(y[train_ind].reshape(-1), y_pred))
-            recall.append(recall_score(y[train_ind].reshape(-1), y_pred))
-            precision.append(precision_score(y[train_ind].reshape(-1), y_pred))
-            f1.append(f1_score(y[train_ind].reshape(-1), y_pred))            
+            accuracy.append(accuracy_score(y_test.reshape(-1), y_pred))
+            recall.append(recall_score(y_test.reshape(-1), y_pred))
+            precision.append(precision_score(y_test.reshape(-1), y_pred))
+            f1.append(f1_score(y_test.reshape(-1), y_pred))            
 
         if model_name is None:
             model_name = str(self.model).split("(")[0]
@@ -357,6 +394,93 @@ class NameMatchingOptimiser:
                     "Precision": precision,
                     "Recall": recall,
                     }
+        
+    def _preprocess_fit_annotations(self, dataScaler):
+
+        self._all_false = {}
+        self._true_index = {}
+        self._false_index = {}
+
+        # Generate matches
+        self._nm._return_algorithms_score = True
+        self._nm.load_and_process_master_data(
+            self._matching_col, self._df_matching_data, False
+        )
+        matches, possible_names = self._nm.match_names(
+            self._df_to_be_matched, self._to_be_matched_col
+        )
+        matches = matches.reset_index(drop=True) # type: ignore
+        self.scaler = dataScaler().fit(matches[0])  # type: ignore
+        
+        self._true_index = {}
+        self._false_index = {}
+        self._all_false = {}
+        idx_true = 0
+        idx_false = 0
+        if isinstance(self._annotated_data, dict):
+            for idx, name in enumerate(self._df_to_be_matched[self._to_be_matched_col]):
+                if name in self._annotated_data.keys():
+                    if name != self._annotated_data[name]:
+                        temp_idx = possible_names[idx] == self._annotated_data[name]  # type: ignore
+                        if np.sum(temp_idx) > 0:
+                            self._true_index[idx_true] = matches[idx][temp_idx][0]  # type: ignore
+                            self._all_false[idx_true] = np.delete(matches[idx].copy(), temp_idx, 0)  # type: ignore
+                            self._false_index[idx_true] = self._all_false[idx_true][
+                                np.argmax(np.mean(self._all_false[idx_true], axis=1))
+                            ]  # type: ignore
+                            idx_true = idx_true + 1
+                        elif self._annotated_data[name] == -1:
+                            self._false_index[idx_false] = matches[idx][np.argmax(np.mean(matches[idx], axis=1))]  # type: ignore
+                            idx_false = idx_false + 1
+        else:
+            raise ValueError(
+                "Please first annotate some data or provide ",
+                "annotated data so the model can be fitted",
+            )
+
+
+    def _generate_balanced_split(self, train_split:float, train_idx: Optional[list]=None):
+        if self._true_index is None or self._false_index is None or self._all_false is None:
+            raise ValueError()
+        
+        if train_idx is None:
+            train_idx = np.random.choice(
+                list(self._true_index.keys()), int(train_split * len(self._true_index))
+            ) # type: ignore
+        test_idx = list(set(self._true_index.keys()) - set(train_idx)) # type: ignore
+        
+        if train_idx is not None:
+
+            X_train = np.array(self._true_index[train_idx[0]])
+            X_train = np.vstack([X_train, np.array(self._false_index[train_idx[0]])])
+            y_train = np.ones(1)
+            y_train = np.vstack([y_train, np.zeros(1)])
+            for idx in train_idx[1:]:
+                X_train = np.vstack([X_train, np.array(self._true_index[idx])])
+                X_train = np.vstack([X_train, np.array(self._false_index[idx])])
+                y_train = np.vstack([y_train, np.ones(1)])
+                y_train = np.vstack([y_train, np.zeros(1)])
+
+            X_test = np.array(self._true_index[test_idx[0]])
+            y_test = np.ones(1)
+            X_test = np.vstack([X_test, self._all_false[test_idx[0]]])
+            y_test = np.vstack(
+                [y_test, np.zeros([len(self._all_false[test_idx[0]]), 1])]
+            )
+            for idx in test_idx[1:]:
+                X_test = np.vstack([X_test, np.array(self._true_index[idx])])
+                y_test = np.vstack([y_test, np.ones(1)])
+                X_test = np.vstack([X_test, self._all_false[idx]])
+                y_test = np.vstack([y_test, np.zeros([len(self._all_false[idx]), 1])])
+
+            X_train = self.scaler.transform(X_train)
+            X_test = self.scaler.transform(X_test)
+            y_train = y_train.reshape(-1)
+            y_test = y_test.reshape(-1)
+
+            return X_train, y_train, X_test, y_test
+        raise ValueError()
+
 
     def fit(
         self,
@@ -365,6 +489,7 @@ class NameMatchingOptimiser:
         model_args: dict | None = None,
         print_results: bool = True,
         train_split: float = 0.7,
+        preprocess: bool = False,
     ) -> None:
         """
         Fits a model to the name matching data.
@@ -384,76 +509,9 @@ class NameMatchingOptimiser:
         """
 
         self._model = model
-        # Generate matches
-        self._nm._return_algorithms_score = True
-        self._nm.load_and_process_master_data(
-            self._matching_col, self._df_matching_data, False
-        )
-        matches, possible_names = self._nm.match_names(
-            self._df_to_be_matched, self._to_be_matched_col
-        )
-        matches = matches.reset_index(drop=True) # type: ignore
-        self.scaler = dataScaler().fit(matches[0])  # type: ignore
-
-        # TODO fix -1 indexes
-        # Select matches for model training and fitting
-        true_index = {}
-        false_index = {}
-        all_false = {}
-        if isinstance(self._annotated_data, dict):
-            for idx, name in enumerate(self._df_to_be_matched[self._to_be_matched_col]):
-                if name in self._annotated_data.keys():
-                    if name != self._annotated_data[name]:
-                        temp_idx = possible_names[idx] == self._annotated_data[name]  # type: ignore
-                        if np.sum(temp_idx) > 0:
-                            true_index[idx] = matches[idx][temp_idx][0]  # type: ignore
-                            all_false[idx] = np.delete(matches[idx].copy(), temp_idx, 0)  # type: ignore
-                            # false_index[idx] = all_false[idx][
-                            #     np.argmax(np.mean(all_false[idx], axis=1))
-                            # ]  # type: ignore
-                        else:
-                            all_false[idx] = np.delete(matches[idx].copy(), temp_idx, 0)
-                            false_index[idx] = all_false[idx][
-                                np.argmax(np.mean(all_false[idx], axis=1))
-                            ]  # type: ignore
-                            print(f"{idx} has no match in names")
-        else:
-            raise ValueError(
-                "Please first annotate some data or provide ",
-                "annotated data so the model can be fitted",
-            )
-
-        train_idx = np.random.choice(
-            list(true_index.keys()), int(train_split * len(true_index))
-        )
-        test_idx = list(set(true_index.keys()) - set(train_idx))
-
-        self._X_train = np.array(true_index[train_idx[0]])
-        self._X_train = np.vstack([self._X_train, np.array(false_index[train_idx[0]])])
-        self._y_train = np.ones(1)
-        self._y_train = np.vstack([self._y_train, np.zeros(1)])
-        for idx in train_idx[1:]:
-            self._X_train = np.vstack([self._X_train, np.array(true_index[idx])])
-            self._X_train = np.vstack([self._X_train, np.array(false_index[idx])])
-            self._y_train = np.vstack([self._y_train, np.ones(1)])
-            self._y_train = np.vstack([self._y_train, np.zeros(1)])
-
-        self._X_test = np.array(true_index[test_idx[0]])
-        self._y_test = np.ones(1)
-        self._X_test = np.vstack([self._X_test, all_false[test_idx[0]]])
-        self._y_test = np.vstack(
-            [self._y_test, np.zeros([len(all_false[test_idx[0]]), 1])]
-        )
-        for idx in test_idx[1:]:
-            self._X_test = np.vstack([self._X_test, np.array(true_index[idx])])
-            self._y_test = np.vstack([self._y_test, np.ones(1)])
-            self._X_test = np.vstack([self._X_test, all_false[idx]])
-            self._y_test = np.vstack([self._y_test, np.zeros([len(all_false[idx]), 1])])
-
-        self._X_train = self.scaler.transform(self._X_train)
-        self._X_test = self.scaler.transform(self._X_test)
-        self._y_train = self._y_train.reshape(-1)
-        self._y_test = self._y_test.reshape(-1)
+        if preprocess or self._true_index is None:
+            self._preprocess_fit_annotations(dataScaler)
+        self._X_train, self._y_train, self._X_test, self._y_test = self._generate_balanced_split(train_split)
 
         if model_args is None:
             self._model_args = {}
