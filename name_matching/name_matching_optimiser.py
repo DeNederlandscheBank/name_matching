@@ -10,8 +10,8 @@ from sklearn.metrics import (
     f1_score,
     precision_recall_curve,
 )
-from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import StandardScaler
+from sklearn.base import clone
 from typing import Any, Optional, Protocol
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -155,7 +155,7 @@ class NameMatchingOptimiser:
         Split a list into `x` randomly shuffled, nearly equal-length sublists.
 
         This function shuffles the input list randomly and then divides it into
-        `x` sublists, where the sublists are as evenly sized as possible. 
+        `x` sublists, where the sublists are as evenly sized as possible.
         The remainder (if any) is distributed such that the first `m` sublists
         get one extra element.
 
@@ -169,35 +169,45 @@ class NameMatchingOptimiser:
         Returns
         -------
         list of lists
-            A list containing `x` sublists with elements randomly selected 
+            A list containing `x` sublists with elements randomly selected
             from the original list.
         """
         lst = copy.deepcopy(lst)
         random.shuffle(lst)
         k, m = divmod(len(lst), x)
-        return [lst[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(x)]
+        return [lst[i * k + min(i, m) : (i + 1) * k + min(i + 1, m)] for i in range(x)]
 
-    def cross_validate_model(self, model_name: Optional[str] = None, threshold:float=0.5, n_folds=5) -> pd.DataFrame:
+    def cross_validate_model(
+        self, model_name: Optional[str] = None, threshold: float = 0.5, n_folds=5
+    ) -> pd.DataFrame:
         accuracy = []
         recall = []
         precision = []
         f1 = []
 
         if self._true_index is None:
-            raise ValueError("Please fit the model first before running the cross validation")
+            raise ValueError(
+                "Please fit the model first before running the cross validation"
+            )
         lists = self.split_list_random_uneven(list(self._true_index.keys()), n_folds)
 
-        for train_idx in lists:                
-            X_train, y_train, X_test, y_test = self._generate_balanced_split(0.8, train_idx)
-            self.model.fit(X_train, y_train)
+        for train_idx in lists:
+            X_train, y_train, X_test, y_test = self._generate_balanced_split(
+                0.8, train_idx
+            )
+            model = clone(self.model)
+            model.fit(X_train, y_train)
 
-            y_pred = self.model.predict_proba(X_test)[:, 1]
-            y_pred[y_pred >= threshold] = 1
-            y_pred[y_pred < threshold] = 0
+            if 'predict_proba' in dir(model):
+                y_pred = model.predict_proba(X_test)[:, 1]
+                y_pred[y_pred >= threshold] = 1
+                y_pred[y_pred < threshold] = 0
+            else:
+                y_pred = model.predict(X_test)
             accuracy.append(accuracy_score(y_test.reshape(-1), y_pred))
             recall.append(recall_score(y_test.reshape(-1), y_pred))
             precision.append(precision_score(y_test.reshape(-1), y_pred))
-            f1.append(f1_score(y_test.reshape(-1), y_pred))            
+            f1.append(f1_score(y_test.reshape(-1), y_pred))
 
         if model_name is None:
             model_name = str(self.model).split("(")[0]
@@ -215,14 +225,14 @@ class NameMatchingOptimiser:
         )
         df = pd.DataFrame(index=ind, columns=[model_name])
 
-        df.loc[("Accuracy", "\mu"), model_name] = np.mean(accuracy) # type: ignore
-        df.loc[("Accuracy", "$\sigma$"), model_name] = np.std(accuracy) # type: ignore
-        df.loc[("F1", "\mu"), model_name] = np.mean(f1) # type: ignore
-        df.loc[("F1", "$\sigma$"), model_name] = np.std(f1) # type: ignore
-        df.loc[("Precision", "\mu"), model_name] = np.mean(precision) # type: ignore
-        df.loc[("Precision", "$\sigma$"), model_name] = np.std(precision) # type: ignore
-        df.loc[("Recall", "\mu"), model_name] = np.mean(recall) # type: ignore
-        df.loc[("Recall", "$\sigma$"), model_name] = np.std(recall) # type: ignore
+        df.loc[("Accuracy", "\mu"), model_name] = np.mean(accuracy)  # type: ignore
+        df.loc[("Accuracy", "$\sigma$"), model_name] = np.std(accuracy)  # type: ignore
+        df.loc[("F1", "\mu"), model_name] = np.mean(f1)  # type: ignore
+        df.loc[("F1", "$\sigma$"), model_name] = np.std(f1)  # type: ignore
+        df.loc[("Precision", "\mu"), model_name] = np.mean(precision)  # type: ignore
+        df.loc[("Precision", "$\sigma$"), model_name] = np.std(precision)  # type: ignore
+        df.loc[("Recall", "\mu"), model_name] = np.mean(recall)  # type: ignore
+        df.loc[("Recall", "$\sigma$"), model_name] = np.std(recall)  # type: ignore
 
         return df
 
@@ -337,7 +347,9 @@ class NameMatchingOptimiser:
         else:
             self._annotated_data.update(annotations_dict)
 
-    def plot_curves(self, absolute: bool = True, return_data: bool = False) -> None|dict[str, Any]:
+    def plot_curves(
+        self, absolute: bool = True, return_data: bool = False
+    ) -> None | dict[str, Any]:
         """
         Plots precision-recall curve and the true positive, false positive rate curve
         based on the model's predictions.
@@ -388,13 +400,14 @@ class NameMatchingOptimiser:
         plt.show()
 
         if return_data:
-            return {"true_positives": y_true_positives,
-                    "false_positives": y_false_positives,
-                    "threshold": x,
-                    "Precision": precision,
-                    "Recall": recall,
-                    }
-        
+            return {
+                "true_positives": y_true_positives,
+                "false_positives": y_false_positives,
+                "threshold": x,
+                "Precision": precision,
+                "Recall": recall,
+            }
+
     def _preprocess_fit_annotations(self, dataScaler):
 
         self._all_false = {}
@@ -409,9 +422,9 @@ class NameMatchingOptimiser:
         matches, possible_names = self._nm.match_names(
             self._df_to_be_matched, self._to_be_matched_col
         )
-        matches = matches.reset_index(drop=True) # type: ignore
+        matches = matches.reset_index(drop=True)  # type: ignore
         self.scaler = dataScaler().fit(matches[0])  # type: ignore
-        
+
         self._true_index = {}
         self._false_index = {}
         self._all_false = {}
@@ -421,16 +434,20 @@ class NameMatchingOptimiser:
             for idx, name in enumerate(self._df_to_be_matched[self._to_be_matched_col]):
                 if name in self._annotated_data.keys():
                     if name != self._annotated_data[name]:
-                        temp_idx = possible_names[idx] == self._annotated_data[name]  # type: ignore
+                        temp_idx = possible_names[idx] == self._annotated_data[name] # type: ignore
                         if np.sum(temp_idx) > 0:
-                            self._true_index[idx_true] = matches[idx][temp_idx][0]  # type: ignore
-                            self._all_false[idx_true] = np.delete(matches[idx].copy(), temp_idx, 0)  # type: ignore
+                            self._true_index[idx_true] = matches[idx][temp_idx][0]
+                            self._all_false[idx_true] = np.delete(
+                                matches[idx].copy(), temp_idx, 0
+                            )
                             self._false_index[idx_true] = self._all_false[idx_true][
                                 np.argmax(np.mean(self._all_false[idx_true], axis=1))
                             ]  # type: ignore
                             idx_true = idx_true + 1
                         elif self._annotated_data[name] == -1:
-                            self._false_index[idx_false] = matches[idx][np.argmax(np.mean(matches[idx], axis=1))]  # type: ignore
+                            self._false_index[idx_false] = matches[idx][
+                                np.argmax(np.mean(matches[idx], axis=1))
+                            ] # type: ignore
                             idx_false = idx_false + 1
         else:
             raise ValueError(
@@ -438,17 +455,22 @@ class NameMatchingOptimiser:
                 "annotated data so the model can be fitted",
             )
 
-
-    def _generate_balanced_split(self, train_split:float, train_idx: Optional[list]=None):
-        if self._true_index is None or self._false_index is None or self._all_false is None:
+    def _generate_balanced_split(
+        self, train_split: float, train_idx: Optional[list] = None
+    ):
+        if (
+            self._true_index is None
+            or self._false_index is None
+            or self._all_false is None
+        ):
             raise ValueError()
-        
+
         if train_idx is None:
             train_idx = np.random.choice(
                 list(self._true_index.keys()), int(train_split * len(self._true_index))
-            ) # type: ignore
-        test_idx = list(set(self._true_index.keys()) - set(train_idx)) # type: ignore
-        
+            )  # type: ignore
+        test_idx = list(set(self._true_index.keys()) - set(train_idx))  # type: ignore
+
         if train_idx is not None:
 
             X_train = np.array(self._true_index[train_idx[0]])
@@ -481,7 +503,6 @@ class NameMatchingOptimiser:
             return X_train, y_train, X_test, y_test
         raise ValueError()
 
-
     def fit(
         self,
         model: sklearnModel = GradientBoostingClassifier,  # type: ignore
@@ -511,7 +532,9 @@ class NameMatchingOptimiser:
         self._model = model
         if preprocess or self._true_index is None:
             self._preprocess_fit_annotations(dataScaler)
-        self._X_train, self._y_train, self._X_test, self._y_test = self._generate_balanced_split(train_split)
+        self._X_train, self._y_train, self._X_test, self._y_test = (
+            self._generate_balanced_split(train_split)
+        )
 
         if model_args is None:
             self._model_args = {}
