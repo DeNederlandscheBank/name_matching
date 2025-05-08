@@ -198,7 +198,7 @@ class NameMatchingOptimiser:
             model = clone(self.model)
             model.fit(X_train, y_train)
 
-            if 'predict_proba' in dir(model):
+            if "predict_proba" in dir(model):
                 y_pred = model.predict_proba(X_test)[:, 1]
                 y_pred[y_pred >= threshold] = 1
                 y_pred[y_pred < threshold] = 0
@@ -372,19 +372,20 @@ class NameMatchingOptimiser:
         x = np.linspace(0, 1, 1000, True)
         y_true_positives = []
         y_false_positives = []
+        y_true_negatives = []
+        y_false_negatives = []
         for i in x:
-            positives = y_scores > i
-            y_true_positives.append(
-                np.sum(np.bitwise_and(positives, self._y_test == 1))
-            )
-            y_false_positives.append(
-                np.sum(np.bitwise_and(positives, self._y_test == 0))
-            )
+            positives = y_scores >= i
+            negatives = y_scores < i
+            y_true_positives.append(np.sum(np.bitwise_and(positives, self._y_test == 1)))
+            y_false_positives.append(np.sum(np.bitwise_and(positives, self._y_test == 0)))
+            y_true_negatives.append(np.sum(np.bitwise_and(negatives, self._y_test == 0)))
+            y_false_negatives.append(np.sum(np.bitwise_and(negatives, self._y_test == 1)))
             if not absolute:
                 y_true_positives[-1] = y_true_positives[-1] / np.sum(self._y_test)
-                y_false_positives[-1] = y_false_positives[-1] / (
-                    len(self._y_test) - np.sum(self._y_test)
-                )
+                y_false_positives[-1] = y_false_positives[-1] / (len(self._y_test) - np.sum(self._y_test))
+                y_true_negatives[-1] = y_true_negatives[-1] / np.sum(1 - self._y_test)
+                y_false_negatives[-1] = y_false_negatives[-1] / (len(self._y_test) - np.sum(1 - self._y_test))
 
         # Plot the true-false positives curve
         plt.figure(figsize=(8, 6))
@@ -403,6 +404,8 @@ class NameMatchingOptimiser:
             return {
                 "true_positives": y_true_positives,
                 "false_positives": y_false_positives,
+                "true_negatives": y_true_negatives,
+                "false_negatives": y_false_negatives,
                 "threshold": x,
                 "Precision": precision,
                 "Recall": recall,
@@ -434,7 +437,7 @@ class NameMatchingOptimiser:
             for idx, name in enumerate(self._df_to_be_matched[self._to_be_matched_col]):
                 if name in self._annotated_data.keys():
                     if name != self._annotated_data[name]:
-                        temp_idx = possible_names[idx] == self._annotated_data[name] # type: ignore
+                        temp_idx = possible_names[idx] == self._annotated_data[name]  # type: ignore
                         if np.sum(temp_idx) > 0:
                             self._true_index[idx_true] = matches[idx][temp_idx][0]
                             self._all_false[idx_true] = np.delete(
@@ -447,7 +450,7 @@ class NameMatchingOptimiser:
                         elif self._annotated_data[name] == -1:
                             self._false_index[idx_false] = matches[idx][
                                 np.argmax(np.mean(matches[idx], axis=1))
-                            ] # type: ignore
+                            ]  # type: ignore
                             idx_false = idx_false + 1
         else:
             raise ValueError(
