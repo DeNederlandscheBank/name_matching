@@ -1,6 +1,6 @@
 import copy
 import random
-from name_matching.check_results import ResultsChecker
+from name_matching.match_annotator import MatchAnnotator
 from name_matching.name_matcher import NameMatcher
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.metrics import (
@@ -128,7 +128,7 @@ class NameMatchingOptimiser:
         if self._annotated_data is None:
             self._annotated_data = {}
         filtered_matches = self._preselect_matches(matches, lower_bound)
-        rc = ResultsChecker(filtered_matches, annotated_results=self._annotated_data)
+        rc = MatchAnnotator(filtered_matches, annotated_results=self._annotated_data)
         rc.start()
         self._annotated_data.update(rc.annotated_results)
 
@@ -377,15 +377,27 @@ class NameMatchingOptimiser:
         for i in x:
             positives = y_scores >= i
             negatives = y_scores < i
-            y_true_positives.append(np.sum(np.bitwise_and(positives, self._y_test == 1)))
-            y_false_positives.append(np.sum(np.bitwise_and(positives, self._y_test == 0)))
-            y_true_negatives.append(np.sum(np.bitwise_and(negatives, self._y_test == 0)))
-            y_false_negatives.append(np.sum(np.bitwise_and(negatives, self._y_test == 1)))
+            y_true_positives.append(
+                np.sum(np.bitwise_and(positives, self._y_test == 1))
+            )
+            y_false_positives.append(
+                np.sum(np.bitwise_and(positives, self._y_test == 0))
+            )
+            y_true_negatives.append(
+                np.sum(np.bitwise_and(negatives, self._y_test == 0))
+            )
+            y_false_negatives.append(
+                np.sum(np.bitwise_and(negatives, self._y_test == 1))
+            )
             if not absolute:
                 y_true_positives[-1] = y_true_positives[-1] / np.sum(self._y_test)
-                y_false_positives[-1] = y_false_positives[-1] / (len(self._y_test) - np.sum(self._y_test))
+                y_false_positives[-1] = y_false_positives[-1] / (
+                    len(self._y_test) - np.sum(self._y_test)
+                )
                 y_true_negatives[-1] = y_true_negatives[-1] / np.sum(1 - self._y_test)
-                y_false_negatives[-1] = y_false_negatives[-1] / (len(self._y_test) - np.sum(1 - self._y_test))
+                y_false_negatives[-1] = y_false_negatives[-1] / (
+                    len(self._y_test) - np.sum(1 - self._y_test)
+                )
 
         # Plot the true-false positives curve
         plt.figure(figsize=(8, 6))
@@ -436,9 +448,13 @@ class NameMatchingOptimiser:
         if isinstance(self._annotated_data, dict):
             for idx, name in enumerate(self._df_to_be_matched[self._to_be_matched_col]):
                 if name in self._annotated_data.keys():
+                    print("check !")
                     if name != self._annotated_data[name]:
+                        print("doublecheck !!")
+                        print(possible_names[idx])
                         temp_idx = possible_names[idx] == self._annotated_data[name]  # type: ignore
                         if np.sum(temp_idx) > 0:
+                            print("triplecheck !!!")
                             self._true_index[idx_true] = matches[idx][temp_idx][0]
                             self._all_false[idx_true] = np.delete(
                                 matches[idx].copy(), temp_idx, 0

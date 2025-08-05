@@ -1,8 +1,10 @@
 import os
 import pickle
 import re
+import warnings
 import numpy as np
 import pandas as pd
+import importlib.resources as importlib_resource
 from tqdm import tqdm
 from operator import iconcat
 from functools import reduce
@@ -14,7 +16,6 @@ from itertools import compress
 from sklearn.feature_extraction.text import TfidfVectorizer
 from name_matching.distance_metrics import make_distance_metrics
 from name_matching.sparse_cosine import sparse_cosine_top_n
-from importlib.resources import path as pkg_path
 
 
 class NameMatcher:
@@ -132,8 +133,9 @@ class NameMatcher:
         number_of_rows: int = 5000,
         number_of_matches: int = 1,
         lowercase: bool = True,
-        non_word_characters: bool = True,
+        non_word_characters: bool = None,
         remove_ascii: bool = True,
+        punctuations: bool = None,
         legal_suffixes: bool = False,
         preprocess_legal: bool = False,
         delete_legal: bool = False,
@@ -180,7 +182,9 @@ class NameMatcher:
         self._return_algorithms_score = return_algorithms_score
 
         self._preprocess_lowercase = lowercase
-        self._preprocess_non_word_characters = non_word_characters
+        self._preprocess_non_word_characters = self._process_punctuations_depricated(
+            non_word_characters, punctuations
+        )
         self._preprocess_ascii = remove_ascii
         self._preprocess_abbreviations = make_abbreviations
         self._preprocess_legal_suffixes = preprocess_legal
@@ -214,6 +218,29 @@ class NameMatcher:
             lowercase=False, analyzer="char", ngram_range=(ngrams)
         )
         self._n_grams_matching = None
+
+    def _process_punctuations_depricated(
+        self, non_word_characters: bool, punctuations: bool
+    ):
+
+        if non_word_characters is None:
+            if punctuations is None:
+                return True
+            else:
+                warnings.warn(
+                    "The punctuations parameter has been replaced with the non_word_characters "
+                    + "parameter, please use the non_word_characters parameter going forward. The"
+                    + "punctuations parameter will be depricated in the future."
+                )
+                return punctuations
+        else:
+            if (punctuations is not None) & (punctuations != non_word_characters):
+                warnings.warn(
+                    "non_word_characters is the new name of the punctuations parameter. "
+                    + "These parameters are now not equal and the non_word_characters is used."
+                    + "The punctuations parameter will be depricated in the future."
+                )
+            return non_word_characters
 
     def _generate_combinations(
         self, list_a: List, list_b: List, ind: int = 0, result: Optional[List] = None
@@ -312,11 +339,11 @@ class NameMatcher:
         pd.DataFrame
             The DataFrame with modified column data.
         """
-        with pkg_path("name_matching.data", "common_words.csv") as path:
+        with importlib_resource.as_file(
+            importlib_resource.files("name_matching.data").joinpath("common_words.csv")
+        ) as path:
             common_words = pd.read_csv(path)
-        # common_words["length"] = common_words["word"].apply(len)
-        # common_words = common_words.sort_values(by=["length"], ascending=False)
-        data[column_name] = data[column_name].apply(
+        data.loc[:, column_name] = data.loc[:, column_name].apply(
             lambda x: self._replace_substring(
                 x,
                 common_words["short_form"].tolist(),
@@ -347,7 +374,9 @@ class NameMatcher:
         """
         abbreviations = []
         possible_names = []
-        with pkg_path("name_matching.data", "legal_names.csv") as path:
+        with importlib_resource.as_file(
+            importlib_resource.files("name_matching.data").joinpath("legal_names.csv")
+        ) as path:
             legal_words = pd.read_csv(path)
 
         for _, legal_word in legal_words.iterrows():
@@ -389,7 +418,6 @@ class NameMatcher:
                         possible_names.append(".".join(option).strip() + ".")
                         abbreviations.append(legal_word["abbreviation"].lower())
 
-        print(possible_names)
         if self._delete_legal:
             possible_names.sort(key=len, reverse=True)
 
@@ -620,9 +648,8 @@ class NameMatcher:
                 "common", self._word_set, self._cut_off
             )
 
-        else:
-            self._vectorise_data(transform)
-            self._preprocessed = True
+        self._vectorise_data(transform)
+        self._preprocessed = True
 
     def match_names(
         self, to_be_matched: Union[pd.Series, pd.DataFrame], column_matching: str
@@ -1180,7 +1207,9 @@ class NameMatcher:
         Set
             The original word_set with the legal words added
         """
-        with pkg_path("name_matching.data", "legal_names.csv") as path:
+        with importlib_resource.as_file(
+            importlib_resource.files("name_matching.data").joinpath("legal_names.csv")
+        ) as path:
             legal_words = pd.read_csv(path)
         word_set = word_set.union(set(legal_words["abbreviation"].values))
 
