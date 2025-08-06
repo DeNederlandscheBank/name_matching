@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "name_matching"
+version = "0.9.21"
+description = "A package for the matching of company names"
+readme = "README.md"
+authors = [
+    { name = "Michiel Nijhuis", email = "m.nijhuis@dnb.nl" }
+]
+dependencies = [
+    "cleanco",
+    "scikit-learn",
+    "pandas",
+    "numpy",
+    "tqdm",
+    "ipywidgets",
+    "matplotlib"
+]
+requires-python = ">=3.7"
+
+[project.urls]
+Documentation = "https://name-matching.readthedocs.io/en/latest/index.html"
+Source = "https://github.com/DeNederlandscheBank/name_matching"
+
+[tool.setuptools]
+packages = ["name_matching", "distances"]
+
+[tool.setuptools.package-data]
+"name_matching" = ["data/*.csv", "data/*.py"]

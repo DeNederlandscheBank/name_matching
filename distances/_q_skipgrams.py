@@ -151,8 +151,10 @@ class QSkipgrams(_Tokenizer):
         self._string_ss = self._string
         if isinstance(ssk_lambda, float):
             self._lambda = (ssk_lambda,)  # type: TIterable[float]
-        else:
+        elif isinstance(ssk_lambda, Iterable):
             self._lambda = tuple(ssk_lambda)
+        else:
+            raise ValueError('ssk_lamba is not an iterable or float')
 
     def tokenize(self, string: str) -> 'QSkipgrams':
         """Tokenize the term and store it.

@@ -141,7 +141,7 @@ class BaulieuXIII(_TokenDistance):
 
         if bpc == 0.0:
             return 0.0
-        return bpc / (a + bpc + a * (a - 4) ** 2)
+        return 1 - bpc / (a + bpc + a * (a - 4) ** 2)
 
 
 if __name__ == '__main__':

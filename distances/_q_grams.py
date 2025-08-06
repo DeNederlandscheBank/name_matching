@@ -191,6 +191,7 @@ class QGrams(_Tokenizer):
         return self
 
 
+
 if __name__ == '__main__':
     import doctest
 

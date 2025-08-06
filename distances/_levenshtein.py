@@ -102,6 +102,9 @@ class Levenshtein(_Distance):
         self._normalizer = normalizer
         self._taper_enabled = taper
 
+    def sim(self, src: str, tar: str):
+        return 1 - self.dist(src, tar)
+
     def _taper(self, pos: int, length: int) -> float:
         return (
             round(1 + ((length - pos) / length) * (1 + float_info.epsilon), 15)
@@ -139,16 +142,13 @@ class Levenshtein(_Distance):
         max_len = max(src_len, tar_len)
 
         d_mat = np.zeros((src_len + 1, tar_len + 1), dtype=np.float64)
-        if backtrace:
-            trace_mat = np.zeros((src_len + 1, tar_len + 1), dtype=np.int8)
+        trace_mat = np.zeros((src_len + 1, tar_len + 1), dtype=np.int8)
         for i in range(src_len + 1):
             d_mat[i, 0] = i * self._taper(i, max_len) * del_cost
-            if backtrace:
-                trace_mat[i, 0] = 1
+            trace_mat[i, 0] = 1
         for j in range(tar_len + 1):
             d_mat[0, j] = j * self._taper(j, max_len) * ins_cost
-            if backtrace:
-                trace_mat[0, j] = 0
+            trace_mat[0, j] = 0
 
         for i in range(src_len):
             for j in range(tar_len):
@@ -165,8 +165,7 @@ class Levenshtein(_Distance):
                     ),  # sub/==
                 )
                 d_mat[i + 1, j + 1] = min(opts)
-                if backtrace:
-                    trace_mat[i + 1, j + 1] = int(np.argmin(opts))
+                trace_mat[i + 1, j + 1] = int(np.argmin(opts))
 
                 if self._mode == 'osa':
                     if (
@@ -181,8 +180,7 @@ class Levenshtein(_Distance):
                             d_mat[i - 1, j - 1]
                             + trans_cost * self._taper(1 + max(i, j), max_len),
                         )
-                        if backtrace:
-                            trace_mat[i + 1, j + 1] = 2
+                        trace_mat[i + 1, j + 1] = 2
 
         if backtrace:
             return d_mat, trace_mat
@@ -329,6 +327,7 @@ class Levenshtein(_Distance):
             return int(d_mat[src_len, tar_len])
         else:
             return cast(float, d_mat[src_len, tar_len])
+        
 
     def dist(self, src: str, tar: str) -> float:
         """Return the normalized Levenshtein distance between two strings.

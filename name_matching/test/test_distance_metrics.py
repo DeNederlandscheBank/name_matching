@@ -128,14 +128,14 @@ def test_iterative_sub_string(string_a, string_b, expected):
     "string_a, string_b, expected",
     [
         ("De Nederlandsche Bank", "De Nederlandsche Bank", 1),
-        ("De Nederlandsche Bank", "Nederlandsche Bank", 3546 / 3551),
-        ("De Nederlandsche Bank", "Bank de Nederlandsche", 289 / 290),
-        ("De Nederlandsche Bank", "De Nederlandse Bank", 2147 / 2149),
-        ("De Nederlandsche Bank", "De Nederlancsh Bank", 232 / 233),
-        ("De Nederlandsche Bank", "De Bank", 68 / 75),
+        ("De Nederlandsche Bank", "Nederlandsche Bank", 18 / 23),
+        ("De Nederlandsche Bank", "Bank de Nederlandsche", 17 / 27),
+        ("De Nederlandsche Bank", "De Nederlandse Bank", 19 / 23),
+        ("De Nederlandsche Bank", "De Nederlancsh Bank", 16 / 26),
+        ("De Nederlandsche Bank", "De Bank", 8 / 22),
         ("De Nederlandsche Bank", "Bank", 4 / 23),
-        ("De Nederlandsche Bank", "De Duitse Bank", 234 / 253),
-        ("De Nederlandsche Bank", "Federal Reserve", 3 / 19),
+        ("De Nederlandsche Bank", "De Duitse Bank", 9 / 28),
+        ("De Nederlandsche Bank", "Federal Reserve", 3 / 35),
     ],
 )
 def test_baulieu_xiii(string_a, string_b, expected):
@@ -324,14 +324,14 @@ def test_warrens_iv(string_a, string_b, expected):
     "string_a, string_b, expected",
     [
         ("De Nederlandsche Bank", "De Nederlandsche Bank", 1),
-        ("De Nederlandsche Bank", "Nederlandsche Bank", 6 / 7),
-        ("De Nederlandsche Bank", "Bank de Nederlandsche", 20 / 21),
+        ("De Nederlandsche Bank", "Nederlandsche Bank", 18 / 21),
+        ("De Nederlandsche Bank", "Bank de Nederlandsche", 20 / 22),
         ("De Nederlandsche Bank", "De Nederlandse Bank", 19 / 21),
         ("De Nederlandsche Bank", "De Nederlancsh Bank", 19 / 21),
-        ("De Nederlandsche Bank", "De Bank", 1 / 3),
+        ("De Nederlandsche Bank", "De Bank", 7 / 21),
         ("De Nederlandsche Bank", "Bank", 4 / 21),
-        ("De Nederlandsche Bank", "De Duitse Bank", 10 / 21),
-        ("De Nederlandsche Bank", "Federal Reserve", 10 / 21),
+        ("De Nederlandsche Bank", "De Duitse Bank", 10 / 25),
+        ("De Nederlandsche Bank", "Federal Reserve", 10 / 26),
     ],
 )
 def test_bag(string_a, string_b, expected):

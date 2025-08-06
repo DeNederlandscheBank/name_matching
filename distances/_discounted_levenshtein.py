@@ -176,20 +176,17 @@ class DiscountedLevenshtein(Levenshtein):
             discount_from = [1, 1]
 
         d_mat = np.zeros((src_len + 1, tar_len + 1), dtype=np.float64)
-        if backtrace:
-            trace_mat = np.zeros((src_len + 1, tar_len + 1), dtype=np.int8)
+        trace_mat = np.zeros((src_len + 1, tar_len + 1), dtype=np.int8)
         for i in range(1, src_len + 1):
             d_mat[i, 0] = d_mat[i - 1, 0] + self._discount_func(
                 max(0, i - discount_from[0])
             )
-            if backtrace:
-                trace_mat[i, 0] = 1
+            trace_mat[i, 0] = 1
         for j in range(1, tar_len + 1):
             d_mat[0, j] = d_mat[0, j - 1] + self._discount_func(
                 max(0, j - discount_from[1])
             )
-            if backtrace:
-                trace_mat[0, j] = 0
+            trace_mat[0, j] = 0
         for i in range(src_len):
             i_extend = self._discount_func(max(0, i - discount_from[0]))
             for j in range(tar_len):
@@ -204,8 +201,7 @@ class DiscountedLevenshtein(Levenshtein):
                     + (cost if src[i] != tar[j] else 0),  # sub/==
                 )
                 d_mat[i + 1, j + 1] = min(opts)
-                if backtrace:
-                    trace_mat[i + 1, j + 1] = int(np.argmin(opts))
+                trace_mat[i + 1, j + 1] = int(np.argmin(opts))
 
                 if self._mode == 'osa':
                     if (
@@ -218,8 +214,7 @@ class DiscountedLevenshtein(Levenshtein):
                         d_mat[i + 1, j + 1] = min(
                             d_mat[i + 1, j + 1], d_mat[i - 1, j - 1] + cost
                         )
-                        if backtrace:
-                            trace_mat[i + 1, j + 1] = 2
+                        trace_mat[i + 1, j + 1] = 2
         if backtrace:
             return d_mat, trace_mat
         return d_mat

@@ -975,13 +975,30 @@ member function, such as Levenshtein."
         )
 
     def _intersection(self) -> TCounter[str]:
-        """Return the intersection.
-
-        This function may be overridden by setting the intersection_type during
-        initialization.
-        """
         return self._crisp_intersection()  # pragma: no cover
 
+    def sim(self, src, tar):
+        """Return the token simularity two strings.
+
+        Parameters
+        ----------
+        src : str
+            Source string for comparison
+        tar : str
+            Target string for comparison
+
+        Returns
+        -------
+        float
+            The normalized token distance between src and tar
+
+        """
+        self._tokenize(src, tar)
+        union_card = self._union_card()
+        if union_card == 0:
+            return 0
+        else:
+            return  1 - (self._tar_only_card() + self._src_only_card())/union_card
 
 if __name__ == '__main__':
     import doctest
