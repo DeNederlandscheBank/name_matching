@@ -1,4 +1,5 @@
 import pytest
+import matplotlib
 import os.path as path
 import pandas as pd
 import numpy as np
@@ -8,6 +9,11 @@ from scipy.sparse import csc_matrix
 from name_matching.name_matching_optimiser import NameMatchingOptimiser
 from name_matching.match_annotator import MatchAnnotator
 import name_matching.name_matcher as nm
+
+
+@pytest.fixture(autouse=True)
+def set_matplotlib_backend():
+    matplotlib.use("Agg")
 
 
 @pytest.fixture

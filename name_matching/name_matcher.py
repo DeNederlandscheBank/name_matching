@@ -20,109 +20,74 @@ from name_matching.sparse_cosine import sparse_cosine_top_n
 
 class NameMatcher:
     """
-    A class for the name matching of data based on the strings in a single column. The
-    NameMatcher first applies a cosine similarity on the ngrams of the strings to get
-    an approximate match followed by a fuzzy matching based on a number of different
-    algorithms.
+    Name matching using character n-gram cosine similarity followed by fuzzy matching.
+
+    This class first vectorizes names using character n-grams (via TF-IDF and cosine
+    similarity), selects the top N candidates, and then applies multiple fuzzy matching
+    distance metrics to pick the best match or top-K matches.
 
     Parameters
     ----------
-    ngrams : tuple of integers
-        The length of the ngrams which should be used for the generation of ngrams for
-        the cosine similarity comparison of the possible matches
-        default=(2, 3)
-    top_n : integer
-        The number of possible matches that should be included in the group which will
-        be analysed with the fuzzy matching algorithms
-        default=50
-    low_memory : bool
-        Bool indicating if the a low memory approach should be taken in the sparse
-        cosine similarity step.
-        default=False
-    number_of_rows : integer
-        Determines how many rows should be calculated at once with the sparse cosine
-        similarity step. If the low_memory bool is True this number is unused.
-        default=5000
-    number_of_matches : int
-        The number of matches which should be returned by the matching algorithm. If a
-        number higher than 1 is given, a number of alternative matches are also returned.
-        If the number is equal to the number of algorithms used, the best match for each
-        algorithm is returned. If the number is equal to the number of algorithm groups
-        which are included the best match for each group is returned.
-        default=1
-    legal_suffixes : bool
-        Boolean indicating whether the most common company legal terms should be excluded
-        when calculating the final score. The terms are still included in determining the
-        best match.
-        default=False
-    preprocess_legal : bool
-        Boolean indicating whether the common company legal terms should be excluded
-        from the whole matching process.
-        default=False
-    delete_legal: bool
-        default = False
-    common_words : bool or list
-        Boolean indicating whether the most common words from the matching data should be
-        excluded when calculating the final score. The terms are still included in
-        determining the best match. If common_words is given as a list, the words in the
-        list are excluded from the calculation of the final score, downgrading matches
-        that predominatly rely on these words.
-        default=False
-    cut_off_no_scoring_words: float
-        the cut off percentage of the occurrence of the most occurring word for which words
-        are still included in the no_scoring_words set
-        default=0.01
-    lowercase : bool
-        A boolean indicating whether during the preprocessing all characters should be
-        converted to lowercase, to generate case insensitive matching
-        default=True
-    non_word_characters : bool
-        A boolean indicating whether during the preprocessing all non_word_characters
-        should be ignored, excluding & # -
-        default=True
-    remove_ascii : bool
-        A boolean indicating whether during the preprocessing all characters should be
-        converted to ascii characters
-        default=True : bool
-    make_abbreviations : bool
-        A boolean indicating whether common words and legal names should be abbriviated
-        default=True : bool
-    preprocess_split
-        Indicating whether during the preprocessing an additional step should be taken in
-        which only the most common words out of a name are isolated and used in the
-        matching process. The removing of the common words is only done for the n-grams
-        cosine matching part.
-        default=False
-    begin_end_legal_pre_suffix: bool
-        asd
-        default=True
-    verbose : bool
-        A boolean indicating whether progress printing should be done
-        default=True
-    distance_metrics: list
-        A list of The distance metrics to be used during the fuzzy matching. For a list of
-        possible distance metrics see the distance_metrics.py file. By default the
-        following metrics are used: overlap, weighted_jaccard, ratcliff_obershelp,
-        fuzzy_wuzzy_token_sort and editex.
-    row_numbers : bool
-        Bool indicating whether the row number should be used as match_index rather than
-        the original index as was the default case before version 0.8.8
-        default=False
-    return_algorithms_score : bool
-        Bool indicating whether the scores of all the algorithms should be returned instead
-        of a combined score
-        default=False
-    save_intermediate_results: bool
-        default= False
-    load_intermediate_results: bool
-        default= False
-    intermediate_results_name: dict[str, str]
-        dict containing the names of the different intermediate files. The values are the names
-        and the keys indicate which name should be given to a certain file. The following keys are
-        used to name the files: df_matching_data, to_be_matched, possible_matches
-        default= {"matching_data":"matching_data_name",
-                  "to_be_matched":"to_be_matched_name",
-                  "possible_matches":"possible_matches_name",}
+    ngrams : tuple of int, default=(2, 3)
+        Character n-gram lengths used for cosine similarity.
+    top_n : int, default=50
+        Number of top candidates to return from the cosine step.
+    low_memory : bool, default=False
+        If True, uses a low-memory approach for sparse cosine similarity.
+    number_of_rows : int, default=5000
+        Batch size for low-memory sparse cosine similarity. Ignored if low_memory is True.
+    number_of_matches : int, default=1
+        Number of fuzzy-matched alternatives to return.
+    lowercase : bool, default=True
+        If True, converts text to lowercase during preprocessing.
+    non_word_characters : Optional[bool], default=True
+        If True, strips non-word characters (excluding & and #) during preprocessing.
+    remove_ascii : bool, default=True
+        If True, transliterates to ASCII (dropping accents) during preprocessing.
+    punctuations : Optional[bool], default=None
+        Deprecated alias for non_word_characters.
+    legal_suffixes : bool, default=False
+        If True, post-processing will ignore common company legal suffixes in scoring.
+    preprocess_legal : bool, default=False
+        If True, strips or abbreviates legal suffixes/prefixes during preprocessing.
+    delete_legal : bool, default=False
+        If True, deletes legal suffixes/prefixes instead of abbreviating them.
+    make_abbreviations : bool, default=True
+        If True, replaces common words with their abbreviations during preprocessing.
+    common_words : Union[bool, list], default=False
+        If True, will post-process to down-weight the most common words. If a list is
+        provided, those specific words will be down-weighted.
+    cut_off_no_scoring_words : float, default=0.01
+        Threshold (fraction of max frequency) above which a word is considered too common.
+    preprocess_split : bool, default=False
+        If True, performs an additional “split” variant of preprocessing for searching.
+    begin_end_legal_pre_suffix : bool, default=True
+        If True, only abbreviate legal terms at the beginning or end of names.
+    verbose : bool, default=True
+        If True, prints progress via tqdm.
+    distance_metrics : list of str, default=[
+        "overlap", "weighted_jaccard", "ratcliff_obershelp",
+        "fuzzy_wuzzy_token_sort", "editex"]
+        List of distance metric names to use in the fuzzy-matching step.
+    row_numbers : bool, default=False
+        If True, returns original DataFrame index values in the match results.
+    return_algorithms_score : bool, default=False
+        If True, return the full per-algorithm score matrix instead of just combined scores.
+    save_intermediate_results : bool, default=False
+        If True, saves intermediate pickle files for matching_data, to_be_matched, possible_matches.
+    load_intermediate_results : bool, default=False
+        If True, attempts to load intermediate pickle files before recomputing.
+    intermediate_results_name : dict of str to str, default={
+        "matching_data": "df_matching_data_name",
+        "to_be_matched": "to_be_matched_name",
+        "possible_matches": "possible_matches_name"
+    }
+        Filenames (without “.pkl”) for saving/loading intermediate results.
+
+    Raises
+    ------
+    TypeError
+        If `common_words` is not a bool or iterable of strings.
     """
 
     def __init__(
@@ -221,7 +186,26 @@ class NameMatcher:
 
     def _process_punctuations_depricated(
         self, non_word_characters: bool, punctuations: bool
-    ):
+    ) -> bool:
+        """
+        Handle backward compatibility between `punctuations` and `non_word_characters`.
+
+        Parameters
+        ----------
+        non_word_characters : bool
+            New parameter indicating whether to strip non-word characters.
+        punctuations : bool
+            Deprecated parameter (alias of `non_word_characters`).
+
+        Returns
+        -------
+        bool
+            Final value to use for stripping non-word characters.
+
+        Warnings
+        --------
+        Warns if both parameters are provided but disagree.
+        """
 
         if non_word_characters is None:
             if punctuations is None:
@@ -243,25 +227,32 @@ class NameMatcher:
             return non_word_characters
 
     def _generate_combinations(
-        self, list_a: List, list_b: List, ind: int = 0, result: Optional[List] = None
+        self,
+        list_a: List,
+        list_b: List,
+        ind: int = 0,
+        result: Optional[List] = None,
     ) -> None:
         """
-        Recursively generate combinations of elements from two lists by swapping elements at the same index.
+        Recursively build all possible element-wise choices between two lists.
+
+        At each index `i`, you may choose `list_a[i]` or `list_b[i]`.
 
         Parameters
         ----------
-        list_a : List
-            The first list from which elements are taken.
-        list_b : List
-            The second list from which elements are taken.
-        ind : int, optional
-            The current index in the lists to consider for swapping.
-        result : List, optional
-            The current combination of elements being built.
+        list_a : list
+            First choice list.
+        list_b : list
+            Second choice list.
+        ind : int, default=0
+            Current index in recursion.
+        result : list, optional
+            Sequence built so far.
 
         Returns
         -------
         None
+            Results are appended to `self._temp`.
         """
         if result is None:
             result = []
@@ -282,25 +273,25 @@ class NameMatcher:
         delete_names: bool = False,
     ) -> str:
         """
-        Replace substrings in a given name with their corresponding abbreviations based on specified conditions.
+        Replace or delete substrings in `name` according to provided maps.
 
         Parameters
         ----------
         name : str
-            The name in which substrings are to be replaced.
-        abbreviations : List[str]
-            List of abbreviation strings.
-        long_names : List[str]
-            List of long names corresponding to the abbreviations.
-        begin_end : bool, optional
-            If True, replace only if the substring is at the beginning or end of the name.
-        delete_names : bool, optional
-            Bool indicating whether the strings should be deleted
+            Original string.
+        abbreviations : list of str
+            Short forms to insert.
+        long_names : list of str
+            Corresponding full forms to replace.
+        begin_end : bool, default=True
+            If True, only replace when the full form is at the start or end.
+        delete_names : bool, default=False
+            If True, delete the matched substring entirely instead of abbreviating.
 
         Returns
         -------
         str
-            The modified name after replacements.
+            Modified string.
         """
         if begin_end:
             for abbreviation, long_name in zip(abbreviations, long_names):
@@ -325,19 +316,19 @@ class NameMatcher:
         self, data: pd.DataFrame, column_name: str
     ) -> pd.DataFrame:
         """
-        Replace common long strings in a specified column of a DataFrame with their abbreviated forms.
+        Abbreviate common words in a DataFrame column using an external CSV map.
 
         Parameters
         ----------
         data : pd.DataFrame
-            The DataFrame containing the data.
+            DataFrame to modify.
         column_name : str
-            The name of the column in which replacements are to be made.
+            Column on which to apply replacements.
 
         Returns
         -------
         pd.DataFrame
-            The DataFrame with modified column data.
+            Modified DataFrame.
         """
         with importlib_resource.as_file(
             importlib_resource.files("name_matching.data").joinpath("common_words.csv")
@@ -358,19 +349,20 @@ class NameMatcher:
         self, data: pd.DataFrame, column_name: str
     ) -> pd.DataFrame:
         """
-        Replace legal prefixes and suffixes in a specified column of a DataFrame with their abbreviations.
+        Abbreviate or delete legal prefixes/suffixes in a DataFrame column.
+        Reads `legal_names.csv` to get mappings.
 
         Parameters
         ----------
         data : pd.DataFrame
-            The DataFrame containing the data where replacements need to be made.
+            DataFrame containing the column.
         column_name : str
-            The name of the column in the DataFrame where the replacements will be applied.
+            Name of the column to process.
 
         Returns
         -------
         pd.DataFrame
-            The DataFrame with the replacements made.
+            DataFrame with legal terms replaced.
         """
         abbreviations = []
         possible_names = []
@@ -392,8 +384,6 @@ class NameMatcher:
                 if len(new_lgl) == len(abbr):
                     self._temp = []
                     self._generate_combinations(abbr, new_lgl)
-                    # if not self._preprocess_non_word_characters:
-                    #     self._generate_combinations([s + "." for s in abbr], new_lgl)
                 else:
                     self._temp = [legal_word["full_name"]]
             else:
@@ -414,7 +404,6 @@ class NameMatcher:
                         possible_names.append(option.strip())
                     else:
                         possible_names.append(" ".join(option).strip())
-                        # TODO find a better solution for cases in which a dot should be added
                         possible_names.append(".".join(option).strip() + ".")
                         abbreviations.append(legal_word["abbreviation"].lower())
 
@@ -435,19 +424,20 @@ class NameMatcher:
         return data
 
     def _combine_legal_words(self, abbr: List[str], lgl: List[str]) -> List[str]:
-        """Combine legal words based on their abbreviations.
+        """
+        Merge parts of a full legal name so they align with its abbreviation parts.
 
         Parameters
         ----------
-        abbr : List[str]
-            The parts of the abbreviation
-        lgl : List[str]
-            The parts of the full legal name
+        abbr : list of str
+            Segments of the abbreviation.
+        lgl : list of str
+            Segments of the full legal name.
 
         Returns
         -------
-        List[str]
-            The new parts of the legal name.
+        list of str
+            Re-grouped segments of the legal name.
         """
         ind = 0
         new_lgl = []
@@ -654,29 +644,36 @@ class NameMatcher:
     def match_names(
         self, to_be_matched: Union[pd.Series, pd.DataFrame], column_matching: str
     ) -> Union[pd.Series, pd.DataFrame] | Tuple[pd.DataFrame, pd.DataFrame]:
-        """Performs the name matching operation on the to_be_matched data. First it does
-        the preprocessing of the data to be matched as well as the matching data if this
-        has not been performed. Subsequently based on ngrams a cosine similarity is
-        computed between the matching data and the data to be matched, to the top n
-        matches fuzzy matching algorithms are performed to determine the best match and
-        the quality of the match.
+        """
+        Match input names against the preprocessed master data.
+
+        This will:
+          1. Preprocess the new names.
+          2. Compute cosine-similarity top-N candidates.
+          3. Apply fuzzy matching to those candidates.
 
         Parameters
         ----------
-        to_be_matched: Union[pd.Series, pd.DataFrame]
-            The data which should be matched
-        column_matching: str
-            string indicating the column which will be matched
+        to_be_matched : pandas Series or DataFrame
+            New names to match.
+        column_matching : str
+            Column name in `to_be_matched` containing the names.
 
         Returns
         -------
-        Union[pd.Series, pd.DataFrame]|Tuple[pd.DataFrame,pd.DataFrame]
-            A series or dataframe depending on the input containing the match index from
-            the matching_data dataframe. the name in the to_be_matched data, the name to
-            which the datapoint was matched and a score between 0 (no match) and 100
-            (perfect match) to indicate the quality of the matches. If the algorithm scores
-            should be returned, the results will be a Tuple[pd.DataFrame,pd.DataFrame] with
-            the first dataframe the scores and the second dataframe the names.
+        pandas Series or DataFrame
+            If `return_algorithms_score=False` and `number_of_matches=1`, returns a
+            DataFrame containing:
+              - original_name
+              - match_name
+              - score
+              - match_index
+
+            If `return_algorithms_score=False` and `number_of_matches>1`, returns a
+            DataFrame with columns for each alternative.
+
+            If `return_algorithms_score=True`, returns a tuple (
+            DataFrame_of_scores, DataFrame_of_matched_names ).
         """
         if self._column == "":
             raise ValueError(
@@ -1009,7 +1006,7 @@ class NameMatcher:
 
         return match
 
-    def _vectorise_data(self, transform: bool = True):
+    def _vectorise_data(self, transform: bool = True) -> None:
         """Initialises the TfidfVectorizer, which generates ngrams and weights them
         based on the occurrance. Subsequently the matching data will be used to fit
         the vectoriser and the matching data might also be send to the transform_data
@@ -1026,7 +1023,7 @@ class NameMatcher:
         if transform:
             self.transform_data()
 
-    def transform_data(self):
+    def transform_data(self) -> None:
         """A method which transforms the matching data based on the ngrams transformer.
         After the transformation (the generation of the ngrams), the data is normalised
         by dividing each row by the sum of the row. Subsequently the data is changed to
