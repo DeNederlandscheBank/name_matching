@@ -33,6 +33,7 @@ from ._kuhns_iii import KuhnsIII
 from ._lcprefix import LCPrefix
 from ._lcsseq import LCSseq
 from ._levenshtein import Levenshtein
+from ._jaro_winkler import JaroWinkler
 from ._lig3 import LIG3
 from ._ncd_bz2 import NCDbz2
 from ._overlap import Overlap
@@ -50,7 +51,6 @@ from ._typo import Typo
 from ._warrens_iv import WarrensIV
 from ._weighted_jaccard import WeightedJaccard
 from ._character import CharacterTokenizer
-from ._q_grams import QGrams
 from ._q_skipgrams import QSkipgrams
 from ._regexp import RegexpTokenizer
 from ._tokenizer import _Tokenizer

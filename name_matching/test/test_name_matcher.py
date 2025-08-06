@@ -1,13 +1,10 @@
 import numpy as np
 import pandas as pd
 import os.path as path
+from distances._jaro_winkler import JaroWinkler
 import pytest
 from scipy.sparse import csc_matrix
 from sklearn.feature_extraction.text import TfidfVectorizer
-from cleanco.termdata import terms_by_country, terms_by_type
-import functools
-import operator
-import re
 import name_matching.name_matcher as nm
 from distances import (
     Indel,
@@ -38,114 +35,8 @@ from distances import (
     DoubleMetaphone,
     RefinedSoundex,
     PhoneticDistance,
+    _TokenDistance,
 )
-
-
-@pytest.fixture
-def name_match():
-    package_dir = path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
-    data = pd.read_csv(path.join(package_dir, "test", "test_names.csv"))
-    name_matcher = nm.NameMatcher()
-    name_matcher.load_and_process_master_data(
-        "company_name", data, start_processing=False, transform=False
-    )
-    return name_matcher
-
-
-@pytest.fixture
-def original_name():
-    package_dir = path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
-    return pd.read_csv(path.join(package_dir, "test", "test_names.csv"))
-
-
-@pytest.fixture
-def adjusted_name():
-    package_dir = path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
-    return pd.read_csv(path.join(package_dir, "test", "adjusted_test_names.csv"))
-
-
-@pytest.fixture
-def words():
-    return [
-        "fun",
-        "small",
-        "pool",
-        "fun",
-        "small",
-        "pool",
-        "sign",
-        "small",
-        "pool",
-        "sign",
-        "sign",
-        "small",
-        "pool",
-        "sign",
-        "paper",
-        "oppose",
-        "paper",
-        "oppose",
-        "brown",
-        "pig",
-        "fat",
-        "oppose",
-        "paper",
-        "oppose",
-        "brown",
-        "pig",
-        "fat",
-        "snail",
-    ]
-
-
-def number_of_words_in_legal_list(preprocess: bool) -> int:
-    """
-    Get the number of words in the legal word list. To allow for updates of the cleanco
-    package.
-
-    Parameters
-    -------
-    preprocess: bool
-        a bool determining if the punctuations should be removed
-
-    Returns
-    -------
-    int
-        The number of legal words in the list
-    """
-
-    if preprocess:
-        set_of_words = set(
-            [
-                re.sub(r"[^\w\s]", "", s).strip()
-                for s in functools.reduce(
-                    operator.iconcat, terms_by_country.values(), []
-                )
-            ]
-        )
-        set_of_words.update(
-            [
-                re.sub(r"[^\w\s]", "", s).strip()
-                for s in functools.reduce(operator.iconcat, terms_by_type.values(), [])
-            ]
-        )
-    else:
-        set_of_words = set(
-            [
-                s.strip()
-                for s in functools.reduce(
-                    operator.iconcat, terms_by_country.values(), []
-                )
-            ]
-        )
-        set_of_words.update(
-            [
-                s.strip()
-                for s in functools.reduce(operator.iconcat, terms_by_type.values(), [])
-            ]
-        )
-
-    return len(set_of_words)
 
 
 @pytest.mark.parametrize("method", ["", None, "no_method"])
@@ -157,6 +48,9 @@ def test_make_distance_metrics_error(name_match, method):
 @pytest.mark.parametrize(
     "method, result",
     [
+        ["levenshtein", Levenshtein()],
+        ["jaro_winkler", JaroWinkler()],
+        ["token_distance", _TokenDistance()],
         ["indel", Indel()],
         ["discounted_levenshtein", DiscountedLevenshtein()],
         ["tichy", Tichy()],
@@ -223,9 +117,7 @@ def test_initialisation(kwargs_str, result_1, result_2, result_3, result_4):
     name_match = nm.NameMatcher(**kwargs_str)
     number_of_words = 1
     if result_1 > -1:
-        number_of_words = number_of_words_in_legal_list(
-            name_match._preprocess_punctuations
-        )
+        number_of_words = 330
     assert len(name_match._word_set) == number_of_words + result_1
     assert name_match._low_memory == result_2
     assert name_match._vec.ngram_range == result_3
@@ -318,7 +210,7 @@ def test_process_matching_data(name_match, trans, common):
 
 
 @pytest.mark.parametrize(
-    "lower_case, punctuations, ascii, result_1, result_2, result_3",
+    "lower_case, non_word_characters, ascii, result_1, result_2, result_3",
     [
         [
             False,
@@ -342,7 +234,7 @@ def test_process_matching_data(name_match, trans, common):
             False,
             "Schumm PLC",
             "Towne Johnston and Murray",
-            "ÖsinskiSchinner",
+            "Ösinski-Schinner",
         ],
         [
             False,
@@ -358,7 +250,7 @@ def test_process_matching_data(name_match, trans, common):
             True,
             "Schumm PLC",
             "Towne Johnston and Murray",
-            "OsinskiSchinner",
+            "Osinski-Schinner",
         ],
         [
             True,
@@ -374,7 +266,7 @@ def test_process_matching_data(name_match, trans, common):
             False,
             "schumm plc",
             "towne johnston and murray",
-            "ösinskischinner",
+            "ösinski-schinner",
         ],
         [
             True,
@@ -382,15 +274,15 @@ def test_process_matching_data(name_match, trans, common):
             True,
             "schumm plc",
             "towne johnston and murray",
-            "osinskischinner",
+            "osinski-schinner",
         ],
     ],
 )
 def test_preprocess(
-    name_match, lower_case, punctuations, ascii, result_1, result_2, result_3
+    name_match, lower_case, non_word_characters, ascii, result_1, result_2, result_3
 ):
     name_match._preprocess_lowercase = lower_case
-    name_match._preprocess_punctuations = punctuations
+    name_match._preprocess_non_word_characters = non_word_characters
     name_match._preprocess_ascii = ascii
     new_df = name_match.preprocess(name_match._df_matching_data, "company_name")
     assert new_df.loc[0, "company_name"] == result_1
@@ -401,12 +293,12 @@ def test_preprocess(
 @pytest.mark.parametrize(
     "low_memory, ngrams, result_1, result_2, result_3",
     [
-        [1, (5, 6), 0.00689, 0.00892, 0.0293],
-        [6, (2, 3), 0.01044, 0.01092, 0.035],
-        [8, (1, 2), 0.02729, 0.02783, 0.0360],
-        [0, (5, 6), 0.00689, 0.00892, 0.0293],
-        [0, (2, 3), 0.01044, 0.01092, 0.035],
-        [0, (1, 2), 0.02729, 0.02783, 0.036],
+        [1, (5, 6), 0.04732, 0.00933, 0.02465],
+        [6, (2, 3), 0.04548, 0.01049, 0.02108],
+        [8, (1, 2), 0.02405, 0.02918, 0.02876],
+        [0, (5, 6), 0.04732, 0.00933, 0.02465],
+        [0, (2, 3), 0.04548, 0.01049, 0.02108],
+        [0, (1, 2), 0.02405, 0.02918, 0.02876],
     ],
 )
 def test_transform_data(name_match, low_memory, ngrams, result_1, result_2, result_3):
@@ -478,7 +370,7 @@ def test_transform_data(name_match, low_memory, ngrams, result_1, result_2, resu
                 "Bank de Nederlandsche",
             ],
             ["weighted_jaccard", "overlap", "bag"],
-            11,
+            6,
         ),
         (
             "De Nederlandsche Bank",
@@ -809,7 +701,7 @@ def test_make_no_scoring_words(
 ):
     name_match._preprocess_punctuations = punctuations
     new_word_set = name_match._make_no_scoring_words(indicator, word_set, cut_off)
-    print(new_word_set)
+
     assert new_word_set.issuperset(set([result_1]))
     assert not new_word_set.issuperset(set([result_2]))
 
@@ -1053,7 +945,6 @@ def test_get_alternative_names(match, num_of_matches, result):
 def test_preprocess_word_list(preprocess_punctuations, output, input, x):
     name_match = nm.NameMatcher(punctuations=preprocess_punctuations)
     res = name_match._preprocess_word_list(input)
-    print(res)
     assert res[x] == output
 
 
@@ -1194,25 +1085,19 @@ def test_common_words_addition(original_name, common_words, legal_suffixes):
 
 
 @pytest.mark.parametrize(
-    "word_set, preprocess, result_1, result_2, result_3",
+    "word_set, result_1, result_2, result_3",
     [
-        [set(), True, 0, "company", True],
-        [set(), True, 0, "3ao", True],
-        [set(), True, 0, "g.m.b.h.", False],
-        [set(), False, 0, "& company", True],
-        [set(), False, 0, "3ao", True],
-        [set(), False, 0, "g.m.b.h.", True],
-        [set(["apple"]), True, 1, "apple", True],
-        [set(["apple"]), False, 1, "apple", True],
-        [set(["apple.."]), True, 1, "apple..", True],
-        [set(["apple.."]), False, 1, "apple..", True],
+        [set(), 0, "company", True],
+        [set(), 0, "3ao", True],
+        [set(), 0, "apple", False],
+        [set(["apple"]), 1, "apple", True],
+        [set(["ltd.."]), 1, "ltd..", True],
     ],
 )
-def test_process_legal_words(word_set, preprocess, result_1, result_2, result_3):
+def test_process_legal_words(word_set, result_1, result_2, result_3):
     name_match = nm.NameMatcher()
-    name_match._preprocess_punctuations = preprocess
     words = name_match._process_legal_words(word_set)
 
-    number_of_words = number_of_words_in_legal_list(preprocess)
+    number_of_words = 330
     assert (result_2 in words) == result_3
     assert len(words) == number_of_words + result_1
