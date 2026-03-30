@@ -23,7 +23,7 @@ from typing import Callable, Optional, Union
 
 from ._regexp import RegexpTokenizer
 
-__all__ = ['WhitespaceTokenizer']
+__all__ = ["WhitespaceTokenizer"]
 
 
 class WhitespaceTokenizer(RegexpTokenizer):
@@ -71,12 +71,10 @@ class WhitespaceTokenizer(RegexpTokenizer):
         .. versionadded:: 0.4.0
 
         """
-        super(WhitespaceTokenizer, self).__init__(
-            scaler, regexp=r'\S+', flags=flags
-        )
+        super(WhitespaceTokenizer, self).__init__(scaler, regexp=r"\S+", flags=flags)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

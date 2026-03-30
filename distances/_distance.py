@@ -18,9 +18,10 @@
 
 The distance._distance module implements abstract class _Distance.
 """
-from typing import Any, Dict
 
-__all__ = ['_Distance']
+from typing import Any
+
+__all__ = ["_Distance"]
 
 
 class _Distance:
@@ -123,7 +124,7 @@ class _Distance:
         return self.dist(src, tar)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

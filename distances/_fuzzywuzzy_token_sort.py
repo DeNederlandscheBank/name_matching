@@ -22,11 +22,11 @@ FuzzyWuzzy Token Sort similarity
 from difflib import SequenceMatcher
 from typing import Any, Optional
 
+from ._regexp import RegexpTokenizer
 from ._token_distance import _TokenDistance
 from ._tokenizer import _Tokenizer
-from ._regexp import RegexpTokenizer
 
-__all__ = ['FuzzyWuzzyTokenSort']
+__all__ = ["FuzzyWuzzyTokenSort"]
 
 
 class FuzzyWuzzyTokenSort(_TokenDistance):
@@ -40,9 +40,7 @@ class FuzzyWuzzyTokenSort(_TokenDistance):
     .. versionadded:: 0.4.0
     """
 
-    def __init__(
-        self, tokenizer: Optional[_Tokenizer] = None, **kwargs: Any
-    ) -> None:
+    def __init__(self, tokenizer: Optional[_Tokenizer] = None, **kwargs: Any) -> None:
         """Initialize FuzzyWuzzyTokenSort instance.
 
         Parameters
@@ -67,9 +65,7 @@ class FuzzyWuzzyTokenSort(_TokenDistance):
         """
         if tokenizer is None:
             tokenizer = RegexpTokenizer()
-        super(FuzzyWuzzyTokenSort, self).__init__(
-            tokenizer=tokenizer, **kwargs
-        )
+        super(FuzzyWuzzyTokenSort, self).__init__(tokenizer=tokenizer, **kwargs)
 
     def sim(self, src: str, tar: str) -> float:
         """Return the FuzzyWuzzy Token Sort similarity of two strings.
@@ -102,17 +98,13 @@ class FuzzyWuzzyTokenSort(_TokenDistance):
         .. versionadded:: 0.4.0
 
         """
-        src = ' '.join(
-            sorted(self.params['tokenizer'].tokenize(src).get_list())
-        )
-        tar = ' '.join(
-            sorted(self.params['tokenizer'].tokenize(tar).get_list())
-        )
+        src = " ".join(sorted(self.params["tokenizer"].tokenize(src).get_list()))
+        tar = " ".join(sorted(self.params["tokenizer"].tokenize(tar).get_list()))
 
         return SequenceMatcher(None, src, tar).ratio()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

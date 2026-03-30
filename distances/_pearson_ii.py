@@ -19,12 +19,14 @@
 Pearson II similarity
 """
 
-from typing import Any, Counter as TCounter, Optional, Sequence, Set, Union
+from typing import Any
+from typing import Counter as TCounter
+from typing import Optional, Sequence, Set, Union
 
 from ._pearson_chi_squared import PearsonChiSquared
 from ._tokenizer import _Tokenizer
 
-__all__ = ['PearsonII']
+__all__ = ["PearsonII"]
 
 
 class PearsonII(PearsonChiSquared):
@@ -60,12 +62,10 @@ class PearsonII(PearsonChiSquared):
 
     def __init__(
         self,
-        alphabet: Optional[
-            Union[TCounter[str], Sequence[str], Set[str], int]
-        ] = None,
+        alphabet: Optional[Union[TCounter[str], Sequence[str], Set[str], int]] = None,
         tokenizer: Optional[_Tokenizer] = None,
-        intersection_type: str = 'crisp',
-        **kwargs: Any
+        intersection_type: str = "crisp",
+        **kwargs: Any,
     ) -> None:
         """Initialize PearsonII instance.
 
@@ -105,7 +105,7 @@ class PearsonII(PearsonChiSquared):
             alphabet=alphabet,
             tokenizer=tokenizer,
             intersection_type=intersection_type,
-            **kwargs
+            **kwargs,
         )
 
     def sim_score(self, src: str, tar: str) -> float:
@@ -140,7 +140,7 @@ class PearsonII(PearsonChiSquared):
 
         """
         if src == tar:
-            return 2 ** 0.5 / 2
+            return 2**0.5 / 2
         chi2 = super(PearsonII, self).sim_score(src, tar)
         return (chi2 / (self._population_unique_card() + chi2)) ** 0.5
 
@@ -175,10 +175,10 @@ class PearsonII(PearsonChiSquared):
         .. versionadded:: 0.4.0
 
         """
-        return self.sim_score(src, tar) * 2 / 2 ** 0.5
+        return self.sim_score(src, tar) * 2 / 2**0.5
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

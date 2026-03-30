@@ -18,13 +18,14 @@
 
 Bag similarity & distance
 """
+
 from typing import Any, Optional
 
+from ._character import CharacterTokenizer
 from ._token_distance import _TokenDistance
 from ._tokenizer import _Tokenizer
-from ._character import CharacterTokenizer
 
-__all__ = ['Bag']
+__all__ = ["Bag"]
 
 
 class Bag(_TokenDistance):
@@ -43,8 +44,8 @@ class Bag(_TokenDistance):
     def __init__(
         self,
         tokenizer: Optional[_Tokenizer] = None,
-        intersection_type: str = 'crisp',
-        **kwargs: Any
+        intersection_type: str = "crisp",
+        **kwargs: Any,
     ) -> None:
         """Initialize Bag instance.
 
@@ -179,7 +180,8 @@ class Bag(_TokenDistance):
 
         return 1 - self.dist_abs(src, tar, normalized=True)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

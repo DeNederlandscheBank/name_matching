@@ -18,13 +18,13 @@
 
 Regexp tokenizer
 """
-import re
 
+import re
 from typing import Callable, Optional, Union
 
 from ._tokenizer import _Tokenizer
 
-__all__ = ['RegexpTokenizer']
+__all__ = ["RegexpTokenizer"]
 
 
 class RegexpTokenizer(_Tokenizer):
@@ -36,7 +36,7 @@ class RegexpTokenizer(_Tokenizer):
     def __init__(
         self,
         scaler: Optional[Union[str, Callable[[float], float]]] = None,
-        regexp: str = r'\w+',
+        regexp: str = r"\w+",
         flags: int = 0,
     ) -> None:
         """Initialize tokenizer.
@@ -73,10 +73,10 @@ class RegexpTokenizer(_Tokenizer):
         # Save parameters
         self._regexp = re.compile(regexp, flags)
 
-        self._string = ''
+        self._string = ""
         self._ordered_tokens = []
 
-    def tokenize(self, string: str) -> 'RegexpTokenizer':
+    def tokenize(self, string: str) -> "RegexpTokenizer":
         """Tokenize the term and store it.
 
         The tokenized term is stored as an ordered list and as a Counter
@@ -101,7 +101,7 @@ class RegexpTokenizer(_Tokenizer):
         return self
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

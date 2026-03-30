@@ -21,11 +21,11 @@ String subsequence kernel (SSK) similarity
 
 from typing import Any, Optional
 
+from ._q_skipgrams import QSkipgrams
 from ._token_distance import _TokenDistance
 from ._tokenizer import _Tokenizer
-from ._q_skipgrams import QSkipgrams
 
-__all__ = ['SSK']
+__all__ = ["SSK"]
 
 
 class SSK(_TokenDistance):
@@ -41,7 +41,7 @@ class SSK(_TokenDistance):
         self,
         tokenizer: Optional[_Tokenizer] = None,
         ssk_lambda: float = 0.9,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         """Initialize SSK instance.
 
@@ -68,16 +68,14 @@ class SSK(_TokenDistance):
         .. versionadded:: 0.4.1
 
         """
-        super(SSK, self).__init__(
-            tokenizer=tokenizer, ssk_lambda=ssk_lambda, **kwargs
-        )
+        super(SSK, self).__init__(tokenizer=tokenizer, ssk_lambda=ssk_lambda, **kwargs)
 
-        qval = 2 if 'qval' not in self.params else self.params['qval']
-        self.params['tokenizer'] = (
+        qval = 2 if "qval" not in self.params else self.params["qval"]
+        self.params["tokenizer"] = (
             tokenizer
             if tokenizer is not None
             else QSkipgrams(
-                qval=qval, start_stop='', scaler='SSK', ssk_lambda=ssk_lambda
+                qval=qval, start_stop="", scaler="SSK", ssk_lambda=ssk_lambda
             )
         )
 
@@ -117,9 +115,7 @@ class SSK(_TokenDistance):
         src_wts = self._src_tokens
         tar_wts = self._tar_tokens
 
-        score = sum(
-            src_wts[token] * tar_wts[token] for token in src_wts & tar_wts
-        )
+        score = sum(src_wts[token] * tar_wts[token] for token in src_wts & tar_wts)
 
         return score
 
@@ -162,9 +158,7 @@ class SSK(_TokenDistance):
         src_wts = self._src_tokens
         tar_wts = self._tar_tokens
 
-        score = sum(
-            src_wts[token] * tar_wts[token] for token in src_wts & tar_wts
-        )
+        score = sum(src_wts[token] * tar_wts[token] for token in src_wts & tar_wts)
 
         norm = (
             sum(src_wts[token] * src_wts[token] for token in src_wts)
@@ -176,7 +170,7 @@ class SSK(_TokenDistance):
         return score / norm
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

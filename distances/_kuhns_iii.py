@@ -19,12 +19,14 @@
 Kuhns III correlation
 """
 
-from typing import Any, Counter as TCounter, Optional, Sequence, Set, Union
+from typing import Any
+from typing import Counter as TCounter
+from typing import Optional, Sequence, Set, Union
 
 from ._token_distance import _TokenDistance
 from ._tokenizer import _Tokenizer
 
-__all__ = ['KuhnsIII']
+__all__ = ["KuhnsIII"]
 
 
 class KuhnsIII(_TokenDistance):
@@ -73,12 +75,10 @@ class KuhnsIII(_TokenDistance):
 
     def __init__(
         self,
-        alphabet: Optional[
-            Union[TCounter[str], Sequence[str], Set[str], int]
-        ] = None,
+        alphabet: Optional[Union[TCounter[str], Sequence[str], Set[str], int]] = None,
         tokenizer: Optional[_Tokenizer] = None,
-        intersection_type: str = 'crisp',
-        **kwargs: Any
+        intersection_type: str = "crisp",
+        **kwargs: Any,
     ) -> None:
         """Initialize KuhnsIII instance.
 
@@ -118,7 +118,7 @@ class KuhnsIII(_TokenDistance):
             alphabet=alphabet,
             tokenizer=tokenizer,
             intersection_type=intersection_type,
-            **kwargs
+            **kwargs,
         )
 
     def corr(self, src: str, tar: str) -> float:
@@ -168,8 +168,7 @@ class KuhnsIII(_TokenDistance):
             return 0.0
         else:
             return delta_ab / (
-                (1 - a / (2 * a + b + c))
-                * (2 * a + b + c - ((a + b) * (a + c) / n))
+                (1 - a / (2 * a + b + c)) * (2 * a + b + c - ((a + b) * (a + c) / n))
             )
 
     def sim(self, src: str, tar: str) -> float:
@@ -206,7 +205,7 @@ class KuhnsIII(_TokenDistance):
         return (1 / 3 + self.corr(src, tar)) / (4 / 3)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

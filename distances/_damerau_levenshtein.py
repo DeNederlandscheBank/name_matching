@@ -28,7 +28,7 @@ from numpy import zeros as np_zeros
 from ._distance import _Distance
 
 __all__ = [
-    'DamerauLevenshtein',
+    "DamerauLevenshtein",
 ]
 
 
@@ -45,7 +45,7 @@ class DamerauLevenshtein(_Distance):
         self,
         cost: Tuple[float, float, float, float] = (1, 1, 1, 1),
         normalizer: Callable[[List[float]], float] = max,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         """Initialize Levenshtein instance.
 
@@ -120,8 +120,8 @@ class DamerauLevenshtein(_Distance):
 
         if 2 * trans_cost < ins_cost + del_cost:
             raise ValueError(
-                'Unsupported cost assignment; the cost of two transpositions '
-                + 'must not be less than the cost of an insert plus a delete.'
+                "Unsupported cost assignment; the cost of two transpositions "
+                + "must not be less than the cost of an insert plus a delete."
             )
 
         d_mat = np_zeros((len(src), len(tar)), dtype=np_int)
@@ -133,17 +133,13 @@ class DamerauLevenshtein(_Distance):
         for i in range(1, len(src)):
             del_distance = d_mat[i - 1, 0] + del_cost
             ins_distance = (i + 1) * del_cost + ins_cost
-            match_distance = i * del_cost + (
-                0 if src[i] == tar[0] else sub_cost
-            )
+            match_distance = i * del_cost + (0 if src[i] == tar[0] else sub_cost)
             d_mat[i, 0] = min(del_distance, ins_distance, match_distance)
 
         for j in range(1, len(tar)):
             del_distance = (j + 1) * ins_cost + del_cost
             ins_distance = d_mat[0, j - 1] + ins_cost
-            match_distance = j * ins_cost + (
-                0 if src[0] == tar[j] else sub_cost
-            )
+            match_distance = j * ins_cost + (0 if src[0] == tar[j] else sub_cost)
             d_mat[0, j] = min(del_distance, ins_distance, match_distance)
 
         for i in range(1, len(src)):
@@ -169,9 +165,7 @@ class DamerauLevenshtein(_Distance):
                     if i_swap == 0 and j_swap == 0:
                         pre_swap_cost = 0
                     else:
-                        pre_swap_cost = d_mat[
-                            max(0, i_swap - 1), max(0, j_swap - 1)
-                        ]
+                        pre_swap_cost = d_mat[max(0, i_swap - 1), max(0, j_swap - 1)]
                     swap_distance = (
                         pre_swap_cost
                         + (i - i_swap - 1) * del_cost
@@ -238,7 +232,7 @@ class DamerauLevenshtein(_Distance):
         )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

@@ -1,7 +1,8 @@
-import numpy as np
-from tqdm import tqdm
-from scipy.sparse import csc_matrix, coo_matrix
 from typing import Union
+
+import numpy as np
+from scipy.sparse import coo_matrix, csc_matrix
+from tqdm import tqdm
 
 
 def _sparse_cosine_low_memory(

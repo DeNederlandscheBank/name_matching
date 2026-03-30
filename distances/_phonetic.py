@@ -21,7 +21,7 @@ The phonetic._phonetic module implements abstract class Phonetic.
 
 from itertools import groupby
 
-__all__ = ['_Phonetic']
+__all__ = ["_Phonetic"]
 
 
 class _Phonetic:
@@ -30,12 +30,12 @@ class _Phonetic:
     .. versionadded:: 0.3.6
     """
 
-    _uc_set = set('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-    _lc_set = set('abcdefghijklmnopqrstuvwxyz')
-    _uc_v_set = set('AEIOU')
-    _lc_v_set = set('aeiou')
-    _uc_vy_set = set('AEIOUY')
-    _lc_vy_set = set('aeiouy')
+    _uc_set = set("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+    _lc_set = set("abcdefghijklmnopqrstuvwxyz")
+    _uc_v_set = set("AEIOU")
+    _lc_v_set = set("aeiou")
+    _uc_vy_set = set("AEIOUY")
+    _lc_vy_set = set("aeiouy")
 
     def _delete_consecutive_repeats(self, word: str) -> str:
         """Delete consecutive repeated characters in a word.
@@ -67,7 +67,7 @@ class _Phonetic:
             Encapsulated in class
 
         """
-        return ''.join(char for char, _ in groupby(word))
+        return "".join(char for char, _ in groupby(word))
 
     def encode(self, word: str) -> str:
         """Encode phonetically.
@@ -103,7 +103,7 @@ class _Phonetic:
         return self.encode(word)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

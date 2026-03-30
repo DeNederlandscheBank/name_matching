@@ -1,21 +1,23 @@
 import copy
 import random
-from name_matching.match_annotator import MatchAnnotator
-from name_matching.name_matcher import NameMatcher
+from typing import Any, Optional, Protocol
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from sklearn.base import clone
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.metrics import (
     accuracy_score,
-    recall_score,
-    precision_score,
     f1_score,
     precision_recall_curve,
+    precision_score,
+    recall_score,
 )
 from sklearn.preprocessing import StandardScaler
-from sklearn.base import clone
-from typing import Any, Optional, Protocol
-import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
+
+from name_matching.match_annotator import MatchAnnotator
+from name_matching.name_matcher import NameMatcher
 
 
 class sklearnModel(Protocol):

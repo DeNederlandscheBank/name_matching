@@ -20,12 +20,14 @@ Pearson's Chi-Squared similarity
 """
 
 from math import copysign
-from typing import Any, Counter as TCounter, Optional, Sequence, Set, Union
+from typing import Any
+from typing import Counter as TCounter
+from typing import Optional, Sequence, Set, Union
 
 from ._token_distance import _TokenDistance
 from ._tokenizer import _Tokenizer
 
-__all__ = ['PearsonChiSquared']
+__all__ = ["PearsonChiSquared"]
 
 
 class PearsonChiSquared(_TokenDistance):
@@ -56,12 +58,10 @@ class PearsonChiSquared(_TokenDistance):
 
     def __init__(
         self,
-        alphabet: Optional[
-            Union[TCounter[str], Sequence[str], Set[str], int]
-        ] = None,
+        alphabet: Optional[Union[TCounter[str], Sequence[str], Set[str], int]] = None,
         tokenizer: Optional[_Tokenizer] = None,
-        intersection_type: str = 'crisp',
-        **kwargs: Any
+        intersection_type: str = "crisp",
+        **kwargs: Any,
     ) -> None:
         """Initialize PearsonChiSquared instance.
 
@@ -101,7 +101,7 @@ class PearsonChiSquared(_TokenDistance):
             alphabet=alphabet,
             tokenizer=tokenizer,
             intersection_type=intersection_type,
-            **kwargs
+            **kwargs,
         )
 
     def sim_score(self, src: str, tar: str) -> float:
@@ -233,7 +233,7 @@ class PearsonChiSquared(_TokenDistance):
         return (1.0 + self.corr(src, tar)) / 2.0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

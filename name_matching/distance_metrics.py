@@ -1,37 +1,38 @@
-import distances as nm_dist
 from collections import defaultdict
+
+import distances as nm_dist
 
 
 def make_distance_metrics(
-    indel:bool|dict=False,
-    discounted_levenshtein:bool|dict=False,
-    levenshtein:bool|dict=False,
-    jaro_winkler:bool|dict=False,
-    tichy:bool|dict=False,
-    cormodel_z:bool|dict=False,
-    iterative_sub_string:bool|dict=False,
-    baulieu_xiii:bool|dict=False,
-    clement:bool|dict=False,
-    dice_asymmetrici:bool|dict=False,
-    kuhns_iii:bool|dict=False,
-    overlap:bool|dict=False,
-    pearson_ii:bool|dict=False,
-    weighted_jaccard:bool|dict=False,
-    warrens_iv:bool|dict=False,
-    bag:bool|dict=False,
-    rouge_l:bool|dict=False,
-    token_distance:bool|dict=False,
-    ratcliff_obershelp:bool|dict=False,
-    ncd_bz2:bool|dict=False,
-    fuzzy_wuzzy_partial_string:bool|dict=False,
-    fuzzy_wuzzy_token_sort:bool|dict=False,
-    fuzzy_wuzzy_token_set:bool|dict=False,
-    editex:bool|dict=False,
-    typo:bool|dict=False,
-    lig_3:bool|dict=False,
-    ssk:bool|dict=False,
-    refined_soundex:bool|dict=False,
-    double_metaphone:bool|dict=False,
+    indel: bool | dict = False,
+    discounted_levenshtein: bool | dict = False,
+    levenshtein: bool | dict = False,
+    jaro_winkler: bool | dict = False,
+    tichy: bool | dict = False,
+    cormodel_z: bool | dict = False,
+    iterative_sub_string: bool | dict = False,
+    baulieu_xiii: bool | dict = False,
+    clement: bool | dict = False,
+    dice_asymmetrici: bool | dict = False,
+    kuhns_iii: bool | dict = False,
+    overlap: bool | dict = False,
+    pearson_ii: bool | dict = False,
+    weighted_jaccard: bool | dict = False,
+    warrens_iv: bool | dict = False,
+    bag: bool | dict = False,
+    rouge_l: bool | dict = False,
+    token_distance: bool | dict = False,
+    ratcliff_obershelp: bool | dict = False,
+    ncd_bz2: bool | dict = False,
+    fuzzy_wuzzy_partial_string: bool | dict = False,
+    fuzzy_wuzzy_token_sort: bool | dict = False,
+    fuzzy_wuzzy_token_set: bool | dict = False,
+    editex: bool | dict = False,
+    typo: bool | dict = False,
+    lig_3: bool | dict = False,
+    ssk: bool | dict = False,
+    refined_soundex: bool | dict = False,
+    double_metaphone: bool | dict = False,
 ) -> dict:
     r"""
     A function which returns a dict containing the distance metrics that should be
@@ -87,7 +88,7 @@ def make_distance_metrics(
     discounted_levenshtein: bool
         Boolean indicating whether the DiscountedLevenshtein method should be used
         during the fuzzy name matching. Equal to the regular levenshtein distance,
-        only errors later in the string are counted at a discounted rate. To limit 
+        only errors later in the string are counted at a discounted rate. To limit
         the importance of for instance suffix differences. If a dictionary is provided,
         it is used as parameters for the discounted_levenshtein distance metric.
         default=False
@@ -261,7 +262,9 @@ def make_distance_metrics(
             distance_metrics["Levenshtein"].append(nm_dist.Indel())
     if discounted_levenshtein:
         if isinstance(discounted_levenshtein, dict):
-            distance_metrics["Levenshtein"].append(nm_dist.DiscountedLevenshtein(**discounted_levenshtein))
+            distance_metrics["Levenshtein"].append(
+                nm_dist.DiscountedLevenshtein(**discounted_levenshtein)
+            )
         else:
             distance_metrics["Levenshtein"].append(nm_dist.DiscountedLevenshtein())
     if levenshtein:
@@ -286,7 +289,9 @@ def make_distance_metrics(
             distance_metrics["block"].append(nm_dist.Tichy())
     if iterative_sub_string:
         if isinstance(iterative_sub_string, dict):
-            distance_metrics["Subsequence"].append(nm_dist.IterativeSubString(**iterative_sub_string))
+            distance_metrics["Subsequence"].append(
+                nm_dist.IterativeSubString(**iterative_sub_string)
+            )
         else:
             distance_metrics["Subsequence"].append(nm_dist.IterativeSubString())
     if baulieu_xiii:
@@ -301,7 +306,9 @@ def make_distance_metrics(
             distance_metrics["multiset"].append(nm_dist.Clement())
     if dice_asymmetrici:
         if isinstance(dice_asymmetrici, dict):
-            distance_metrics["multiset"].append(nm_dist.DiceAsymmetricI(**dice_asymmetrici))
+            distance_metrics["multiset"].append(
+                nm_dist.DiceAsymmetricI(**dice_asymmetrici)
+            )
         else:
             distance_metrics["multiset"].append(nm_dist.DiceAsymmetricI())
     if kuhns_iii:
@@ -321,7 +328,9 @@ def make_distance_metrics(
             distance_metrics["multiset"].append(nm_dist.PearsonII())
     if weighted_jaccard:
         if isinstance(weighted_jaccard, dict):
-            distance_metrics["multiset"].append(nm_dist.WeightedJaccard(**weighted_jaccard))
+            distance_metrics["multiset"].append(
+                nm_dist.WeightedJaccard(**weighted_jaccard)
+            )
         else:
             distance_metrics["multiset"].append(nm_dist.WeightedJaccard())
     if warrens_iv:
@@ -341,12 +350,16 @@ def make_distance_metrics(
             distance_metrics["multiset"].append(nm_dist.RougeL())
     if token_distance:
         if isinstance(token_distance, dict):
-            distance_metrics["multiset"].append(nm_dist._TokenDistance(**token_distance))
+            distance_metrics["multiset"].append(
+                nm_dist._TokenDistance(**token_distance)
+            )
         else:
             distance_metrics["multiset"].append(nm_dist._TokenDistance())
     if ratcliff_obershelp:
         if isinstance(ratcliff_obershelp, dict):
-            distance_metrics["Subsequence"].append(nm_dist.RatcliffObershelp(**ratcliff_obershelp))
+            distance_metrics["Subsequence"].append(
+                nm_dist.RatcliffObershelp(**ratcliff_obershelp)
+            )
         else:
             distance_metrics["Subsequence"].append(nm_dist.RatcliffObershelp())
     if ncd_bz2:
@@ -356,17 +369,23 @@ def make_distance_metrics(
             distance_metrics["compression"].append(nm_dist.NCDbz2())
     if fuzzy_wuzzy_partial_string:
         if isinstance(fuzzy_wuzzy_partial_string, dict):
-            distance_metrics["fuzzy"].append(nm_dist.FuzzyWuzzyPartialString(**fuzzy_wuzzy_partial_string))
+            distance_metrics["fuzzy"].append(
+                nm_dist.FuzzyWuzzyPartialString(**fuzzy_wuzzy_partial_string)
+            )
         else:
             distance_metrics["fuzzy"].append(nm_dist.FuzzyWuzzyPartialString())
     if fuzzy_wuzzy_token_sort:
         if isinstance(fuzzy_wuzzy_token_sort, dict):
-            distance_metrics["fuzzy"].append(nm_dist.FuzzyWuzzyTokenSort(**fuzzy_wuzzy_token_sort))
+            distance_metrics["fuzzy"].append(
+                nm_dist.FuzzyWuzzyTokenSort(**fuzzy_wuzzy_token_sort)
+            )
         else:
             distance_metrics["fuzzy"].append(nm_dist.FuzzyWuzzyTokenSort())
     if fuzzy_wuzzy_token_set:
         if isinstance(fuzzy_wuzzy_token_set, dict):
-            distance_metrics["fuzzy"].append(nm_dist.FuzzyWuzzyTokenSet(**fuzzy_wuzzy_token_set))
+            distance_metrics["fuzzy"].append(
+                nm_dist.FuzzyWuzzyTokenSet(**fuzzy_wuzzy_token_set)
+            )
         else:
             distance_metrics["fuzzy"].append(nm_dist.FuzzyWuzzyTokenSet())
     if editex:
@@ -391,7 +410,7 @@ def make_distance_metrics(
             distance_metrics["Subsequence"].append(nm_dist.SSK())
     if refined_soundex:
         if not isinstance(refined_soundex, dict):
-            refined_soundex = {'max_length':30}
+            refined_soundex = {"max_length": 30}
         distance_metrics["phonetic"].append(
             nm_dist.PhoneticDistance(
                 transforms=nm_dist.RefinedSoundex(**refined_soundex),
@@ -401,7 +420,7 @@ def make_distance_metrics(
         )
     if double_metaphone:
         if not isinstance(double_metaphone, dict):
-            double_metaphone = {'max_length':30}
+            double_metaphone = {"max_length": 30}
         distance_metrics["phonetic"].append(
             nm_dist.PhoneticDistance(
                 transforms=nm_dist.DoubleMetaphone(**double_metaphone),
@@ -411,4 +430,3 @@ def make_distance_metrics(
         )
 
     return distance_metrics
-

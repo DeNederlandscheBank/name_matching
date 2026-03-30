@@ -24,7 +24,7 @@ from typing import Any, Optional
 from ._token_distance import _TokenDistance
 from ._tokenizer import _Tokenizer
 
-__all__ = ['Overlap']
+__all__ = ["Overlap"]
 
 
 class Overlap(_TokenDistance):
@@ -52,8 +52,8 @@ class Overlap(_TokenDistance):
     def __init__(
         self,
         tokenizer: Optional[_Tokenizer] = None,
-        intersection_type: str = 'crisp',
-        **kwargs: Any
+        intersection_type: str = "crisp",
+        **kwargs: Any,
     ) -> None:
         """Initialize Overlap instance.
 
@@ -130,12 +130,10 @@ class Overlap(_TokenDistance):
         if not self._src_card() or not self._tar_card():
             return 0.0
 
-        return self._intersection_card() / min(
-            self._src_card(), self._tar_card()
-        )
+        return self._intersection_card() / min(self._src_card(), self._tar_card())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

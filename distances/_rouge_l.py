@@ -21,10 +21,10 @@ Rouge-L similarity
 
 from typing import Any
 
-from ._lcsseq import LCSseq
 from ._distance import _Distance
+from ._lcsseq import LCSseq
 
-__all__ = ['RougeL']
+__all__ = ["RougeL"]
 
 
 class RougeL(_Distance):
@@ -99,7 +99,7 @@ class RougeL(_Distance):
         return 0.0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

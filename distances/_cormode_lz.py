@@ -23,7 +23,7 @@ from typing import Any
 
 from ._distance import _Distance
 
-__all__ = ['CormodeLZ']
+__all__ = ["CormodeLZ"]
 
 
 class CormodeLZ(_Distance):
@@ -84,9 +84,7 @@ class CormodeLZ(_Distance):
         span = 1
 
         while max(pos + 1, pos + span) <= len(src):
-            if (src[pos : pos + span] in tar) or (
-                src[pos : pos + span] in src[:pos]
-            ):
+            if (src[pos : pos + span] in tar) or (src[pos : pos + span] in src[:pos]):
                 span += 1
             else:
                 edits += 1
@@ -132,7 +130,7 @@ class CormodeLZ(_Distance):
         return num / len(src)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()
