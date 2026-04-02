@@ -1,7 +1,9 @@
-import pandas as pd
-from name_matching.name_matcher import NameMatcher
-from typing import Union, Tuple
+from typing import Tuple, Union
 from unicodedata import normalize
+
+import pandas as pd
+
+from name_matching.name_matcher import NameMatcher
 
 
 def _match_names_check_data(
@@ -270,7 +272,7 @@ def match_names(
     punctuation_sensitive=False,
     special_character_sensitive=False,
     threshold=95,
-    **kwargs
+    **kwargs,
 ) -> pd.DataFrame:
     """Function which performs name matching. First a simple merge on the data is performed
     to get the instances in which the name matches perfectly. Subsequently the matches are

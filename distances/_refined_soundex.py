@@ -23,7 +23,7 @@ from unicodedata import normalize as unicode_normalize
 
 from ._phonetic import _Phonetic
 
-__all__ = ['RefinedSoundex']
+__all__ = ["RefinedSoundex"]
 
 
 class RefinedSoundex(_Phonetic):
@@ -37,12 +37,12 @@ class RefinedSoundex(_Phonetic):
 
     _trans = dict(
         zip(
-            (ord(_) for _ in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'),
-            '01360240043788015936020505',
+            (ord(_) for _ in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"),
+            "01360240043788015936020505",
         )
     )
 
-    _alphabetic = dict(zip((ord(_) for _ in '123456789'), 'PFKGZTLNR'))
+    _alphabetic = dict(zip((ord(_) for _ in "123456789"), "PFKGZTLNR"))
 
     def __init__(
         self,
@@ -99,7 +99,7 @@ class RefinedSoundex(_Phonetic):
         .. versionadded:: 0.4.0
 
         """
-        code = self.encode(word).rstrip('0')
+        code = self.encode(word).rstrip("0")
         return code[:1] + code[1:].translate(self._alphabetic)
 
     def encode(self, word: str) -> str:
@@ -134,24 +134,24 @@ class RefinedSoundex(_Phonetic):
 
         """
         # uppercase, normalize, decompose, and filter non-A-Z out
-        word = unicode_normalize('NFKD', word.upper())
-        word = ''.join(c for c in word if c in self._uc_set)
+        word = unicode_normalize("NFKD", word.upper())
+        word = "".join(c for c in word if c in self._uc_set)
 
         # apply the Soundex algorithm
         sdx = word[:1] + word[1:].translate(self._trans)
         sdx = self._delete_consecutive_repeats(sdx)
         if not self._retain_vowels:
-            sdx = sdx.replace('0', '')  # Delete vowels, H, W, Y
+            sdx = sdx.replace("0", "")  # Delete vowels, H, W, Y
 
         if self._max_length > 0:
             if self._zero_pad:
-                sdx += '0' * self._max_length
+                sdx += "0" * self._max_length
             sdx = sdx[: self._max_length]
 
         return sdx
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

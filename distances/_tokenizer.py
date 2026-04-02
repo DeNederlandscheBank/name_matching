@@ -21,19 +21,11 @@ _Tokenizer base class
 
 from collections import Counter, defaultdict
 from math import exp, log1p, log2
-from typing import (
-    Any,
-    Callable,
-    Counter as TCounter,
-    DefaultDict,
-    List,
-    Optional,
-    Set,
-    Union,
-    cast,
-)
+from typing import Any, Callable
+from typing import Counter as TCounter
+from typing import List, Optional, Set, Union, cast
 
-__all__ = ['_Tokenizer']
+__all__ = ["_Tokenizer"]
 
 
 class _Tokenizer:
@@ -46,7 +38,7 @@ class _Tokenizer:
         self,
         scaler: Optional[Union[str, Callable[[float], float]]] = None,
         *args: Any,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         """Initialize Tokenizer.
 
@@ -77,11 +69,11 @@ class _Tokenizer:
 
         self._scaler = scaler
         self._tokens = defaultdict(int)  # type: DefaultDict[str, float]
-        self._string = ''
+        self._string = ""
         self._ordered_tokens = []  # type: List[str]
         self._ordered_weights = []  # type: List[float]
 
-    def tokenize(self, string: str) -> '_Tokenizer':
+    def tokenize(self, string: str) -> "_Tokenizer":
         """Tokenize the term and store it.
 
         The tokenized term is stored as an ordered list and as a defaultdict
@@ -113,31 +105,22 @@ class _Tokenizer:
         .. versionadded:: 0.6.0
 
         """
-        if self._scaler in {'SSK', 'length', 'length-log', 'length-exp'}:
+        if self._scaler in {"SSK", "length", "length-log", "length-exp"}:
             self._tokens = defaultdict(float)
-            if cast(str, self._scaler)[:6] == 'length':
+            if cast(str, self._scaler)[:6] == "length":
                 self._ordered_weights = [len(_) for _ in self._ordered_tokens]
-                if self._scaler == 'length-log':
-                    self._ordered_weights = [
-                        log1p(_) for _ in self._ordered_weights
-                    ]
-                elif self._scaler == 'length-exp':
-                    self._ordered_weights = [
-                        exp(_) for _ in self._ordered_weights
-                    ]
-            for token, weight in zip(
-                self._ordered_tokens, self._ordered_weights
-            ):
+                if self._scaler == "length-log":
+                    self._ordered_weights = [log1p(_) for _ in self._ordered_weights]
+                elif self._scaler == "length-exp":
+                    self._ordered_weights = [exp(_) for _ in self._ordered_weights]
+            for token, weight in zip(self._ordered_tokens, self._ordered_weights):
                 self._tokens[token] += weight
-        elif self._scaler == 'entropy':
+        elif self._scaler == "entropy":
             counts = Counter(self._ordered_tokens)
             n = len(self._ordered_tokens)
             self._tokens = defaultdict(float)
             self._tokens.update(
-                {
-                    key: -(val / n) * log2(val / n)
-                    for key, val in counts.items()
-                }
+                {key: -(val / n) * log2(val / n) for key, val in counts.items()}
             )
             self._ordered_weights = [
                 self._tokens[tok] / counts[tok] for tok in self._ordered_tokens
@@ -204,7 +187,7 @@ class _Tokenizer:
         .. versionadded:: 0.4.0
 
         """
-        if self._scaler == 'set':
+        if self._scaler == "set":
             return Counter({key: 1 for key in self._tokens.keys()})
         elif callable(self._scaler):
             return Counter(
@@ -259,9 +242,9 @@ class _Tokenizer:
         .. versionadded:: 0.4.0
 
         """
-        return self.__class__.__name__ + '({}'.format(str(self._tokens)[27:])
+        return self.__class__.__name__ + "({}".format(str(self._tokens)[27:])
 
-    def __and__(self, other: '_Tokenizer') -> TCounter[str]:
+    def __and__(self, other: "_Tokenizer") -> TCounter[str]:
         """Return intersection with other tokens.
 
         .. versionadded:: 0.4.0
@@ -269,7 +252,7 @@ class _Tokenizer:
         """
         return self.get_counter() & other.get_counter()
 
-    def __add__(self, other: '_Tokenizer') -> TCounter[str]:
+    def __add__(self, other: "_Tokenizer") -> TCounter[str]:
         """Return union with other tokens.
 
         .. versionadded:: 0.4.0
@@ -277,7 +260,7 @@ class _Tokenizer:
         """
         return self.get_counter() + other.get_counter()
 
-    def __sub__(self, other: '_Tokenizer') -> TCounter[str]:
+    def __sub__(self, other: "_Tokenizer") -> TCounter[str]:
         """Return difference from other tokens.
 
         .. versionadded:: 0.4.0
@@ -286,7 +269,7 @@ class _Tokenizer:
         return self.get_counter() - other.get_counter()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

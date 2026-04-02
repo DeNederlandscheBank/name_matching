@@ -1,5 +1,5 @@
-import pytest
 import pandas as pd
+
 from name_matching.name_matching_optimiser import NameMatchingOptimiser
 
 

@@ -30,7 +30,7 @@ import numpy as np
 
 from ._distance import _Distance
 
-__all__ = ['Levenshtein']
+__all__ = ["Levenshtein"]
 
 
 class Levenshtein(_Distance):
@@ -56,11 +56,11 @@ class Levenshtein(_Distance):
 
     def __init__(
         self,
-        mode: str = 'lev',
+        mode: str = "lev",
         cost: Tuple[float, float, float, float] = (1, 1, 1, 1),
         normalizer: Callable[[List[float]], float] = max,
         taper: bool = False,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         """Initialize Levenshtein instance.
 
@@ -167,7 +167,7 @@ class Levenshtein(_Distance):
                 d_mat[i + 1, j + 1] = min(opts)
                 trace_mat[i + 1, j + 1] = int(np.argmin(opts))
 
-                if self._mode == 'osa':
+                if self._mode == "osa":
                     if (
                         i + 1 > 1
                         and j + 1 > 1
@@ -247,21 +247,21 @@ class Levenshtein(_Distance):
                 tar_aligned.append(tar[tar_trace])
             elif src_pos != src_trace:
                 src_aligned.append(src[src_trace])
-                tar_aligned.append('-')
+                tar_aligned.append("-")
             else:
-                src_aligned.append('-')
+                src_aligned.append("-")
                 tar_aligned.append(tar[tar_trace])
             src_pos, tar_pos = src_trace, tar_trace
         while tar_pos:
             tar_pos -= 1
-            src_aligned.append('-')
+            src_aligned.append("-")
             tar_aligned.append(tar[tar_pos])
         while src_pos:
             src_pos -= 1
             src_aligned.append(src[src_pos])
-            tar_aligned.append('-')
+            tar_aligned.append("-")
 
-        return distance, ''.join(src_aligned[::-1]), ''.join(tar_aligned[::-1])
+        return distance, "".join(src_aligned[::-1]), "".join(tar_aligned[::-1])
 
     def dist_abs(self, src: str, tar: str) -> float:
         """Return the Levenshtein distance between two strings.
@@ -311,23 +311,16 @@ class Levenshtein(_Distance):
         if src == tar:
             return 0
         if not src:
-            return sum(
-                ins_cost * self._taper(pos, max_len) for pos in range(tar_len)
-            )
+            return sum(ins_cost * self._taper(pos, max_len) for pos in range(tar_len))
         if not tar:
-            return sum(
-                del_cost * self._taper(pos, max_len) for pos in range(src_len)
-            )
+            return sum(del_cost * self._taper(pos, max_len) for pos in range(src_len))
 
-        d_mat = cast(
-            np.ndarray, self._alignment_matrix(src, tar, backtrace=False)
-        )
+        d_mat = cast(np.ndarray, self._alignment_matrix(src, tar, backtrace=False))
 
         if int(d_mat[src_len, tar_len]) == d_mat[src_len, tar_len]:
             return int(d_mat[src_len, tar_len])
         else:
             return cast(float, d_mat[src_len, tar_len])
-        
 
     def dist(self, src: str, tar: str) -> float:
         """Return the normalized Levenshtein distance between two strings.
@@ -379,25 +372,17 @@ class Levenshtein(_Distance):
         if self._taper_enabled:
             normalize_term = self._normalizer(
                 [
-                    sum(
-                        self._taper(pos, src_len) * del_cost
-                        for pos in range(src_len)
-                    ),
-                    sum(
-                        self._taper(pos, tar_len) * ins_cost
-                        for pos in range(tar_len)
-                    ),
+                    sum(self._taper(pos, src_len) * del_cost for pos in range(src_len)),
+                    sum(self._taper(pos, tar_len) * ins_cost for pos in range(tar_len)),
                 ]
             )
         else:
-            normalize_term = self._normalizer(
-                [src_len * del_cost, tar_len * ins_cost]
-            )
+            normalize_term = self._normalizer([src_len * del_cost, tar_len * ins_cost])
 
         return self.dist_abs(src, tar) / normalize_term
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

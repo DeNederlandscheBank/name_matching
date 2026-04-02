@@ -19,12 +19,14 @@
 Baulieu XIII distance
 """
 
-from typing import Any, Counter as TCounter, Optional, Sequence, Set, Union
+from typing import Any
+from typing import Counter as TCounter
+from typing import Optional, Sequence, Set, Union
 
 from ._token_distance import _TokenDistance
 from ._tokenizer import _Tokenizer
 
-__all__ = ['BaulieuXIII']
+__all__ = ["BaulieuXIII"]
 
 
 class BaulieuXIII(_TokenDistance):
@@ -55,12 +57,10 @@ class BaulieuXIII(_TokenDistance):
 
     def __init__(
         self,
-        alphabet: Optional[
-            Union[TCounter[str], Sequence[str], Set[str], int]
-        ] = None,
+        alphabet: Optional[Union[TCounter[str], Sequence[str], Set[str], int]] = None,
         tokenizer: Optional[_Tokenizer] = None,
-        intersection_type: str = 'crisp',
-        **kwargs: Any
+        intersection_type: str = "crisp",
+        **kwargs: Any,
     ) -> None:
         """Initialize BaulieuXIII instance.
 
@@ -100,7 +100,7 @@ class BaulieuXIII(_TokenDistance):
             alphabet=alphabet,
             tokenizer=tokenizer,
             intersection_type=intersection_type,
-            **kwargs
+            **kwargs,
         )
 
     def dist(self, src: str, tar: str) -> float:
@@ -144,7 +144,7 @@ class BaulieuXIII(_TokenDistance):
         return 1 - bpc / (a + bpc + a * (a - 4) ** 2)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

@@ -24,7 +24,7 @@ from typing import Any, Optional
 from ._token_distance import _TokenDistance
 from ._tokenizer import _Tokenizer
 
-__all__ = ['WeightedJaccard']
+__all__ = ["WeightedJaccard"]
 
 
 class WeightedJaccard(_TokenDistance):
@@ -57,9 +57,9 @@ class WeightedJaccard(_TokenDistance):
     def __init__(
         self,
         tokenizer: Optional[_Tokenizer] = None,
-        intersection_type: str = 'crisp',
+        intersection_type: str = "crisp",
         weight: int = 3,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         """Initialize TripleWeightedJaccard instance.
 
@@ -142,7 +142,7 @@ class WeightedJaccard(_TokenDistance):
         return self.weight * a / (self.weight * a + b + c)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

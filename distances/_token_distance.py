@@ -23,15 +23,9 @@ _TokenDistance.
 from collections import Counter, OrderedDict
 from itertools import product
 from math import exp, log1p
-from typing import (
-    Any,
-    Callable,
-    Counter as TCounter,
-    Optional,
-    Tuple,
-    Union,
-    cast,
-)
+from typing import Any
+from typing import Counter as TCounter
+from typing import Optional, Tuple, Union, cast
 
 import numpy as np
 
@@ -39,12 +33,12 @@ from ._damerau_levenshtein import DamerauLevenshtein
 from ._distance import _Distance
 from ._lcprefix import LCPrefix
 from ._levenshtein import Levenshtein
-from ._tokenizer import _Tokenizer
-from ._whitespace import WhitespaceTokenizer
 from ._q_grams import QGrams
 from ._q_skipgrams import QSkipgrams
+from ._tokenizer import _Tokenizer
+from ._whitespace import WhitespaceTokenizer
 
-__all__ = ['_TokenDistance']
+__all__ = ["_TokenDistance"]
 
 
 class _TokenDistance(_Distance):
@@ -81,8 +75,8 @@ class _TokenDistance(_Distance):
     def __init__(
         self,
         tokenizer: Optional[_Tokenizer] = None,
-        intersection_type: str = 'crisp',
-        **kwargs: Any
+        intersection_type: str = "crisp",
+        **kwargs: Any,
     ) -> None:
         r"""Initialize _TokenDistance instance.
 
@@ -172,68 +166,68 @@ class _TokenDistance(_Distance):
             intersection_type=intersection_type, **kwargs
         )
 
-        qval = 2 if 'qval' not in self.params else self.params['qval']
-        self.params['tokenizer'] = (
+        qval = 2 if "qval" not in self.params else self.params["qval"]
+        self.params["tokenizer"] = (
             tokenizer
             if tokenizer is not None
-            else WhitespaceTokenizer()
-            if qval == 0
-            else QGrams(qval=qval, start_stop='$#', skip=0, scaler=None)
+            else (
+                WhitespaceTokenizer()
+                if qval == 0
+                else QGrams(qval=qval, start_stop="$#", skip=0, scaler=None)
+            )
         )
 
-        if hasattr(self.params['tokenizer'], 'qval'):
-            if isinstance(self.params['tokenizer'].qval, int):
-                qvals = [self.params['tokenizer'].qval]
+        if hasattr(self.params["tokenizer"], "qval"):
+            if isinstance(self.params["tokenizer"].qval, int):
+                qvals = [self.params["tokenizer"].qval]
             else:
-                qvals = list(self.params['tokenizer'].qval)
+                qvals = list(self.params["tokenizer"].qval)
         else:
             qvals = []
 
-        if 'alphabet' in self.params:
-            if isinstance(self.params['alphabet'], str):
-                alpha_set = set(self.params['alphabet'])
-                if isinstance(self.params['tokenizer'], (QGrams, QSkipgrams)):
-                    alpha_set |= set(self.params['tokenizer'].start_stop)
-                    self.params['alphabet'] = sum(
+        if "alphabet" in self.params:
+            if isinstance(self.params["alphabet"], str):
+                alpha_set = set(self.params["alphabet"])
+                if isinstance(self.params["tokenizer"], (QGrams, QSkipgrams)):
+                    alpha_set |= set(self.params["tokenizer"].start_stop)
+                    self.params["alphabet"] = sum(
                         len(alpha_set) ** qval for qval in qvals
                     )
-            if hasattr(self.params['alphabet'], '__len__') and not isinstance(
-                self.params['alphabet'], Counter
+            if hasattr(self.params["alphabet"], "__len__") and not isinstance(
+                self.params["alphabet"], Counter
             ):
-                self.params['alphabet'] = len(self.params['alphabet'])
-            elif self.params['alphabet'] is None and isinstance(
-                self.params['tokenizer'], (QGrams, QSkipgrams)
+                self.params["alphabet"] = len(self.params["alphabet"])
+            elif self.params["alphabet"] is None and isinstance(
+                self.params["tokenizer"], (QGrams, QSkipgrams)
             ):
-                self.params['alphabet'] = sum(
-                    28 ** qval if qval > 1 else 26 for qval in qvals
+                self.params["alphabet"] = sum(
+                    28**qval if qval > 1 else 26 for qval in qvals
                 )
         else:
-            if isinstance(self.params['tokenizer'], (QGrams, QSkipgrams)):
-                self.params['alphabet'] = sum(
-                    28 ** qval if qval > 1 else 26 for qval in qvals
+            if isinstance(self.params["tokenizer"], (QGrams, QSkipgrams)):
+                self.params["alphabet"] = sum(
+                    28**qval if qval > 1 else 26 for qval in qvals
                 )
             else:
-                self.params['alphabet'] = None
+                self.params["alphabet"] = None
 
-        if intersection_type == 'soft':
-            if 'metric' not in self.params or self.params['metric'] is None:
-                self.params['metric'] = Levenshtein()
+        if intersection_type == "soft":
+            if "metric" not in self.params or self.params["metric"] is None:
+                self.params["metric"] = Levenshtein()
             self._lcprefix = LCPrefix()
             self._intersection = self._soft_intersection  # type: ignore
-        elif intersection_type == 'fuzzy':
-            if 'metric' not in self.params or self.params['metric'] is None:
-                self.params['metric'] = Levenshtein()
-            if 'threshold' not in self.params:
-                self.params['threshold'] = 0.8
+        elif intersection_type == "fuzzy":
+            if "metric" not in self.params or self.params["metric"] is None:
+                self.params["metric"] = Levenshtein()
+            if "threshold" not in self.params:
+                self.params["threshold"] = 0.8
             self._intersection = self._fuzzy_intersection  # type: ignore
-        elif intersection_type == 'linkage':
-            if 'metric' not in self.params or self.params['metric'] is None:
-                self.params['metric'] = DamerauLevenshtein()
-            if 'threshold' not in self.params:
-                self.params['threshold'] = 0.1
-            self._intersection = (  # type: ignore
-                self._group_linkage_intersection
-            )
+        elif intersection_type == "linkage":
+            if "metric" not in self.params or self.params["metric"] is None:
+                self.params["metric"] = DamerauLevenshtein()
+            if "threshold" not in self.params:
+                self.params["threshold"] = 0.1
+            self._intersection = self._group_linkage_intersection  # type: ignore
         else:
             self._intersection = self._crisp_intersection  # type: ignore
 
@@ -247,12 +241,12 @@ class _TokenDistance(_Distance):
         )  # type: Callable[[float, int, float], float]  # noqa: E501
 
         self._norm_dict = {
-            'proportional': self._norm_proportional,
-            'log': self._norm_log,
-            'exp': self._norm_exp,
-            'laplace': self._norm_laplace,
-            'inverse': self._norm_inverse,
-            'complement': self._norm_complement,
+            "proportional": self._norm_proportional,
+            "log": self._norm_log,
+            "exp": self._norm_exp,
+            "laplace": self._norm_laplace,
+            "inverse": self._norm_inverse,
+            "complement": self._norm_complement,
         }
 
         # initialize values for soft intersection
@@ -290,7 +284,7 @@ class _TokenDistance(_Distance):
 
     def _tokenize(
         self, src: Union[str, TCounter[str]], tar: Union[str, TCounter[str]]
-    ) -> '_TokenDistance':
+    ) -> "_TokenDistance":
         """Return the Q-Grams in src & tar.
 
         Parameters
@@ -324,26 +318,19 @@ class _TokenDistance(_Distance):
         if isinstance(src, Counter):
             self._src_tokens = src
         else:
-            self._src_tokens = (
-                self.params['tokenizer'].tokenize(src).get_counter()
-            )
+            self._src_tokens = self.params["tokenizer"].tokenize(src).get_counter()
         if isinstance(tar, Counter):
             self._tar_tokens = tar
         else:
-            self._tar_tokens = (
-                self.params['tokenizer'].tokenize(tar).get_counter()
-            )
+            self._tar_tokens = self.params["tokenizer"].tokenize(tar).get_counter()
 
         self._population_card_value = self._calc_population_card()
 
         # Set up the normalizer, a function of two variables:
         # x is the value in the contingency table square(s)
         # n is the number of squares that x represents
-        if (
-            'normalizer' in self.params
-            and self.params['normalizer'] in self._norm_dict
-        ):
-            self.normalizer = self._norm_dict[self.params['normalizer']]
+        if "normalizer" in self.params and self.params["normalizer"] in self._norm_dict:
+            self.normalizer = self._norm_dict[self.params["normalizer"]]
 
         # clear values for soft intersection
         self._soft_intersection_precalc = Counter()
@@ -358,7 +345,7 @@ class _TokenDistance(_Distance):
 
     def _src_card(self) -> float:
         r"""Return the cardinality of the tokens in the source set."""
-        if self.params['intersection_type'] == 'soft':
+        if self.params["intersection_type"] == "soft":
             if not len(self._soft_intersection_precalc):
                 self._intersection()
             return self.normalizer(
@@ -382,12 +369,12 @@ class _TokenDistance(_Distance):
 
         For (multi-)sets S and T, this is :math:`S \setminus T`.
         """
-        if self.params['intersection_type'] == 'soft':
+        if self.params["intersection_type"] == "soft":
             if not len(self._soft_intersection_precalc):
                 self._intersection()
             return self._soft_src_only
         src_only = self._src_tokens - self._intersection()
-        if self.params['intersection_type'] != 'crisp':
+        if self.params["intersection_type"] != "crisp":
             src_only -= self._intersection() - self._crisp_intersection()
         return src_only
 
@@ -401,7 +388,7 @@ class _TokenDistance(_Distance):
 
     def _tar_card(self) -> float:
         r"""Return the cardinality of the tokens in the target set."""
-        if self.params['intersection_type'] == 'soft':
+        if self.params["intersection_type"] == "soft":
             if not len(self._soft_intersection_precalc):
                 self._intersection()
             return self.normalizer(
@@ -425,12 +412,12 @@ class _TokenDistance(_Distance):
 
         For (multi-)sets S and T, this is :math:`T \setminus S`.
         """
-        if self.params['intersection_type'] == 'soft':
+        if self.params["intersection_type"] == "soft":
             if not len(self._soft_intersection_precalc):
                 self._intersection()
             return self._soft_tar_only
         tar_only = self._tar_tokens - self._intersection()
-        if self.params['intersection_type'] != 'crisp':
+        if self.params["intersection_type"] != "crisp":
             tar_only -= self._intersection() - self._crisp_intersection()
         return tar_only
 
@@ -465,7 +452,7 @@ class _TokenDistance(_Distance):
         In the case of multisets, this counts values in the intersection
         twice. In the case of sets, this is identical to the union.
         """
-        if self.params['intersection_type'] == 'soft':
+        if self.params["intersection_type"] == "soft":
             if not len(self._soft_intersection_precalc):
                 self._intersection()
             return (
@@ -486,24 +473,22 @@ class _TokenDistance(_Distance):
 
     def _total_complement_card(self) -> float:
         """Return the cardinality of the complement of the total."""
-        if self.params['alphabet'] is None:
+        if self.params["alphabet"] is None:
             return self.normalizer(0, 1, self._population_card_value)
-        elif isinstance(self.params['alphabet'], Counter):
+        elif isinstance(self.params["alphabet"], Counter):
             return self.normalizer(
                 max(
                     0,
                     sum(
                         abs(val)
-                        for val in (
-                            self.params['alphabet'] - self._total()
-                        ).values()
+                        for val in (self.params["alphabet"] - self._total()).values()
                     ),
                 ),
                 1,
                 self._population_card_value,
             )
         return self.normalizer(
-            max(0, self.params['alphabet'] - len(self._total().values())),
+            max(0, self.params["alphabet"] - len(self._total().values())),
             1,
             self._population_card_value,
         )
@@ -512,11 +497,11 @@ class _TokenDistance(_Distance):
         """Return the cardinality of the population."""
         save_normalizer = self.normalizer
         self.normalizer = self._norm_none
-        save_intersection = self.params['intersection_type']
-        self.params['intersection_type'] = 'crisp'
+        save_intersection = self.params["intersection_type"]
+        self.params["intersection_type"] = "crisp"
         pop = self._total_card() + self._total_complement_card()
         self.normalizer = save_normalizer
-        self.params['intersection_type'] = save_intersection
+        self.params["intersection_type"] = save_intersection
         return pop
 
     def _population_card(self) -> float:
@@ -538,7 +523,7 @@ class _TokenDistance(_Distance):
 
         For (multi-)sets S and T, this is :math:`S \cup T`.
         """
-        if self.params['intersection_type'] == 'soft':
+        if self.params["intersection_type"] == "soft":
             if not len(self._soft_intersection_precalc):
                 self._intersection()
             return (
@@ -547,7 +532,7 @@ class _TokenDistance(_Distance):
                 + self._soft_intersection_precalc
             )
         union = self._total() - self._intersection()
-        if self.params['intersection_type'] != 'crisp':
+        if self.params["intersection_type"] != "crisp":
             union -= self._intersection() - self._crisp_intersection()
         return union
 
@@ -561,7 +546,7 @@ class _TokenDistance(_Distance):
 
     def _difference(self) -> TCounter[str]:
         """Return the difference of the tokens, supporting negative values."""
-        if self.params['intersection_type'] == 'soft':
+        if self.params["intersection_type"] == "soft":
             if not len(self._soft_intersection_precalc):
                 self._intersection()
             _src_copy = Counter(self._soft_src_only)
@@ -584,11 +569,9 @@ class _TokenDistance(_Distance):
         This implements the soft intersection defined by :cite:`Russ:2014` in
         a way that can reproduce the results in the paper.
         """
-        if not hasattr(self.params['metric'], 'alignment'):
-            raise TypeError(
-                "Soft similarity requires a 'metric' with an alignment \
-member function, such as Levenshtein."
-            )
+        if not hasattr(self.params["metric"], "alignment"):
+            raise TypeError("Soft similarity requires a 'metric' with an alignment \
+member function, such as Levenshtein.")
 
         intersection = self._crisp_intersection()
         src_only = self._src_tokens - self._tar_tokens
@@ -602,7 +585,7 @@ member function, such as Levenshtein."
             return cast(
                 float,
                 max(
-                    greater_length - self.params['metric'].dist_abs(src, tar),
+                    greater_length - self.params["metric"].dist_abs(src, tar),
                     self._lcprefix.dist_abs(src, tar),
                 )
                 / greater_length,
@@ -619,30 +602,30 @@ member function, such as Levenshtein."
             tar_val = 0.0
             int_val = 0.0
 
-            _cost, _src, _tar = self.params['metric'].alignment(src, tar)
+            _cost, _src, _tar = self.params["metric"].alignment(src, tar)
 
             for i in range(len(_src)):
                 if _src[i] == _tar[i]:
-                    src_tok.append('-')
-                    tar_tok.append('-')
+                    src_tok.append("-")
+                    tar_tok.append("-")
                     int_tok.append(_src[i])
                     int_val += 1
                 else:
                     src_tok.append(_src[i])
-                    if _src[i] != '-':
+                    if _src[i] != "-":
                         src_val += 1
                     tar_tok.append(_tar[i])
-                    if _tar[i] != '-':
+                    if _tar[i] != "-":
                         tar_val += 1
-                    int_tok.append('-')
+                    int_tok.append("-")
 
             src_val /= len(_src)
             tar_val /= len(_src)
             int_val /= len(_src)
 
-            src_tok_str = ''.join(src_tok).strip('-')
-            tar_tok_str = ''.join(tar_tok).strip('-')
-            int_tok_str = ''.join(int_tok).strip('-')
+            src_tok_str = "".join(src_tok).strip("-")
+            tar_tok_str = "".join(tar_tok).strip("-")
+            int_tok_str = "".join(int_tok).strip("-")
 
             return (
                 src_tok_str,
@@ -721,8 +704,8 @@ member function, such as Levenshtein."
         pair = {}
         for src_tok in sorted(src_only):
             for tar_tok in sorted(tar_only):
-                sim = self.params['metric'].sim(src_tok, tar_tok)
-                if sim >= self.params['threshold']:
+                sim = self.params["metric"].sim(src_tok, tar_tok)
+                if sim >= self.params["threshold"]:
                     pair[(src_tok, tar_tok)] = sim
 
         ordered_keys = [(pair[_], _[0], _[1]) for _ in pair]
@@ -799,12 +782,12 @@ member function, such as Levenshtein."
 
         for col in range(len(src_only_tok)):
             for row in range(len(tar_only_tok)):
-                arr[row, col] = self.params['metric'].dist(
+                arr[row, col] = self.params["metric"].dist(
                     src_only_tok[col], tar_only_tok[row]
                 )
 
-        src_only_tok += [''] * (n - len(src_only_tok))
-        tar_only_tok += [''] * (n - len(tar_only_tok))
+        src_only_tok += [""] * (n - len(src_only_tok))
+        tar_only_tok += [""] * (n - len(tar_only_tok))
 
         starred = np.zeros((n, n), dtype=np.bool_)
         primed = np.zeros((n, n), dtype=np.bool_)
@@ -884,9 +867,7 @@ member function, such as Levenshtein."
                 # column."
                 z_series = []
                 for row, col in zeros:  # pragma: no branch
-                    if primed[row, col] and not (
-                        row_covered[row] | col_covered[col]
-                    ):
+                    if primed[row, col] and not (row_covered[row] | col_covered[col]):
                         z_series.append((row, col))
                         break
                 col = z_series[-1][1]
@@ -931,14 +912,11 @@ member function, such as Levenshtein."
                 # 3: "Let h denote the smallest non-covered element of the
                 # matrix; it will be positive. Add h to each covered row;
                 # then subtract h from each uncovered column."
-                h_val = float('inf')
+                h_val = float("inf")
                 for col in range(n):
                     if not (col_covered[col]):
                         for row in range(n):
-                            if (
-                                not (row_covered[row])
-                                and arr[row, col] < h_val
-                            ):
+                            if not (row_covered[row]) and arr[row, col] < h_val:
                                 h_val = arr[row, col]
                 for row in range(n):
                     if row_covered[row]:
@@ -953,7 +931,7 @@ member function, such as Levenshtein."
 
         for row, col in tuple(zip(*(starred.nonzero()))):
             sim = orig_sim[row, col]
-            if sim >= self.params['threshold']:
+            if sim >= self.params["threshold"]:
                 score = float(
                     (sim / 2)
                     * min(
@@ -998,9 +976,10 @@ member function, such as Levenshtein."
         if union_card == 0:
             return 0
         else:
-            return  1 - (self._tar_only_card() + self._src_only_card())/union_card
+            return 1 - (self._tar_only_card() + self._src_only_card()) / union_card
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

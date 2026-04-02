@@ -1,19 +1,21 @@
+import importlib.resources as importlib_resource
 import os
 import pickle
 import re
 import warnings
+from functools import reduce
+from itertools import compress
+from operator import iconcat
+from re import escape, sub
+from typing import List, Optional, Tuple, Union
+from unicodedata import category, normalize
+
 import numpy as np
 import pandas as pd
-import importlib.resources as importlib_resource
-from tqdm import tqdm
-from operator import iconcat
-from functools import reduce
-from unicodedata import category, normalize
-from re import escape, sub
-from name_matching.data.transliterations import TRANSLITERATION_MAP
-from typing import List, Optional, Union, Tuple
-from itertools import compress
 from sklearn.feature_extraction.text import TfidfVectorizer
+from tqdm import tqdm
+
+from name_matching.data.transliterations import TRANSLITERATION_MAP
 from name_matching.distance_metrics import make_distance_metrics
 from name_matching.sparse_cosine import sparse_cosine_top_n
 
@@ -1019,7 +1021,10 @@ class NameMatcher:
             vectoriser is initialised
             default: True
         """
-        self._vec.fit(self._df_matching_data[self._column].values.flatten().astype(str))  # type: ignore
+        # self._vec.fit(self._df_matching_data[self._column].values.flatten().astype(str))  # type: ignore
+        self._vec.fit(
+            self._df_matching_data[self._column].to_numpy()
+        )  # .flatten().astype(str))  # type: ignore
         if transform:
             self.transform_data()
 

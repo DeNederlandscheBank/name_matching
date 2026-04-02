@@ -26,7 +26,7 @@ import numpy as np
 
 from ._levenshtein import Levenshtein
 
-__all__ = ['DiscountedLevenshtein']
+__all__ = ["DiscountedLevenshtein"]
 
 
 class DiscountedLevenshtein(Levenshtein):
@@ -41,12 +41,12 @@ class DiscountedLevenshtein(Levenshtein):
 
     def __init__(
         self,
-        mode: str = 'lev',
+        mode: str = "lev",
         normalizer: Callable[[List[float]], float] = max,
         discount_from: Union[int, str] = 1,
-        discount_func: Union[str, Callable[[float], float]] = 'log',
-        vowels: str = 'aeiou',
-        **kwargs: Any
+        discount_func: Union[str, Callable[[float], float]] = "log",
+        vowels: str = "aeiou",
+        **kwargs: Any,
     ) -> None:
         """Initialize DiscountedLevenshtein instance.
 
@@ -104,7 +104,7 @@ class DiscountedLevenshtein(Levenshtein):
         self._vowels = set(vowels.lower())
         if callable(discount_func):
             self._discount_func = discount_func
-        elif discount_func == 'exp':
+        elif discount_func == "exp":
             self._discount_func = self._exp_discount
         else:
             self._discount_func = self._log_discount
@@ -143,7 +143,7 @@ class DiscountedLevenshtein(Levenshtein):
         src_len = len(src)
         tar_len = len(tar)
 
-        if self._discount_from == 'coda':
+        if self._discount_from == "coda":
             discount_from = [0, 0]
 
             src_voc = src.lower()
@@ -191,19 +191,16 @@ class DiscountedLevenshtein(Levenshtein):
             i_extend = self._discount_func(max(0, i - discount_from[0]))
             for j in range(tar_len):
                 traces = ((i + 1, j), (i, j + 1), (i, j))
-                cost = min(
-                    i_extend, self._discount_func(max(0, j - discount_from[1]))
-                )
+                cost = min(i_extend, self._discount_func(max(0, j - discount_from[1])))
                 opts = (
                     d_mat[traces[0]] + cost,  # ins
                     d_mat[traces[1]] + cost,  # del
-                    d_mat[traces[2]]
-                    + (cost if src[i] != tar[j] else 0),  # sub/==
+                    d_mat[traces[2]] + (cost if src[i] != tar[j] else 0),  # sub/==
                 )
                 d_mat[i + 1, j + 1] = min(opts)
                 trace_mat[i + 1, j + 1] = int(np.argmin(opts))
 
-                if self._mode == 'osa':
+                if self._mode == "osa":
                     if (
                         i + 1 > 1
                         and j + 1 > 1
@@ -278,9 +275,7 @@ class DiscountedLevenshtein(Levenshtein):
                 for pos in range(src_len)
             )
 
-        d_mat = cast(
-            np.ndarray, self._alignment_matrix(src, tar, backtrace=False)
-        )
+        d_mat = cast(np.ndarray, self._alignment_matrix(src, tar, backtrace=False))
 
         if int(d_mat[src_len, tar_len]) == d_mat[src_len, tar_len]:
             return int(d_mat[src_len, tar_len])
@@ -352,7 +347,7 @@ class DiscountedLevenshtein(Levenshtein):
         return self.dist_abs(src, tar) / normalize_term
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

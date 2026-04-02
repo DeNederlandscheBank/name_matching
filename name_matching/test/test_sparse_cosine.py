@@ -3,8 +3,8 @@ import pytest
 from scipy.sparse import csc_matrix
 
 from name_matching.sparse_cosine import (
-    _sparse_cosine_top_n_standard,
     _sparse_cosine_low_memory,
+    _sparse_cosine_top_n_standard,
     sparse_cosine_top_n,
 )
 

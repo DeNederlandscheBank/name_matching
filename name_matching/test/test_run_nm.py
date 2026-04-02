@@ -1,5 +1,4 @@
 import pandas as pd
-import os.path as path
 import pytest
 
 import name_matching.run_nm as run_nm
@@ -31,7 +30,7 @@ def test_match_names_check_data(adjusted_name, series, column, group_column):
         adjusted_name = adjusted_name["company_name"]
     data = run_nm._match_names_check_data(adjusted_name, column, group_column)
     assert "name_matching_data" in data
-    assert type(data) == pd.DataFrame
+    assert isinstance(data, pd.DataFrame)
 
 
 @pytest.mark.parametrize(

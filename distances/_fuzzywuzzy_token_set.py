@@ -22,11 +22,11 @@ FuzzyWuzzy Token Set similarity
 from difflib import SequenceMatcher
 from typing import Any, Optional
 
+from ._regexp import RegexpTokenizer
 from ._token_distance import _TokenDistance
 from ._tokenizer import _Tokenizer
-from ._regexp import RegexpTokenizer
 
-__all__ = ['FuzzyWuzzyTokenSet']
+__all__ = ["FuzzyWuzzyTokenSet"]
 
 
 class FuzzyWuzzyTokenSet(_TokenDistance):
@@ -40,9 +40,7 @@ class FuzzyWuzzyTokenSet(_TokenDistance):
     .. versionadded:: 0.4.0
     """
 
-    def __init__(
-        self, tokenizer: Optional[_Tokenizer] = None, **kwargs: Any
-    ) -> None:
+    def __init__(self, tokenizer: Optional[_Tokenizer] = None, **kwargs: Any) -> None:
         """Initialize FuzzyWuzzyTokenSet instance.
 
         Parameters
@@ -100,16 +98,16 @@ class FuzzyWuzzyTokenSet(_TokenDistance):
         .. versionadded:: 0.4.0
 
         """
-        src_tok = self.params['tokenizer'].tokenize(src).get_set()
-        tar_tok = self.params['tokenizer'].tokenize(tar).get_set()
+        src_tok = self.params["tokenizer"].tokenize(src).get_set()
+        tar_tok = self.params["tokenizer"].tokenize(tar).get_set()
 
         intersection = src_tok & tar_tok
         src_tok -= intersection
         tar_tok -= intersection
 
-        intersection = ' '.join(sorted(intersection)) + ' '
-        src = intersection + ' '.join(sorted(src_tok))
-        tar = intersection + ' '.join(sorted(tar_tok))
+        intersection = " ".join(sorted(intersection)) + " "
+        src = intersection + " ".join(sorted(src_tok))
+        tar = intersection + " ".join(sorted(tar_tok))
 
         return max(
             SequenceMatcher(None, src, intersection).ratio(),
@@ -118,7 +116,7 @@ class FuzzyWuzzyTokenSet(_TokenDistance):
         )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

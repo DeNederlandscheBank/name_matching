@@ -1,14 +1,14 @@
-import pytest
-import matplotlib
 import os.path as path
-import pandas as pd
-import numpy as np
 
+import matplotlib
+import numpy as np
+import pandas as pd
+import pytest
 from scipy.sparse import csc_matrix
 
-from name_matching.name_matching_optimiser import NameMatchingOptimiser
-from name_matching.match_annotator import MatchAnnotator
 import name_matching.name_matcher as nm
+from name_matching.match_annotator import MatchAnnotator
+from name_matching.name_matching_optimiser import NameMatchingOptimiser
 
 
 @pytest.fixture(autouse=True)

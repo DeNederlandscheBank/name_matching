@@ -1,7 +1,7 @@
+import ipywidgets as ipyw
 import numpy as np
 import pandas as pd
-import ipywidgets as ipyw
-from IPython.display import display, clear_output
+from IPython.display import clear_output, display
 
 
 class MatchAnnotator:
