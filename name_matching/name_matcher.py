@@ -1019,7 +1019,7 @@ class NameMatcher:
             vectoriser is initialised
             default: True
         """
-        self._vec.fit(self._df_matching_data[self._column].values.flatten().astype(str))  # type: ignore
+        self._vec.fit(self._df_matching_data[self._column].to_numpy())  # type: ignore
         if transform:
             self.transform_data()
 
