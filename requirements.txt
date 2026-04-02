@@ -1,9 +1,0 @@
-abydos==0.5.0
-cleanco==2.0.1
-numpy
-pandas
-scikit-learn
-scipy
-tqdm
-ipywidgets
-matplotlib

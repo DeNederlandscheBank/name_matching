@@ -685,7 +685,7 @@ def test_postprocess(name_match, match, number_of_matches, word_set, score, resu
 
 
 @pytest.mark.parametrize(
-    "indicator, punctuations, word_set, cut_off, result_1, result_2",
+    "indicator, non_word_characters, word_set, cut_off, result_1, result_2",
     [
         ("legal", False, set(), 0.01, "plc.", "bedrijf"),
         ("legal", True, set(), 0.01, "plc", "bedrijf"),
@@ -697,9 +697,9 @@ def test_postprocess(name_match, match, number_of_matches, word_set, score, resu
     ],
 )
 def test_make_no_scoring_words(
-    name_match, indicator, punctuations, word_set, cut_off, result_1, result_2
+    name_match, indicator, non_word_characters, word_set, cut_off, result_1, result_2
 ):
-    name_match._preprocess_punctuations = punctuations
+    name_match._preprocess_punctuations = non_word_characters
     new_word_set = name_match._make_no_scoring_words(indicator, word_set, cut_off)
 
     assert new_word_set.issuperset(set([result_1]))
@@ -943,7 +943,7 @@ def test_get_alternative_names(match, num_of_matches, result):
     ],
 )
 def test_preprocess_word_list(preprocess_punctuations, output, input, x):
-    name_match = nm.NameMatcher(punctuations=preprocess_punctuations)
+    name_match = nm.NameMatcher(non_word_characters=preprocess_punctuations)
     res = name_match._preprocess_word_list(input)
     assert res[x] == output
 
