@@ -19,12 +19,12 @@
 Phonetic distance.
 """
 
-from typing import Any, Callable, List, Optional, Sequence, Type, Union
+from typing import Any, Callable, Optional, Sequence, Type, Union
 
 from ._distance import _Distance
 from ._phonetic import _Phonetic
 
-__all__ = ['PhoneticDistance']
+__all__ = ["PhoneticDistance"]
 
 
 class PhoneticDistance(_Distance):
@@ -64,7 +64,7 @@ class PhoneticDistance(_Distance):
         ] = None,
         metric: Optional[Union[Type[_Distance], _Distance]] = None,
         encode_alpha: bool = False,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         """Initialize PhoneticDistance instance.
 
@@ -101,16 +101,12 @@ class PhoneticDistance(_Distance):
             for i, trans in enumerate(transforms):
                 if isinstance(trans, (_Phonetic)):
                     continue
-                elif isinstance(trans, type) and issubclass(
-                    trans, (_Phonetic)
-                ):
+                elif isinstance(trans, type) and issubclass(trans, (_Phonetic)):
                     transforms[i] = trans()
                 elif callable(trans):
                     continue
                 else:
-                    raise TypeError(
-                        '{} has unknown type {}'.format(trans, type(trans))
-                    )
+                    raise TypeError("{} has unknown type {}".format(trans, type(trans)))
 
             for trans in transforms:
                 if isinstance(trans, _Phonetic):
@@ -128,9 +124,7 @@ class PhoneticDistance(_Distance):
         elif metric is None:
             self.metric = None
         else:
-            raise TypeError(
-                '{} has unknown type {}'.format(metric, type(metric))
-            )
+            raise TypeError("{} has unknown type {}".format(metric, type(metric)))
 
     def dist_abs(self, src: str, tar: str) -> float:
         """Return the Phonetic distance.
@@ -235,7 +229,7 @@ class PhoneticDistance(_Distance):
             return float(src != tar)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

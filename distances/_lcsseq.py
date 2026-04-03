@@ -26,7 +26,7 @@ from numpy import zeros as np_zeros
 
 from ._distance import _Distance
 
-__all__ = ['LCSseq']
+__all__ = ["LCSseq"]
 
 
 class LCSseq(_Distance):
@@ -109,12 +109,10 @@ class LCSseq(_Distance):
                 if src_char == tar_char:
                     lengths[i + 1, j + 1] = lengths[i, j] + 1
                 else:
-                    lengths[i + 1, j + 1] = max(
-                        lengths[i + 1, j], lengths[i, j + 1]
-                    )
+                    lengths[i + 1, j + 1] = max(lengths[i + 1, j], lengths[i, j + 1])
 
         # read the substring out from the matrix
-        result = ''
+        result = ""
         i, j = len(src), len(tar)
         while i != 0 and j != 0:
             if lengths[i, j] == lengths[i - 1, j]:
@@ -170,12 +168,10 @@ class LCSseq(_Distance):
             return 1.0
         elif not src or not tar:
             return 0.0
-        return len(self.lcsseq(src, tar)) / self._normalizer(
-            [len(src), len(tar)]
-        )
+        return len(self.lcsseq(src, tar)) / self._normalizer([len(src), len(tar)])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

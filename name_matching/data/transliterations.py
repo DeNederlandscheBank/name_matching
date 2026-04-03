@@ -5,7 +5,6 @@ TRANSLITERATION_MAP = {
     "â": "a",
     "ä": "a",
     "ã": "a",
-    "å": "a",
     "ā": "a",
     "æ": "ae",
     "ç": "c",
@@ -45,7 +44,6 @@ TRANSLITERATION_MAP = {
     "ś": "s",
     "ş": "s",
     "ť": "t",
-    "ü": "u",
     "ž": "z",
     # Specific to languages
     # French
@@ -67,7 +65,6 @@ TRANSLITERATION_MAP = {
     "ó": "o",
     "ú": "u",
     "ñ": "n",
-    "ü": "u",
     # Portuguese
     "á": "a",
     "à": "a",
@@ -81,11 +78,7 @@ TRANSLITERATION_MAP = {
     "õ": "o",
     "ú": "u",
     "ç": "c",
-    "ü": "u",
     # German
-    "ä": "ae",
-    "ö": "oe",
-    "ü": "ue",
     "ß": "ss",
     "é": "e",
     "à": "a",
@@ -113,10 +106,8 @@ TRANSLITERATION_MAP = {
     "é": "e",
     "í": "i",
     "ó": "o",
-    "ö": "o",
     "ő": "o",
     "ú": "u",
-    "ü": "u",
     "ű": "u",
     # Other specific European characters
     "ł": "l",

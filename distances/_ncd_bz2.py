@@ -20,12 +20,11 @@ NCD using bzip2
 """
 
 import bz2
-
 from typing import Any
 
 from ._distance import _Distance
 
-__all__ = ['NCDbz2']
+__all__ = ["NCDbz2"]
 
 
 class NCDbz2(_Distance):
@@ -93,8 +92,8 @@ class NCDbz2(_Distance):
         if src == tar:
             return 0.0
 
-        src_b = src.encode('utf-8')
-        tar_b = tar.encode('utf-8')
+        src_b = src.encode("utf-8")
+        tar_b = tar.encode("utf-8")
 
         src_comp = bz2.compress(src_b, self._level)[10:]
         tar_comp = bz2.compress(tar_b, self._level)[10:]
@@ -102,12 +101,11 @@ class NCDbz2(_Distance):
         concat_comp2 = bz2.compress(tar_b + src_b, self._level)[10:]
 
         return (
-            min(len(concat_comp), len(concat_comp2))
-            - min(len(src_comp), len(tar_comp))
+            min(len(concat_comp), len(concat_comp2)) - min(len(src_comp), len(tar_comp))
         ) / max(len(src_comp), len(tar_comp))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

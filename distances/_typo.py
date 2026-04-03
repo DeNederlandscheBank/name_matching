@@ -21,15 +21,14 @@ Typo edit distance functions.
 
 from itertools import chain
 from math import log
-from typing import Any, Dict, Tuple, cast
+from typing import Any, Tuple, cast
 
 from numpy import float64 as np_float
 from numpy import zeros as np_zeros
 
 from ._distance import _Distance
 
-
-__all__ = ['Typo']
+__all__ = ["Typo"]
 
 
 class Typo(_Distance):
@@ -112,11 +111,11 @@ class Typo(_Distance):
 
     def __init__(
         self,
-        metric: str = 'euclidean',
+        metric: str = "euclidean",
         cost: Tuple[float, float, float, float] = (1.0, 1.0, 0.5, 0.5),
-        layout: str = 'QWERTY',
+        layout: str = "QWERTY",
         failsafe: bool = False,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         """Initialize Typo instance.
 
@@ -220,8 +219,8 @@ class Typo(_Distance):
         if not tar:
             return len(src) * del_cost
 
-        if self._layout == 'auto':
-            for kb in ['QWERTY', 'QWERTZ', 'AZERTY']:
+        if self._layout == "auto":
+            for kb in ["QWERTY", "QWERTZ", "AZERTY"]:
                 keys = set(chain(*chain(*self._keyboard[kb])))
                 letters = set(src) | set(tar)
                 if not (letters - keys):
@@ -229,7 +228,7 @@ class Typo(_Distance):
                     break
             else:
                 # Fallback to QWERTY
-                keyboard = self._keyboard['QWERTY']
+                keyboard = self._keyboard["QWERTY"]
         else:
             keyboard = self._keyboard[self._layout]
 
@@ -262,7 +261,7 @@ class Typo(_Distance):
             for i, kb_mode in enumerate(kb_array):
                 if char in kb_mode:
                     return keyboard[i]
-            raise ValueError(char + ' not found in any keyboard layouts')
+            raise ValueError(char + " not found in any keyboard layouts")
 
         def _substitution_cost(char1: str, char2: str) -> float:
             if self._failsafe and (char1 not in keys or char2 not in keys):
@@ -315,10 +314,10 @@ class Typo(_Distance):
             return log(1 + _manhattan_keyboard_distance(char1, char2))
 
         metric_dict = {
-            'euclidean': _euclidean_keyboard_distance,
-            'manhattan': _manhattan_keyboard_distance,
-            'log-euclidean': _log_euclidean_keyboard_distance,
-            'log-manhattan': _log_manhattan_keyboard_distance,
+            "euclidean": _euclidean_keyboard_distance,
+            "manhattan": _manhattan_keyboard_distance,
+            "log-euclidean": _log_euclidean_keyboard_distance,
+            "log-manhattan": _log_manhattan_keyboard_distance,
         }
 
         d_mat = np_zeros((len(src) + 1, len(tar) + 1), dtype=np_float)
@@ -334,9 +333,7 @@ class Typo(_Distance):
                     d_mat[i, j + 1] + del_cost,  # del
                     d_mat[i, j]
                     + (
-                        _substitution_cost(src[i], tar[j])
-                        if src[i] != tar[j]
-                        else 0
+                        _substitution_cost(src[i], tar[j]) if src[i] != tar[j] else 0
                     ),  # sub/==
                 )
 
@@ -380,12 +377,10 @@ class Typo(_Distance):
         if src == tar:
             return 0.0
         ins_cost, del_cost = self._cost[:2]
-        return self.dist_abs(src, tar) / (
-            max(len(src) * del_cost, len(tar) * ins_cost)
-        )
+        return self.dist_abs(src, tar) / (max(len(src) * del_cost, len(tar) * ins_cost))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

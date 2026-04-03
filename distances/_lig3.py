@@ -22,7 +22,7 @@ LIG3 similarity
 from ._distance import _Distance
 from ._levenshtein import Levenshtein
 
-__all__ = ['LIG3']
+__all__ = ["LIG3"]
 
 
 class LIG3(_Distance):
@@ -88,7 +88,7 @@ class LIG3(_Distance):
         return matches / (matches + cost)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

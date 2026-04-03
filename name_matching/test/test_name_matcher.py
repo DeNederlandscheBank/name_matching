@@ -1,42 +1,42 @@
 import numpy as np
 import pandas as pd
-import os.path as path
-from distances._jaro_winkler import JaroWinkler
 import pytest
 from scipy.sparse import csc_matrix
 from sklearn.feature_extraction.text import TfidfVectorizer
+
 import name_matching.name_matcher as nm
 from distances import (
-    Indel,
-    DiscountedLevenshtein,
-    CormodeLZ,
-    Tichy,
-    IterativeSubString,
-    BaulieuXIII,
-    Clement,
-    DiceAsymmetricI,
-    KuhnsIII,
-    Overlap,
-    PearsonII,
-    WeightedJaccard,
-    WarrensIV,
-    Bag,
-    RougeL,
-    RatcliffObershelp,
-    NCDbz2,
-    FuzzyWuzzyPartialString,
-    FuzzyWuzzyTokenSort,
-    FuzzyWuzzyTokenSet,
-    Editex,
-    Typo,
     LIG3,
     SSK,
-    Levenshtein,
+    Bag,
+    BaulieuXIII,
+    Clement,
+    CormodeLZ,
+    DiceAsymmetricI,
+    DiscountedLevenshtein,
     DoubleMetaphone,
-    RefinedSoundex,
+    Editex,
+    FuzzyWuzzyPartialString,
+    FuzzyWuzzyTokenSet,
+    FuzzyWuzzyTokenSort,
+    Indel,
+    IterativeSubString,
+    KuhnsIII,
+    Levenshtein,
+    NCDbz2,
+    Overlap,
+    PearsonII,
     PhoneticDistance,
+    RatcliffObershelp,
+    RefinedSoundex,
+    RougeL,
+    Tichy,
+    Typo,
+    WarrensIV,
+    WeightedJaccard,
     _TokenDistance,
 )
+from distances._jaro_winkler import JaroWinkler
 
 
 @pytest.mark.parametrize("method", ["", None, "no_method"])
@@ -182,7 +182,7 @@ def test_load_and_process_master_data(adjusted_name, col, start_pro, transform):
     pd.testing.assert_frame_equal(name_matcher._df_matching_data, adjusted_name)
     assert name_matcher._preprocessed == start_pro
     if transform & start_pro:
-        assert type(name_matcher._n_grams_matching) == csc_matrix
+        assert isinstance(name_matcher._n_grams_matching, csc_matrix)
 
 
 @pytest.mark.parametrize(
@@ -200,7 +200,7 @@ def test_process_matching_data(name_match, trans, common):
 
     assert name_match._preprocessed
     if trans:
-        assert type(name_match._n_grams_matching) == csc_matrix
+        assert isinstance(name_match._n_grams_matching, csc_matrix)
     else:
         assert name_match._n_grams_matching is None
     if common:
@@ -685,7 +685,7 @@ def test_postprocess(name_match, match, number_of_matches, word_set, score, resu
 
 
 @pytest.mark.parametrize(
-    "indicator, punctuations, word_set, cut_off, result_1, result_2",
+    "indicator, non_word_characters, word_set, cut_off, result_1, result_2",
     [
         ("legal", False, set(), 0.01, "plc.", "bedrijf"),
         ("legal", True, set(), 0.01, "plc", "bedrijf"),
@@ -697,9 +697,9 @@ def test_postprocess(name_match, match, number_of_matches, word_set, score, resu
     ],
 )
 def test_make_no_scoring_words(
-    name_match, indicator, punctuations, word_set, cut_off, result_1, result_2
+    name_match, indicator, non_word_characters, word_set, cut_off, result_1, result_2
 ):
-    name_match._preprocess_punctuations = punctuations
+    name_match._preprocess_punctuations = non_word_characters
     new_word_set = name_match._make_no_scoring_words(indicator, word_set, cut_off)
 
     assert new_word_set.issuperset(set([result_1]))
@@ -943,7 +943,7 @@ def test_get_alternative_names(match, num_of_matches, result):
     ],
 )
 def test_preprocess_word_list(preprocess_punctuations, output, input, x):
-    name_match = nm.NameMatcher(punctuations=preprocess_punctuations)
+    name_match = nm.NameMatcher(non_word_characters=preprocess_punctuations)
     res = name_match._preprocess_word_list(input)
     assert res[x] == output
 
@@ -1056,7 +1056,7 @@ def test_common_words_type_error(common_words, error):
     else:
         name_matcher = nm.NameMatcher(common_words=common_words)
         if isinstance(common_words, bool):
-            assert name_matcher._postprocess_common_words == True
+            assert name_matcher._postprocess_common_words is True
         else:
             assert name_matcher._word_set == set(common_words)
 

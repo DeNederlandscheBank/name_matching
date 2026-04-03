@@ -28,7 +28,7 @@ from typing import Any
 from ._distance import _Distance
 from ._q_grams import QGrams
 
-__all__ = ['JaroWinkler']
+__all__ = ["JaroWinkler"]
 
 
 class JaroWinkler(_Distance):
@@ -48,11 +48,11 @@ class JaroWinkler(_Distance):
     def __init__(
         self,
         qval: int = 1,
-        mode: str = 'winkler',
+        mode: str = "winkler",
         long_strings: bool = False,
         boost_threshold: float = 0.7,
         scaling_factor: float = 0.1,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         """Initialize JaroWinkler instance.
 
@@ -145,16 +145,16 @@ class JaroWinkler(_Distance):
             Encapsulated in class
 
         """
-        if self._mode == 'winkler':
+        if self._mode == "winkler":
             if self._boost_threshold > 1 or self._boost_threshold < 0:
                 raise ValueError(
-                    'Unsupported boost_threshold assignment; '
-                    + 'boost_threshold must be between 0 and 1.'
+                    "Unsupported boost_threshold assignment; "
+                    + "boost_threshold must be between 0 and 1."
                 )
             if self._scaling_factor > 0.25 or self._scaling_factor < 0:
                 raise ValueError(
-                    'Unsupported scaling_factor assignment; '
-                    + 'scaling_factor must be between 0 and 0.25.'
+                    "Unsupported scaling_factor assignment; "
+                    + "scaling_factor must be between 0 and 0.25."
                 )
 
         if src == tar:
@@ -217,14 +217,12 @@ class JaroWinkler(_Distance):
         n_trans //= 2
 
         # Main weight computation for Jaro distance
-        weight = (
-            num_com / lens + num_com / lent + (num_com - n_trans) / num_com
-        )
+        weight = num_com / lens + num_com / lent + (num_com - n_trans) / num_com
         weight /= 3.0
 
         # Continue to boost the weight if the strings are similar
         # This is the Winkler portion of Jaro-Winkler distance
-        if self._mode == 'winkler' and weight > self._boost_threshold:
+        if self._mode == "winkler" and weight > self._boost_threshold:
 
             # Adjust for having up to the first 4 characters in common
             j = 4 if (minv >= 4) else minv
@@ -250,7 +248,7 @@ class JaroWinkler(_Distance):
         return weight
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

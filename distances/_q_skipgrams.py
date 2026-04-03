@@ -21,11 +21,13 @@ Q-Skipgrams multi-set class
 
 from collections.abc import Iterable
 from itertools import combinations
-from typing import Callable, Iterable as TIterable, Optional, Union, cast
+from typing import Callable
+from typing import Iterable as TIterable
+from typing import Optional, Union, cast
 
 from ._tokenizer import _Tokenizer
 
-__all__ = ['QSkipgrams']
+__all__ = ["QSkipgrams"]
 
 
 class QSkipgrams(_Tokenizer):
@@ -42,7 +44,7 @@ class QSkipgrams(_Tokenizer):
     def __init__(
         self,
         qval: Union[int, TIterable[int]] = 2,
-        start_stop: str = '$#',
+        start_stop: str = "$#",
         scaler: Optional[Union[str, Callable[[float], float]]] = None,
         ssk_lambda: Union[float, TIterable[float]] = 0.9,
     ) -> None:
@@ -146,7 +148,7 @@ class QSkipgrams(_Tokenizer):
         self.qval = qval
         self.start_stop = start_stop
         if qval == 1:
-            self.start_stop = ''
+            self.start_stop = ""
 
         self._string_ss = self._string
         if isinstance(ssk_lambda, float):
@@ -154,9 +156,9 @@ class QSkipgrams(_Tokenizer):
         elif isinstance(ssk_lambda, Iterable):
             self._lambda = tuple(ssk_lambda)
         else:
-            raise ValueError('ssk_lamba is not an iterable or float')
+            raise ValueError("ssk_lamba is not an iterable or float")
 
-    def tokenize(self, string: str) -> 'QSkipgrams':
+    def tokenize(self, string: str) -> "QSkipgrams":
         """Tokenize the term and store it.
 
         The tokenized term is stored as an ordered list and as a Counter
@@ -200,13 +202,15 @@ class QSkipgrams(_Tokenizer):
                 self._string_ss = string
 
             combs = list(combinations(enumerate(string), qval_i))
-            self._ordered_tokens += [''.join(l[1] for l in t) for t in combs]
+            self._ordered_tokens += [
+                "".join(char for idx, char in combination) for combination in combs
+            ]
 
-            if self._scaler == 'SSK':
+            if self._scaler == "SSK":
                 self._ordered_weights += [
                     sum(
-                        l ** (t[-1][0] - t[0][0] + len(t) - 1)
-                        for l in self._lambda
+                        lamdb ** (t[-1][0] - t[0][0] + len(t) - 1)
+                        for lamdb in self._lambda
                     )
                     for t in combs
                 ]
@@ -217,7 +221,7 @@ class QSkipgrams(_Tokenizer):
         return self
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod(optionflags=doctest.NORMALIZE_WHITESPACE)

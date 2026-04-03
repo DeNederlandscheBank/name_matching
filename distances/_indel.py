@@ -23,7 +23,7 @@ from typing import Any
 
 from ._levenshtein import Levenshtein
 
-__all__ = ['Indel']
+__all__ = ["Indel"]
 
 
 class Indel(Levenshtein):
@@ -49,7 +49,7 @@ class Indel(Levenshtein):
 
         """
         super(Indel, self).__init__(
-            mode='lev', cost=(1, 1, float('inf'), float('inf')), **kwargs
+            mode="lev", cost=(1, 1, float("inf"), float("inf")), **kwargs
         )
 
     def dist(self, src: str, tar: str) -> float:
@@ -91,7 +91,7 @@ class Indel(Levenshtein):
         return self.dist_abs(src, tar) / (len(src) + len(tar))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

@@ -26,7 +26,7 @@ from numpy import zeros as np_zeros
 
 from ._distance import _Distance
 
-__all__ = ['RatcliffObershelp']
+__all__ = ["RatcliffObershelp"]
 
 
 class RatcliffObershelp(_Distance):
@@ -151,9 +151,7 @@ class RatcliffObershelp(_Distance):
             return (
                 _sstr_matches(src[:src_start], tar[:tar_start])
                 + length
-                + _sstr_matches(
-                    src[src_start + length :], tar[tar_start + length :]
-                )
+                + _sstr_matches(src[src_start + length :], tar[tar_start + length :])
             )
 
         if src == tar:
@@ -163,7 +161,7 @@ class RatcliffObershelp(_Distance):
         return 2 * _sstr_matches(src, tar) / (len(src) + len(tar))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

@@ -23,7 +23,7 @@ from typing import Any
 
 from ._distance import _Distance
 
-__all__ = ['IterativeSubString']
+__all__ = ["IterativeSubString"]
 
 
 class IterativeSubString(_Distance):
@@ -38,10 +38,7 @@ class IterativeSubString(_Distance):
     """
 
     def __init__(
-        self,
-        hamacher: float = 0.6,
-        normalize_strings: bool = False,
-        **kwargs: Any
+        self, hamacher: float = 0.6, normalize_strings: bool = False, **kwargs: Any
     ) -> None:
         """Initialize IterativeSubString instance.
 
@@ -97,9 +94,7 @@ class IterativeSubString(_Distance):
         input_src = src
         input_tar = tar
 
-        def _winkler_improvement(
-            src: str, tar: str, commonality: float
-        ) -> float:
+        def _winkler_improvement(src: str, tar: str, commonality: float) -> float:
             idx = min(len(src), len(tar))
             for i in range(min(len(src), len(tar))):
                 if src[i] != tar[i]:
@@ -111,9 +106,9 @@ class IterativeSubString(_Distance):
             src = src.lower()
             tar = tar.lower()
 
-            for ch in '._ ':
-                src = src.replace(ch, '')
-                tar = tar.replace(ch, '')
+            for ch in "._ ":
+                src = src.replace(ch, "")
+                tar = tar.replace(ch, "")
 
         src_len = len(src)
         tar_len = len(tar)
@@ -170,9 +165,7 @@ class IterativeSubString(_Distance):
                 best = 0
 
         commonality = 2.0 * common / (src_len + tar_len)
-        winkler_improvement = _winkler_improvement(
-            input_src, input_tar, commonality
-        )
+        winkler_improvement = _winkler_improvement(input_src, input_tar, commonality)
 
         unmatched_src = max(src_len - common, 0) / src_len
         unmatched_tar = max(tar_len - common, 0) / tar_len
@@ -180,8 +173,7 @@ class IterativeSubString(_Distance):
         unmatched_prod = unmatched_src * unmatched_tar
         dissimilarity = unmatched_prod / (
             self._hamacher
-            + (1 - self._hamacher)
-            * (unmatched_src + unmatched_tar - unmatched_prod)
+            + (1 - self._hamacher) * (unmatched_src + unmatched_tar - unmatched_prod)
         )
 
         return commonality - dissimilarity + winkler_improvement
@@ -220,7 +212,7 @@ class IterativeSubString(_Distance):
         return (self.corr(src, tar) + 1.0) / 2.0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

@@ -23,7 +23,7 @@ from difflib import SequenceMatcher
 
 from ._distance import _Distance
 
-__all__ = ['FuzzyWuzzyPartialString']
+__all__ = ["FuzzyWuzzyPartialString"]
 
 
 class FuzzyWuzzyPartialString(_Distance):
@@ -88,7 +88,7 @@ class FuzzyWuzzyPartialString(_Distance):
         return max_sim
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

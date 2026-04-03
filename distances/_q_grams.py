@@ -20,11 +20,13 @@ QGrams multi-set class
 """
 
 from collections.abc import Iterable
-from typing import Callable, Iterable as TIterable, Optional, Union, cast
+from typing import Callable
+from typing import Iterable as TIterable
+from typing import Optional, Union, cast
 
 from ._tokenizer import _Tokenizer
 
-__all__ = ['QGrams']
+__all__ = ["QGrams"]
 
 
 class QGrams(_Tokenizer):
@@ -41,7 +43,7 @@ class QGrams(_Tokenizer):
     def __init__(
         self,
         qval: Union[int, TIterable[int]] = 2,
-        start_stop: str = '$#',
+        start_stop: str = "$#",
         skip: Union[int, TIterable[int]] = 0,
         scaler: Optional[Union[str, Callable[[float], float]]] = None,
     ) -> None:
@@ -123,19 +125,19 @@ class QGrams(_Tokenizer):
 
         """
         if qval == 0:
-            raise ValueError('Use WhitespaceTokenizer instead of qval=0.')
+            raise ValueError("Use WhitespaceTokenizer instead of qval=0.")
         super(QGrams, self).__init__(scaler)
 
         # Save parameters
         self.qval = qval
         self.start_stop = start_stop
         if qval == 1:
-            self.start_stop = ''
+            self.start_stop = ""
         self.skip = skip
 
         self._string_ss = self._string
 
-    def tokenize(self, string: str) -> 'QGrams':
+    def tokenize(self, string: str) -> "QGrams":
         """Tokenize the term and store it.
 
         The tokenized term is stored as an ordered list and as a Counter
@@ -191,8 +193,7 @@ class QGrams(_Tokenizer):
         return self
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod(optionflags=doctest.NORMALIZE_WHITESPACE)

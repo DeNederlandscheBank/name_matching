@@ -23,7 +23,7 @@ from typing import Any, Tuple
 
 from ._distance import _Distance
 
-__all__ = ['Tichy']
+__all__ = ["Tichy"]
 
 
 class Tichy(_Distance):
@@ -182,7 +182,7 @@ class Tichy(_Distance):
         return 0.0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

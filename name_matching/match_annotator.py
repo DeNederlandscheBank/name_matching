@@ -1,7 +1,7 @@
+import ipywidgets as ipyw
 import numpy as np
 import pandas as pd
-import ipywidgets as ipyw
-from IPython.display import display, clear_output
+from IPython.display import clear_output, display
 
 
 class MatchAnnotator:
@@ -147,12 +147,14 @@ class MatchAnnotator:
             Description of buttons.
         """
         clear_output()
-        label = ipyw.Label(
-            value=f"{self._results_data.loc[self._possible_nodes[self._index],'original_name']}",
+        label = ipyw.HTML(
+            value=(
+                "<b style='font-size:20px'>"
+                f"{self._results_data.loc[self._possible_nodes[self._index],'original_name']}"
+                "</b>"
+            ),
             layout=ipyw.Layout(
                 padding="10px",
-                font_weight="bold",
-                font_size="20px",
                 width="100%",
                 height="50px",
             ),

@@ -28,7 +28,7 @@ from numpy import zeros as np_zeros
 
 from ._distance import _Distance
 
-__all__ = ['Editex']
+__all__ = ["Editex"]
 
 
 class Editex(_Distance):
@@ -44,25 +44,25 @@ class Editex(_Distance):
     """
 
     _letter_groups = (
-        frozenset('AEIOUY'),
-        frozenset('BP'),
-        frozenset('CKQ'),
-        frozenset('DT'),
-        frozenset('LR'),
-        frozenset('MN'),
-        frozenset('GJ'),
-        frozenset('FPV'),
-        frozenset('SXZ'),
+        frozenset("AEIOUY"),
+        frozenset("BP"),
+        frozenset("CKQ"),
+        frozenset("DT"),
+        frozenset("LR"),
+        frozenset("MN"),
+        frozenset("GJ"),
+        frozenset("FPV"),
+        frozenset("SXZ"),
     )
 
-    _all_letters = frozenset('ABCDEFGIJKLMNOPQRSTUVXYZ')
+    _all_letters = frozenset("ABCDEFGIJKLMNOPQRSTUVXYZ")
 
     def __init__(
         self,
         cost: Tuple[int, int, int] = (0, 1, 2),
         local: bool = False,
         taper: bool = False,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         """Initialize Editex instance.
 
@@ -92,9 +92,7 @@ class Editex(_Distance):
 
     def _taper(self, pos: int, length: int) -> float:
         return (
-            round(
-                1.0 + ((length - pos) / length) * (1 + float_info.epsilon), 15
-            )
+            round(1.0 + ((length - pos) / length) * (1 + float_info.epsilon), 15)
             if self._taper_enabled
             else 1.0
         )
@@ -178,13 +176,13 @@ class Editex(_Distance):
             .. versionadded:: 0.1.0
 
             """
-            if ch1 != ch2 and (ch1 == 'H' or ch1 == 'W'):
+            if ch1 != ch2 and (ch1 == "H" or ch1 == "W"):
                 return group_cost
             return r_cost(ch1, ch2)
 
         # convert both src & tar to NFKD normalized unicode
-        src = unicode_normalize('NFKD', src.upper())
-        tar = unicode_normalize('NFKD', tar.upper())
+        src = unicode_normalize("NFKD", src.upper())
+        tar = unicode_normalize("NFKD", tar.upper())
 
         src_len = len(src)
         tar_len = len(tar)
@@ -194,18 +192,16 @@ class Editex(_Distance):
             return 0.0
         if not src:
             return sum(
-                mismatch_cost * self._taper(pos, max_len)
-                for pos in range(tar_len)
+                mismatch_cost * self._taper(pos, max_len) for pos in range(tar_len)
             )
         if not tar:
             return sum(
-                mismatch_cost * self._taper(pos, max_len)
-                for pos in range(src_len)
+                mismatch_cost * self._taper(pos, max_len) for pos in range(src_len)
             )
 
         d_mat = np_zeros((len(src) + 1, len(tar) + 1), dtype=np_float)
-        src = ' ' + src
-        tar = ' ' + tar
+        src = " " + src
+        tar = " " + tar
 
         if not self._local:
             for i in range(1, src_len + 1):
@@ -213,19 +209,17 @@ class Editex(_Distance):
                     src[i - 1], src[i]
                 ) * self._taper(i, max_len)
         for j in range(1, tar_len + 1):
-            d_mat[0, j] = d_mat[0, j - 1] + d_cost(
-                tar[j - 1], tar[j]
-            ) * self._taper(j, max_len)
+            d_mat[0, j] = d_mat[0, j - 1] + d_cost(tar[j - 1], tar[j]) * self._taper(
+                j, max_len
+            )
 
         for i in range(1, src_len + 1):
             for j in range(1, tar_len + 1):
                 d_mat[i, j] = min(
                     d_mat[i - 1, j]
-                    + d_cost(src[i - 1], src[i])
-                    * self._taper(max(i, j), max_len),
+                    + d_cost(src[i - 1], src[i]) * self._taper(max(i, j), max_len),
                     d_mat[i, j - 1]
-                    + d_cost(tar[j - 1], tar[j])
-                    * self._taper(max(i, j), max_len),
+                    + d_cost(tar[j - 1], tar[j]) * self._taper(max(i, j), max_len),
                     d_mat[i - 1, j - 1]
                     + r_cost(src[i], tar[j]) * self._taper(max(i, j), max_len),
                 )
@@ -296,13 +290,11 @@ class Editex(_Distance):
                 ]
             )
         else:
-            normalize_term = max(
-                src_len * mismatch_cost, tar_len * mismatch_cost
-            )
+            normalize_term = max(src_len * mismatch_cost, tar_len * mismatch_cost)
         return self.dist_abs(src, tar) / normalize_term
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

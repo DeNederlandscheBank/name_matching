@@ -19,12 +19,14 @@
 Clement similarity
 """
 
-from typing import Any, Counter as TCounter, Optional, Sequence, Set, Union
+from typing import Any
+from typing import Counter as TCounter
+from typing import Optional, Sequence, Set, Union
 
 from ._token_distance import _TokenDistance
 from ._tokenizer import _Tokenizer
 
-__all__ = ['Clement']
+__all__ = ["Clement"]
 
 
 class Clement(_TokenDistance):
@@ -54,12 +56,10 @@ class Clement(_TokenDistance):
 
     def __init__(
         self,
-        alphabet: Optional[
-            Union[TCounter[str], Sequence[str], Set[str], int]
-        ] = None,
+        alphabet: Optional[Union[TCounter[str], Sequence[str], Set[str], int]] = None,
         tokenizer: Optional[_Tokenizer] = None,
-        intersection_type: str = 'crisp',
-        **kwargs: Any
+        intersection_type: str = "crisp",
+        **kwargs: Any,
     ) -> None:
         """Initialize Clement instance.
 
@@ -99,7 +99,7 @@ class Clement(_TokenDistance):
             alphabet=alphabet,
             tokenizer=tokenizer,
             intersection_type=intersection_type,
-            **kwargs
+            **kwargs,
         )
 
     def sim(self, src: str, tar: str) -> float:
@@ -153,7 +153,7 @@ class Clement(_TokenDistance):
         return score
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

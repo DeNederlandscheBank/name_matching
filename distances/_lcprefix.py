@@ -24,7 +24,7 @@ from typing import List, cast
 
 from ._distance import _Distance
 
-__all__ = ['LCPrefix']
+__all__ = ["LCPrefix"]
 
 
 class LCPrefix(_Distance):
@@ -109,7 +109,7 @@ class LCPrefix(_Distance):
             if isinstance(arg, str):
                 strings.append(arg)
             else:
-                raise TypeError('All arguments must be of type str')
+                raise TypeError("All arguments must be of type str")
 
         return len(self.lcprefix(strings))
 
@@ -160,7 +160,7 @@ class LCPrefix(_Distance):
         return dist / maxlen
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

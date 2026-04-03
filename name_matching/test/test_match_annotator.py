@@ -1,5 +1,4 @@
 import numpy as np
-import pytest
 import pandas as pd
 
 from name_matching.match_annotator import MatchAnnotator
@@ -32,8 +31,8 @@ def test_possible_names(annotator):
     annotator._possible_nodes = [0]
     annotator._index = 0
     names = annotator._possible_names()
-    assert isinstance(names, np.ndarray)
     assert set(names).issubset(set(["Alpha Incorporated", "Alpha Inc."]))
+    assert len(names) == len(np.unique(names))
 
 
 def test_save_result(annotator):

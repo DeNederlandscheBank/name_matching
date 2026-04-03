@@ -23,7 +23,7 @@ from typing import Any
 
 from ._distance import _Distance
 
-__all__ = ['Hamming']
+__all__ = ["Hamming"]
 
 
 class Hamming(_Distance):
@@ -101,9 +101,9 @@ class Hamming(_Distance):
         """
         if not self._diff_lens and len(src) != len(tar):
             raise ValueError(
-                'Undefined for sequences of unequal length; set diff_lens '
-                + 'to True for Hamming distance between strings of unequal '
-                + 'lengths.'
+                "Undefined for sequences of unequal length; set diff_lens "
+                + "to True for Hamming distance between strings of unequal "
+                + "lengths."
             )
 
         hdist = 0
@@ -159,7 +159,7 @@ class Hamming(_Distance):
         return self.dist_abs(src, tar) / max(len(src), len(tar))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

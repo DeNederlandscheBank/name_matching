@@ -24,7 +24,7 @@ from typing import Any, Optional
 from ._token_distance import _TokenDistance
 from ._tokenizer import _Tokenizer
 
-__all__ = ['DiceAsymmetricI']
+__all__ = ["DiceAsymmetricI"]
 
 
 class DiceAsymmetricI(_TokenDistance):
@@ -58,8 +58,8 @@ class DiceAsymmetricI(_TokenDistance):
     def __init__(
         self,
         tokenizer: Optional[_Tokenizer] = None,
-        intersection_type: str = 'crisp',
-        **kwargs: Any
+        intersection_type: str = "crisp",
+        **kwargs: Any,
     ) -> None:
         """Initialize DiceAsymmetricI instance.
 
@@ -139,7 +139,7 @@ class DiceAsymmetricI(_TokenDistance):
         return a / ab
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()
