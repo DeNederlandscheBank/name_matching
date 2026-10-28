@@ -79,7 +79,7 @@ class MatchAnnotator:
             Description of button.
         """
         self._annotated_results[
-            self._results_data.loc[self._possible_nodes[self._index], "original_name"]
+            self._results_data.loc[self._possible_nodes[self._index], self._name_col]
         ] = -1
         self._skip(None)
 
@@ -120,7 +120,7 @@ class MatchAnnotator:
             Description of button.
         """
         self._annotated_results[
-            self._results_data.loc[self._possible_nodes[self._index], "original_name"]
+            self._results_data.loc[self._possible_nodes[self._index], self._name_col]
         ] = button.description
         self._skip(None)
 
@@ -150,7 +150,7 @@ class MatchAnnotator:
         label = ipyw.HTML(
             value=(
                 "<b style='font-size:20px'>"
-                f"{self._results_data.loc[self._possible_nodes[self._index],'original_name']}"
+                f"{self._results_data.loc[self._possible_nodes[self._index], self._name_col]}"
                 "</b>"
             ),
             layout=ipyw.Layout(
@@ -192,6 +192,9 @@ class MatchAnnotator:
                 .sample(n=len(self._results_data))
                 .to_list()
             )
+        raise ValueError(
+            f"Unsupported selection {selection!r}; the only supported value is 'random'."
+        )
 
     def start(self, selection: str = "random", fresh_start: bool = False) -> None:
         """Start the annotation process with optional fresh start.

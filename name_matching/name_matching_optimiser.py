@@ -7,13 +7,8 @@ import numpy as np
 import pandas as pd
 from sklearn.base import clone
 from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.metrics import (
-    accuracy_score,
-    f1_score,
-    precision_recall_curve,
-    precision_score,
-    recall_score,
-)
+from sklearn.metrics import (accuracy_score, f1_score, precision_recall_curve,
+                             precision_score, recall_score)
 from sklearn.preprocessing import StandardScaler
 
 from name_matching.match_annotator import MatchAnnotator
@@ -212,13 +207,20 @@ class NameMatchingOptimiser:
         """
         if self._true_index is None:
             raise ValueError("Please fit the model before running cross-validation.")
+        if n_folds < 2 or n_folds > len(self._true_index):
+            raise ValueError(
+                "n_folds must be between 2 and the number of annotated matches."
+            )
 
         accuracy, recall, precision, f1 = [], [], [], []
-        lists = self.split_list_random_uneven(list(self._true_index.keys()), n_folds)
+        keys = list(self._true_index.keys())
+        folds = self.split_list_random_uneven(keys, n_folds)
 
-        for train_idx in lists:
+        for test_idx in folds:
+            test_keys = set(test_idx)
+            train_idx = [key for key in keys if key not in test_keys]
             X_train, y_train, X_test, y_test = self._generate_balanced_split(
-                0.8, train_idx
+                0.8, train_idx, scaler_instance=type(self.scaler)()
             )
             model = clone(self.model)
             model.fit(X_train, y_train)
@@ -231,7 +233,7 @@ class NameMatchingOptimiser:
 
             accuracy.append(accuracy_score(y_test, y_pred))
             recall.append(recall_score(y_test, y_pred))
-            precision.append(precision_score(y_test, y_pred))
+            precision.append(precision_score(y_test, y_pred, zero_division=0))
             f1.append(f1_score(y_test, y_pred))
 
         if model_name is None:
@@ -426,16 +428,11 @@ class NameMatchingOptimiser:
                 "Recall": recall,
             }
 
-    def _preprocess_fit_annotations(self, dataScaler: type[scaler]) -> None:
+    def _preprocess_fit_annotations(self) -> None:
         """Prepare training and test indices from annotated matches.
 
         Runs name matching on all data, then splits each annotated example
         into one positive and one or more negative feature vectors.
-
-        Parameters
-        ----------
-        dataScaler : class
-            Scaler class (e.g. StandardScaler) to fit on all feature vectors.
 
         Raises
         ------
@@ -459,9 +456,6 @@ class NameMatchingOptimiser:
         )
         matches = matches.reset_index(drop=True)  # type: ignore
 
-        # Fit scaler on full set
-        self.scaler = dataScaler().fit(matches[0])  # type: ignore
-
         idx_true = idx_false = 0
         for idx, name in enumerate(self._df_to_be_matched[self._to_be_matched_col]):
             if name in self._annotated_data:
@@ -479,7 +473,10 @@ class NameMatchingOptimiser:
                     idx_false += 1
 
     def _generate_balanced_split(
-        self, train_split: float, train_idx: Optional[list[int]] = None
+        self,
+        train_split: float,
+        train_idx: Optional[list[int]] = None,
+        scaler_instance: Optional[scaler] = None,
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """Build balanced train/test sets from true and false example indices.
 
@@ -491,6 +488,8 @@ class NameMatchingOptimiser:
             Fraction of `self._true_index` keys to include in training.
         train_idx : list of int, optional
             Specific keys to use for training; if None, chosen randomly.
+        scaler_instance : scaler, optional
+            Scaler to fit on the training features and apply to both splits.
 
         Returns
         -------
@@ -536,8 +535,13 @@ class NameMatchingOptimiser:
             ]
         )
 
-        X_train = self.scaler.transform(X_train)
-        X_test = self.scaler.transform(X_test)
+        if scaler_instance is None:
+            scaler_instance = getattr(self, "scaler", None)
+        if scaler_instance is None:
+            raise ValueError("A scaler instance is required to prepare the data.")
+        scaler_instance.fit(X_train)
+        X_train = scaler_instance.transform(X_train)
+        X_test = scaler_instance.transform(X_test)
 
         return X_train, y_train, X_test, y_test
 
@@ -572,10 +576,11 @@ class NameMatchingOptimiser:
         """
         self._model = model
         if preprocess or self._true_index is None:
-            self._preprocess_fit_annotations(dataScaler)
+            self._preprocess_fit_annotations()
 
+        self.scaler = dataScaler()
         self._X_train, self._y_train, self._X_test, self._y_test = (
-            self._generate_balanced_split(train_split)
+            self._generate_balanced_split(train_split, scaler_instance=self.scaler)
         )
 
         self._model_args = model_args or {}
@@ -586,7 +591,9 @@ class NameMatchingOptimiser:
             y_pred = self.model.predict(self._X_test)
             print(f"accuracy - {accuracy_score(self._y_test, y_pred)}")
             print(f"recall   - {recall_score(self._y_test, y_pred)}")
-            print(f"precision- {precision_score(self._y_test, y_pred)}")
+            print(
+                f"precision- {precision_score(self._y_test, y_pred, zero_division=0)}"
+            )
 
     def predict(self, threshold: float = 0.5) -> dict[str, str]:
         """Match new names by applying the trained classifier to all candidates.

@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import pytest
 
 from name_matching.match_annotator import MatchAnnotator
 
@@ -43,6 +44,37 @@ def test_save_result(annotator):
     annotator._index = 0
     annotator._save_result(DummyButton())
     assert annotator._annotated_results["Alpha Inc"] == "Alpha Incorporated"
+
+
+def test_custom_name_column_is_used_for_annotation_and_display(
+    sample_results, monkeypatch
+):
+    results = sample_results.rename(columns={"original_name": "company"})
+    annotator = MatchAnnotator(results=results, name_col="company")
+    annotator._possible_nodes = [0]
+    annotator._index = 0
+    monkeypatch.setattr(annotator, "_skip", lambda button: None)
+
+    class DummyButton:
+        description = "Alpha Incorporated"
+
+    annotator._save_result(DummyButton())
+    assert annotator.annotated_results["Alpha Inc"] == "Alpha Incorporated"
+
+    annotator._index = 0
+    annotator._no_match(DummyButton())
+    assert annotator.annotated_results["Alpha Inc"] == -1
+
+    displayed = []
+    monkeypatch.setattr("name_matching.match_annotator.clear_output", lambda: None)
+    monkeypatch.setattr("name_matching.match_annotator.display", displayed.append)
+    annotator._show_data([])
+    assert "Alpha Inc" in displayed[0].children[0].value
+
+
+def test_start_rejects_unsupported_selection(annotator):
+    with pytest.raises(ValueError, match="only supported value is 'random'"):
+        annotator.start(selection="first")
 
 
 def test_no_match(annotator):

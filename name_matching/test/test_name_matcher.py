@@ -5,37 +5,14 @@ from scipy.sparse import csc_matrix
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 import name_matching.name_matcher as nm
-from distances import (
-    LIG3,
-    SSK,
-    Bag,
-    BaulieuXIII,
-    Clement,
-    CormodeLZ,
-    DiceAsymmetricI,
-    DiscountedLevenshtein,
-    DoubleMetaphone,
-    Editex,
-    FuzzyWuzzyPartialString,
-    FuzzyWuzzyTokenSet,
-    FuzzyWuzzyTokenSort,
-    Indel,
-    IterativeSubString,
-    KuhnsIII,
-    Levenshtein,
-    NCDbz2,
-    Overlap,
-    PearsonII,
-    PhoneticDistance,
-    RatcliffObershelp,
-    RefinedSoundex,
-    RougeL,
-    Tichy,
-    Typo,
-    WarrensIV,
-    WeightedJaccard,
-    _TokenDistance,
-)
+from distances import (LIG3, SSK, Bag, BaulieuXIII, Clement, CormodeLZ,
+                       DiceAsymmetricI, DiscountedLevenshtein, DoubleMetaphone,
+                       Editex, FuzzyWuzzyPartialString, FuzzyWuzzyTokenSet,
+                       FuzzyWuzzyTokenSort, Indel, IterativeSubString,
+                       KuhnsIII, Levenshtein, NCDbz2, Overlap, PearsonII,
+                       PhoneticDistance, RatcliffObershelp, RefinedSoundex,
+                       RougeL, Tichy, Typo, WarrensIV, WeightedJaccard,
+                       _TokenDistance)
 from distances._jaro_winkler import JaroWinkler
 
 
