@@ -1145,8 +1145,15 @@ class NameMatcher:
         Returns
         -------
         pd.DataFrame
-            The preprocessed dataframe or series depending on the input
+            The preprocessed dataframe or series depending on the input. The
+            input dataframe itself is left untouched: cleansing is applied to
+            a copy, so the caller keeps the original names for joining the
+            match results back to their source data.
         """
+        # Work on a copy. Every call site uses the returned frame, and writing
+        # the cleansed names into the caller's dataframe destroys the very
+        # values a user needs to link the matches back to their source (#38).
+        df = df.copy()
         if original_name:
             df["original_name"] = df[column_name].copy(deep=True)
         df.loc[:, column_name] = df[column_name].astype(str)

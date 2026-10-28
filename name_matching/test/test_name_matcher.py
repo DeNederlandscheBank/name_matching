@@ -147,6 +147,7 @@ def test_preprocess_reduce(
     ],
 )
 def test_load_and_process_master_data(adjusted_name, col, start_pro, transform):
+    original = adjusted_name.copy(deep=True)
     name_matcher = nm.NameMatcher()
     name_matcher.load_and_process_master_data(
         column=col,
@@ -156,7 +157,17 @@ def test_load_and_process_master_data(adjusted_name, col, start_pro, transform):
     )
 
     assert name_matcher._column == col
-    pd.testing.assert_frame_equal(name_matcher._df_matching_data, adjusted_name)
+    # The caller's dataframe is never modified (#38). The old assertion here
+    # compared the stored frame to the passed frame, which only held because
+    # preprocessing used to overwrite the caller's object with the cleansed
+    # names - the two were the same mutated thing.
+    pd.testing.assert_frame_equal(adjusted_name, original)
+    if start_pro:
+        # The stored data is a preprocessed copy, aligned to the caller's rows.
+        assert name_matcher._df_matching_data.index.equals(adjusted_name.index)
+        assert name_matcher._df_matching_data.shape[0] == adjusted_name.shape[0]
+    else:
+        pd.testing.assert_frame_equal(name_matcher._df_matching_data, adjusted_name)
     assert name_matcher._preprocessed == start_pro
     if transform & start_pro:
         assert isinstance(name_matcher._n_grams_matching, csc_matrix)
@@ -1078,3 +1089,19 @@ def test_process_legal_words(word_set, result_1, result_2, result_3):
     number_of_words = 330
     assert (result_2 in words) == result_3
     assert len(words) == number_of_words + result_1
+
+
+def test_input_dataframes_are_not_modified(original_name, adjusted_name):
+    """Regression test for #38: neither the master data nor the names passed to
+    match_names may be altered. The cleansed values used to be written into the
+    caller's frames, destroying the original names a user needs to join the
+    match results back to their source data."""
+    master_before = original_name.copy(deep=True)
+    to_match_before = adjusted_name.copy(deep=True)
+
+    matcher = nm.NameMatcher(verbose=False)
+    matcher.load_and_process_master_data("company_name", original_name)
+    matcher.match_names(to_be_matched=adjusted_name, column_matching="company_name")
+
+    pd.testing.assert_frame_equal(original_name, master_before)
+    pd.testing.assert_frame_equal(adjusted_name, to_match_before)

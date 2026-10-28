@@ -457,7 +457,16 @@ class NameMatchingOptimiser:
         matches = matches.reset_index(drop=True)  # type: ignore
 
         idx_true = idx_false = 0
-        for idx, name in enumerate(self._df_to_be_matched[self._to_be_matched_col]):
+        # Annotation keys are preprocessed names: the annotator builds them
+        # from match results, whose original_name column carries the cleansed
+        # form. Look up by the same form rather than relying on match_names
+        # having cleansed self._df_to_be_matched in place, which it no longer
+        # does (the caller's frame is left untouched).
+        lookup_names = self._nm.preprocess(
+            self._df_to_be_matched[[self._to_be_matched_col]],
+            self._to_be_matched_col,
+        )[self._to_be_matched_col]
+        for idx, name in enumerate(lookup_names):
             if name in self._annotated_data:
                 true_match = self._annotated_data[name]
                 pos_mask = possible[idx] == true_match  # type: ignore
