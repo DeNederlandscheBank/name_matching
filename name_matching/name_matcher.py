@@ -1,4 +1,5 @@
 import importlib.resources as importlib_resource
+import inspect
 import os
 import pickle
 import re
@@ -459,55 +460,56 @@ class NameMatcher:
 
     def set_distance_metrics(self, metrics: List) -> None:
         """
-        A method to set which of the distance metrics should be employed during the
-        fuzzy matching. For very short explanations of most of the name matching
-        algorithms please see the make_distance_metrics function in distance_matrics.py
+        Set which distance metrics should be used during fuzzy matching.
+
+        For short explanations of the available name-matching algorithms, see
+        ``make_distance_metrics`` in ``distance_metrics.py``. All metric methods
+        supported by ``make_distance_metrics`` are valid inputs here.
 
         Parameters
         ----------
         metrics: List
-            The list with the distance metrics to be used during the name matching. The
-            distance metrics can be chosen from the list below:
-                indel
-                discounted_levenshtein
-                tichy
-                cormodeL_z
-                iterative_sub_string
-                baulieu_xiii
-                clement
-                dice_asymmetricI
-                kuhns_iii
-                overlap
-                pearson_ii
-                weighted_jaccard
-                warrens_iv
-                bag
-                rouge_l
-                q_grams
-                ratcliff_obershelp
-                ncd_bz2
-                fuzzy_wuzzy_partial_string
-                fuzzy_wuzzy_token_sort
-                fuzzy_wuzzy_token_set
-                editex
-                typo
-                lig_3
-                ssk
-                refined_soundex
-                double_metaphone
+            List of distance metric names to use for matching. Every metric name
+            accepted by ``make_distance_metrics`` can be provided.
+
+            Possible options:
+            ``overlap``, ``weighted_jaccard``, ``ratcliff_obershelp``,
+            ``fuzzy_wuzzy_token_sort``, ``editex``, and every other keyword option
+            exposed by ``make_distance_metrics``.
         """
 
+        available_metrics = self.get_available_distance_metrics()
         input_metrics = {str(metric).lower(): True for metric in metrics}
+
+        unknown_metrics = sorted(set(input_metrics) - set(available_metrics))
+        if unknown_metrics:
+            raise TypeError(
+                "Not all of the supplied distance metrics are available. Unknown metrics: "
+                + f"{unknown_metrics}. Available options are: {available_metrics}"
+            )
+
         try:
             self._distance_metrics = make_distance_metrics(**input_metrics)
         except TypeError:
             raise TypeError(
-                "Not all of the supplied distance metrics are available. Please check the"
-                + "list of options in the make_distance_metrics function and adjust"
-                + " your list accordingly"
+                "Not all of the supplied distance metrics are available. "
+                + f"Available options are: {available_metrics}"
             )
         self._num_distance_metrics = sum(
             [len(x) for x in self._distance_metrics.values()]
+        )
+
+    @staticmethod
+    def get_available_distance_metrics() -> List[str]:
+        """Return all keyword metric options accepted by ``make_distance_metrics``."""
+        params = inspect.signature(make_distance_metrics).parameters
+        return sorted(
+            [
+                name.lower()
+                for name, param in params.items()
+                if param.kind
+                not in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
+            ]
         )
 
     def _select_top_words(

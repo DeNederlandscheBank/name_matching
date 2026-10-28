@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "name_matching"
-version = "0.9.22"
+version = "0.9.23"
 description = "A package for the matching of company names"
 readme = "README.md"
 authors = [
@@ -19,7 +19,7 @@ dependencies = [
     "ipywidgets",
     "matplotlib"
 ]
-requires-python = ">=3.7"
+requires-python = ">=3.9"
 
 [project.urls]
 Documentation = "https://name-matching.readthedocs.io/en/latest/index.html"
@@ -34,7 +34,9 @@ dev = [
 ]
 
 [tool.setuptools]
-packages = ["name_matching", "distances"]
+
+[tool.setuptools.packages.find]
+include = ["name_matching*", "distances*"]
 
 [tool.setuptools.package-data]
 "name_matching" = ["data/*.csv", "data/*.py"]

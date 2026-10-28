@@ -38,16 +38,24 @@ def make_distance_metrics(
     A function which returns a dict containing the distance metrics that should be
     used during the fuzzy string matching
 
-    Levenshtein edit distance
+    Supported methods
+        Levenshtein edit distance:
         - Indel
-        - Discounted Levenshtein
-        - levenshtein
+        - DiscountedLevenshtein
+        - Levenshtein
+        - JaroWinkler
         - LIG3
-        - Jaro-Winkler
-    Block edit distances
-        - Tichy
+
+        Block edit distances:
         - CormodeLZ
-    Multi-set token-based distance
+        - Tichy
+
+        Subsequence distances:
+        - IterativeSubString
+        - RatcliffObershelp
+        - SSK
+
+        Multi-set token-based distances:
         - BaulieuXIII
         - Clement
         - DiceAsymmetricI
@@ -58,21 +66,21 @@ def make_distance_metrics(
         - WarrensIV
         - Bag
         - RougeL
-        - Token distance
-    Subsequence distances
-        - IterativeSubString
-        - RatcliffObershelp
-        - SSK
-    Normalized compression distance
+        - TokenDistance
+
+        Normalized compression distance:
         - NCDbz2
-    FuzzyWuzzy distances
+
+        FuzzyWuzzy distances:
         - FuzzyWuzzyPartialString
         - FuzzyWuzzyTokenSort
         - FuzzyWuzzyTokenSet
-    Ponetic distances
-        - RefinedSoundex
-        - DoubleMetaphone
-    Edit distances
+
+        Phonetic distances:
+        - RefinedSoundex + Levenshtein (via PhoneticDistance)
+        - DoubleMetaphone + Levenshtein (via PhoneticDistance)
+
+        Edit distances:
         - Editex
         - Typo
 
@@ -252,7 +260,6 @@ def make_distance_metrics(
         be included in the fuzzy matching process. If a dictionary is provided,
         it is used as parameters for the Double Metaphone distance metric.
         default=False
-
     """
     distance_metrics = defaultdict(list)
     if indel:
